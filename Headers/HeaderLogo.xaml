@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="DownTube.Headers.HeaderLogo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             RenderOptions.BitmapScalingMode="HighQuality"
+             d:DesignHeight="80" d:DesignWidth="450">
+    <Grid>
+        <Image x:Name="MainLogo" Source="/DownTube;component/Resources/Banner.png" Stretch="Uniform"
+               HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Image x:Name="MagentaLogo" Source="/DownTube;component/Resources/BannerMagenta.png" Visibility="Collapsed"
+               Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Image x:Name="GreenLogo" Source="/DownTube;component/Resources/BannerGreen.png" Visibility="Collapsed"
+               Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center" />
+    </Grid>
+</UserControl>
