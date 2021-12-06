@@ -1,0 +1,96 @@
+﻿<Window x:Class="DownTube.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        mc:Ignorable="d"
+        d:Background="#202020"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Style="{StaticResource UiWindow}"
+        WindowStartupLocation="CenterScreen"
+        Title="MainWindow" Height="450" Width="800">
+    <!--<Grid Background="Transparent" Margin="0,0,7,7">-->
+        <Border x:Name="MainBorder"
+                CornerRadius="8"
+                Margin="0,0,7,7">
+            <Border.Effect>
+                <DropShadowEffect Opacity="0.7"/>
+            </Border.Effect>
+            <SelectiveScrollingGrid>
+                <SelectiveScrollingGrid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </SelectiveScrollingGrid.RowDefinitions>
+                <!--  The first division of the grid divides the application into the top bar (TitleBar) and the content itself  -->
+
+                <SelectiveScrollingGrid Grid.Row="1"
+                                        Margin="12,6,12,12">
+                    <!--  Here we separate CardProfile, Navigation and Frame  -->
+                    <SelectiveScrollingGrid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </SelectiveScrollingGrid.RowDefinitions>
+                    <SelectiveScrollingGrid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </SelectiveScrollingGrid.ColumnDefinitions>
+
+                    <!--  Profile card displays the app's icon, name, and subtitle  -->
+                    <wpfui:CardProfile Margin="4,0,4,40"
+                                       Source="pack://application:,,,/Resources/Icon.ico">
+                        <StackPanel>
+                            <TextBlock FontWeight="Medium"
+                                       Text="DownTube" />
+                            <TextBlock Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                       Text="YoutubeDL made simple." />
+                        </StackPanel>
+                    </wpfui:CardProfile>
+
+                    <!--  This element displays the navigation items  -->
+                    <wpfui:NavigationFluent x:Name="RootNavigation"
+                                            Grid.Row="1"
+                                            Grid.Column="0"
+                                            Margin="0,0,12,0" />
+
+                    <!--  Pages are presented here  -->
+                    <Frame x:Name="RootFrame"
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Grid.Column="1" />
+
+                    <wpfui:Snackbar x:Name="RootSnackbar"
+                                    Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    Grid.Column="1"
+                                    Message="Remember that the Heat Death of Universe is coming someday, no time to explain - let's go!" />
+                </SelectiveScrollingGrid>
+
+                <!--  Dialogue is above all controls except the navigation buttons. So it covers all the content, but allows you to close or move the application.  -->
+                <wpfui:Dialog x:Name="RootDialog"
+                              Grid.Row="0"
+                              Grid.RowSpan="2"
+                              ButtonLeftName="Click me if you can!"
+                              ButtonRightClick="RootDialog_RightButtonClick"
+                              Click="RootDialog_Click"
+                              Show="False">
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock FontWeight="Medium"
+                                       Text="WPF UI" />
+                            <TextBlock Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                       Text="What is it like to be a scribe? Is it good? In my opinion it's not about being good or not good. If I were to say what I esteem the most in life, I would say - people. People, who gave me a helping hand when I was a mess, when I was alone. And what's interesting, the chance meetings are the ones that influence our lives. The point is that when you profess certain values, even those seemingly universal, you may not find any understanding which, let me say, which helps us to develop. I had luck, let me say, because I found it. And I'd like to thank life. I'd like to thank it - life is singing, life is dancing, life is love. Many people ask me the same question, but how do you do that? where does all your happiness come from? And i replay that it's easy, it's cherishing live, that's what makes me build machines today, and tomorrow... who knows, why not, i would dedicate myself to do some community working and i would be, wham, not least... planting .... i mean... carrots."
+                                       TextAlignment="Justify"
+                                       TextWrapping="WrapWithOverflow" />
+                        </StackPanel>
+                    </Grid>
+                </wpfui:Dialog>
+
+                <wpfui:TitleBar Grid.Row="0"
+                                ApplicationNavigation="True" />
+                <!--  Contains buttons responsible for maximising, minimising and closing the app. It also has a background coloured strip that allows you to move the application around  -->
+            </SelectiveScrollingGrid>
+        </Border>
+    <!--</Grid>-->
+</Window>
