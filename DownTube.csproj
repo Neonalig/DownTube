@@ -5,6 +5,17 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <StartupObject>DownTube.App</StartupObject>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn>1701;1702;IDE0049</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;IDE0049</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +35,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WPF-UI" Version="1.1.1-prerelease37" />
+    <PackageReference Include="Fody" Version="6.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
+    <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" PrivateAssets="All" />
+    <PackageReference Include="ReactiveUI.WPF" Version="17.1.6" />
+    <PackageReference Include="WPF-UI" Version="1.1.1-prerelease48" />
+    <PackageReference Include="YoutubeDLSharp" Version="0.4.0" />
+    <PackageReference Include="YoutubeSnoop" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,8 +68,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Pages\" />
     <Folder Include="Views\Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MVVMUtils\MVVMUtils.csproj" />
   </ItemGroup>
 
 </Project>

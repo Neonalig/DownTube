@@ -1,0 +1,214 @@
+﻿<Page x:Class="DownTube.Views.Pages.MusicDownloadPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+      xmlns:pages="clr-namespace:DownTube.Views.Pages"
+      xmlns:downTube="clr-namespace:DownTube"
+      Title="MusicDownloadPage"
+      d:DesignHeight="400"
+      d:DesignWidth="635"
+      Style="{StaticResource UiPageScrollable}"
+      mc:Ignorable="d">
+    <Page.DataContext>
+        <pages:MusicDownloadPage_ViewModel />
+    </Page.DataContext>
+    <Grid Margin="0,0,0,12" d:Margin="0,0,0,-18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   FontSize="20"
+                   FontWeight="Medium"
+                   Text="Music Downloads" />
+
+        <Grid Grid.Row="1"
+              Margin="0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Width="50" Content="0" HorizontalContentAlignment="Center" VerticalAlignment="Center" FontSize="30"/>
+                <!--<Image Width="70"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       Source="pack://application:,,,/Assets/microsoft-icon-store.png" />-->
+                <StackPanel Grid.Column="1"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center">
+                    <TextBlock Margin="0,0,0,4"
+                               FontSize="16"
+                               FontWeight="Medium"
+                               Text="Downloaded" />
+                    <TextBlock Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                               Text="Last: 2021年12月09日" />
+                </StackPanel>
+            </Grid>
+            <SelectiveScrollingGrid Grid.Column="1" Grid.ColumnSpan="2">
+                <SelectiveScrollingGrid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="100"/>
+                </SelectiveScrollingGrid.ColumnDefinitions>
+                <SelectiveScrollingGrid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="15"/>
+                </SelectiveScrollingGrid.RowDefinitions>
+                <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding SearchQuery}"/>
+                <Button Grid.Column="2" Grid.Row="0"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch" Padding="0" Click="SearchButton_Click">
+                    <Button.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="   Search "/>
+                            <wpfui:Icon Glyph="Search28" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button.Content>
+                </Button>
+                <StackPanel Orientation="Horizontal"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Grid.Row="1"
+                            VerticalAlignment="Stretch">
+                <TextBlock VerticalAlignment="Top">
+                    <Run Text="Will download to:"/>
+                    <Hyperlink Click="Hyperlink_Path_Click">
+                        <TextBlock Text="{Binding SaveFolderLocation, Mode=OneWay}">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" />
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Hyperlink>
+                    <Hyperlink Click="Hyperlink_PathEdit_Click">
+                        <wpfui:Icon Glyph="Edit16"
+                                    FontSize="12"
+                                    Margin="0,0,0,-2" />
+                    </Hyperlink>
+                </TextBlock>
+                </StackPanel>
+            </SelectiveScrollingGrid>
+        </Grid>
+        <ListBox Grid.Row="2"
+                 ItemsSource="{Binding CachedResults}" >
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type downTube:SearchResult}">
+                    <wpfui:CardAction Padding="0" Margin="0" Glyph="{Binding LoadingGlyph}">
+                        <SelectiveScrollingGrid>
+                            <SelectiveScrollingGrid.ColumnDefinitions>
+                                <ColumnDefinition Width="70" />
+                                <ColumnDefinition />
+                            </SelectiveScrollingGrid.ColumnDefinitions>
+                            <Grid Width="70"
+                                  Grid.Row="0"
+                                  Height="40">
+                                <Image Width="70"
+                                       Grid.Row="0"
+                                       Height="53"
+                                       Source="{Binding Thumbnail}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center">
+                                    <Image.Clip>
+                                        <RectangleGeometry Rect="0 7 70 38" />
+                                    </Image.Clip>
+                                </Image>
+                            </Grid>
+                            <StackPanel Orientation="Vertical"
+                                        Grid.Column="1"
+                                        Margin="10,0,0,0">
+                                <TextBlock Text="{Binding Title}" />
+                                <TextBlock Text="{Binding Author}"
+                                           Foreground="{DynamicResource UiBrushForegroundSecondary}" />
+                            </StackPanel>
+                        </SelectiveScrollingGrid>
+                    </wpfui:CardAction>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"
+                                IsItemsHost="True"
+                                IsHitTestVisible="False" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+        <!--<Grid Grid.Row="2">
+            <StackPanel>
+                <wpfui:CardAction Margin="0,0,0,8"
+                                  Click="ActionCardControls_Click"
+                                  Glyph="AlignSpaceEvenlyHorizontal20">
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,4"
+                                   FontWeight="Medium"
+                                   Text="Controls" />
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                   Text="Check out the available custom components" />
+                    </StackPanel>
+                </wpfui:CardAction>
+                <wpfui:CardAction Margin="0,0,0,8"
+                                  Click="ActionCardIcons_Click"
+                                  Glyph="ImageSearch24">
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,4"
+                                   FontWeight="Medium"
+                                   Text="Icons" />
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                   Text="Easy to use and elegant. Official icons from Microsoft under the MIT license." />
+                    </StackPanel>
+                </wpfui:CardAction>
+                <wpfui:CardAction Margin="0,0,0,8"
+                                  Click="ActionCardColors_Click"
+                                  Glyph="Color24">
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,4"
+                                   FontWeight="Medium"
+                                   Text="Color palette" />
+                        <TextBlock FontSize="11"
+                                   Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                   Text="A small set of colors in line with those presented by Microsoft." />
+                    </StackPanel>
+                </wpfui:CardAction>
+
+                <wpfui:CardCollapse Title="Find out more!"
+                                    Margin="0,0,0,8"
+                                    Glyph="Heart28">
+                    --><!-- Filled="True" --><!--
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,4"
+                                   FontWeight="Medium"
+                                   Text="Check out our computer monitoring application" />
+                        <wpfui:Hyperlink Content="Radiograph on Microsoft Store"
+                                         Glyph="Link48"
+                                         NavigateUri="https://www.microsoft.com/en-us/p/radiograph/9nh1p86h06cg?activetab=pivot:overviewtab" />
+
+                        <TextBlock Margin="0,8,0,4"
+                                   FontWeight="Medium"
+                                   Text="Find out more about our projects" />
+                        <wpfui:Hyperlink Content="lepo.co GitHub"
+                                         Glyph="Link48"
+                                         NavigateUri="https://github.com/lepoco" />
+                    </StackPanel>
+                </wpfui:CardCollapse>
+
+                <wpfui:Hyperlink Margin="0,0,0,4"
+                                 Content="Source code and help on GitHub"
+                                 Glyph="Link48"
+                                 NavigateUri="https://github.com/lepoco/wpfui" />
+                <wpfui:Hyperlink Content="Project library on NuGet"
+                                 Glyph="Link48"
+                                 NavigateUri="https://www.nuget.org/packages/WPF-UI/" />
+            </StackPanel>
+        </Grid>-->
+    </Grid>
+</Page>
