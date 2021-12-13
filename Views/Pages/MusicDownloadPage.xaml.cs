@@ -1,8 +1,13 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
+using System.Windows.Threading;
+
+using DownTube.Engine;
 
 using MVVMUtils;
 
@@ -10,7 +15,11 @@ using Newtonsoft.Json;
 
 using Ookii.Dialogs.Wpf;
 
+using WPFUI.Controls;
+
 using YoutubeSnoop;
+
+using Hyperlink = System.Windows.Documents.Hyperlink;
 
 namespace DownTube.Views.Pages;
 
@@ -21,19 +30,26 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
     /// <inheritdoc />
     public MusicDownloadPage_ViewModel VM { get; }
 
+    /// <summary>
+    /// Initialises a new instance of the <see cref="MusicDownloadPage"/> class.
+    /// </summary>
     public MusicDownloadPage() {
         InitializeComponent();
+        // ReSharper disable once ExceptionNotDocumented
         VM = DataContext.Cast<MusicDownloadPage_ViewModel>();
         InitializeAsync();
     }
 
-    [JsonObject] public class TestClass {
-        [JsonProperty] public List<SearchResult> Results { get; set; }
+    /// <summary> Class made for testing purposes. </summary>
+    public record TestClass( List<SearchResult> Results );
 
-        public TestClass( List<SearchResult> Res ) => Results = Res;
+    //[JsonObject] public class TestClass {
+    //    [JsonProperty] public List<SearchResult> Results { get; set; }
 
-        public TestClass() : this(new List<SearchResult>()) { }
-    }
+    //    public TestClass( List<SearchResult> Res ) => Results = Res;
+
+    //    public TestClass() : this(new List<SearchResult>()) { }
+    //}
 
     public void PromptUserSearch( string Query ) {
         VM.CachedResults.Clear();
@@ -51,6 +67,8 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json");
 
         const bool Search = false;
+#pragma warning disable CS0162
+        // ReSharper disable HeuristicUnreachableCode
         if ( Search ) {
             PromptUserSearch("aha take on me");
 
@@ -62,17 +80,20 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
                 VM.CachedResults.Add(S);
             }
         }*/
+        // ReSharper restore HeuristicUnreachableCode
+#pragma warning restore CS0162
         //First.ThrowIfNull();
 
-        //VM.CachedResults.Add(new SearchResult("ake On Me - a-ha - Brooklyn Duo at Carnegie Hall", "Brooklyn Duo", "https://i.ytimg.com/vi/DHbLuIxw3y4/default.jpg", "https://www.google.com"));
+        //VM.CachedResults.Add(new SearchResult("aka On Me - a-ha - Brooklyn Duo at Carnegie Hall", "Brooklyn Duo", "https://i.ytimg.com/vi/DHbLuIxw3y4/default.jpg", "https://www.google.com"));
     }
 
     void ActionCardIcons_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("icons");
 
-    void ActionCardColors_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("colors");
+    void ActionCardColours_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("colours");
 
     void ActionCardControls_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("controls");
 
+    [SuppressMessage("ReSharper", "CatchAllClause")]
     internal static bool TryGetUri( string Text, out Uri Made ) {
         try {
             Made = new Uri(Text);
@@ -117,7 +138,7 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         VistaFolderBrowserDialog VFBD = new VistaFolderBrowserDialog {
             Description = "Select a path to save downloaded songs in",
             SelectedPath = VM.SaveFolderLocation.GetRawPath(),
-            ShowNewFolderButton = true,
+            ShowNewFolderButton = true
         };
         
         if ( VFBD.ShowDialog() == true && VFBD.SelectedPath.TryGetDirectory(out DirectoryInfo Dir) ) {
@@ -130,8 +151,19 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         if ( string.IsNullOrEmpty(Query) ) { return; }
         PromptUserSearch(Query);
     }
+
+    void SearchResult_Click( object Sender, RoutedEventArgs E ) {
+        if ( Sender is CardAction { TemplatedParent: ContentPresenter { Content: SearchResult SR } } ) {
+            SR.State = SearchResultState.Downloading;
+            Task.Run(() => {
+                Thread.Sleep(3500); //Simulate expensive download work.
+                Dispatcher.Invoke(() => SR.State = SearchResultState.Complete);
+            });
+        }
+    }
 }
 
+/// <summary> Viewmodel for <see cref="MusicDownloadPage"/>. </summary>
 public class MusicDownloadPage_ViewModel : ViewModel<MusicDownloadPage> {
     /// <summary> The save folder location. </summary>
     public Uri SaveFolderLocation { get; set; } = FileSystemInfoExtensions.Desktop.GetUri();
@@ -151,15 +183,15 @@ public class MusicDownloadPage_ViewModel : ViewModel<MusicDownloadPage> {
         new SearchResult("Take on Me (2016 Remaster)", "A-ha - Topic", "https://i.ytimg.com/vi/NaQ083rNUwc/default.jpg", "https://www.youtube.com/watch?v=NaQ083rNUwc"),
         new SearchResult(@"Weezer - Take On Me (Official Video)", @"weezer", "https://i.ytimg.com/vi/f7RwDnZI7Tw/default.jpg", "https://www.youtube.com/watch?v=f7RwDnZI7Tw"),
         new SearchResult("Take on Me", "A-ha - Topic", "https://i.ytimg.com/vi/MIgK3zOk0zg/default.jpg", "https://www.youtube.com/watch?v=MIgK3zOk0zg"),
-        new SearchResult("a-ha - Take On Me (Radio 2 In Concert)", "BBC Radio 2", "https://i.ytimg.com/vi/IHDCMQjNimg/default.jpg", "https://www.youtube.com/watch?v=IHDCMQjNimg"),
+        new SearchResult("a-ha - Take On Me (Radio 2 In Concert)", "BBC Radio 2", @"https://i.ytimg.com/vi/IHDCMQjNimg/default.jpg", @"https://www.youtube.com/watch?v=IHDCMQjNimg"),
         new SearchResult("A-ha - Take On Me, Countdown 1985", "A-ha South America Play", "https://i.ytimg.com/vi/NY2LHIMUcgU/default.jpg", "https://www.youtube.com/watch?v=NY2LHIMUcgU"),
         new SearchResult("[A-ha FR] a-ha Take On Me Live BBC One 09-11-2018", "A-ha France", "https://i.ytimg.com/vi/2SHnAj0yMFE/default.jpg", "https://www.youtube.com/watch?v=2SHnAj0yMFE"),
         new SearchResult(@"a-ha - Take On Me (Dimitri Vegas  Like Mike vs Ummet Ozcan Remix) [...", "Central Bass Boost", "https://i.ytimg.com/vi/CNWgQxrcZ4k/default.jpg", "https://www.youtube.com/watch?v=CNWgQxrcZ4k"),
         new SearchResult(@"A-HA feat KYGO - TAKE ON ME - EXCLUSIVE - The 2015 Nobel Peace Priz...", "Nobel Peace Prize Concert", "https://i.ytimg.com/vi/0FJFKCnYtN4/default.jpg", "https://www.youtube.com/watch?v=0FJFKCnYtN4"),
         new SearchResult("A-ha - Take on me (Live Afterglow 360) - 2016", @"German Irazabal", "https://i.ytimg.com/vi/UHAXKQtaeG4/default.jpg", "https://www.youtube.com/watch?v=UHAXKQtaeG4"),
         new SearchResult("A1 - Take on Me", "A1VEVO", "https://i.ytimg.com/vi/EbCsIKI6HEU/default.jpg", "https://www.youtube.com/watch?v=EbCsIKI6HEU"),
-        new SearchResult("A-HA Take On Me 1984 Version", "MagneticNorth71", "https://i.ytimg.com/vi/liq-seNVvrM/default.jpg", "https://www.youtube.com/watch?v=liq-seNVvrM"),
-        new SearchResult("The Last of Us 2 - Ellie &quot;Take on Me&quot; Cover Song", "Boss Fight Database", "https://i.ytimg.com/vi/NKeU1twQYX4/default.jpg", "https://www.youtube.com/watch?v=NKeU1twQYX4"),
+        new SearchResult("A-HA Take On Me 1984 Version", "MagneticNorth71", @"https://i.ytimg.com/vi/liq-seNVvrM/default.jpg", @"https://www.youtube.com/watch?v=liq-seNVvrM"),
+        new SearchResult(@"The Last of Us 2 - Ellie &quot;Take on Me&quot; Cover Song", "Boss Fight Database", "https://i.ytimg.com/vi/NKeU1twQYX4/default.jpg", "https://www.youtube.com/watch?v=NKeU1twQYX4"),
         new SearchResult("a ha - Take On Me (Official Video Music) 4K Remastered", "Daniel CLASSIC Remastered AI", "https://i.ytimg.com/vi/AYjpwHQ66ts/default.jpg", "https://www.youtube.com/watch?v=AYjpwHQ66ts"),
         new SearchResult("a-Ha - Take On Me [lyrics]", @"Lyricosaurus", "https://i.ytimg.com/vi/irljBY9J5ig/default.jpg", "https://www.youtube.com/watch?v=irljBY9J5ig"),
         new SearchResult("a-ha - The Sun Always Shines on T.V. (Official Video)", "a-ha", "https://i.ytimg.com/vi/a3ir9HC9vYg/default.jpg", "https://www.youtube.com/watch?v=a3ir9HC9vYg"),

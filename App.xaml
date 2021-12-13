@@ -7,8 +7,11 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/Theme/Dark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/WPFUI.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingPulse.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingArcs.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <FontFamily x:Key="SegoeFluentIcons">pack://application:,,,/;component/Resources/Fonts/#Segoe Fluent Icons</FontFamily>
+            <FontFamily x:Key="AtkinsonHyperlegible">pack://application:,,,/;component/Resources/Fonts/#Atkinson Hyperlegible</FontFamily>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

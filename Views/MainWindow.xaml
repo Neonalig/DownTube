@@ -1,25 +1,31 @@
-﻿<Window x:Class="DownTube.MainWindow"
+﻿<Window x:Class="DownTube.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        xmlns:views="clr-namespace:DownTube.Views"
         mc:Ignorable="d"
         d:Background="#202020"
         AllowsTransparency="True"
+        WindowState="{Binding WindowState}"
+        d:WindowState="Normal"
         WindowStyle="None"
         Style="{StaticResource UiWindow}"
         WindowStartupLocation="CenterScreen"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow"
+        Height="450"
+        Width="800"
+        d:DataContext="{d:DesignInstance Type=views:MainWindow_ViewModel}">
     <!--<Grid Background="Transparent" Margin="0,0,7,7">-->
-        <Border x:Name="MainBorder"
-                CornerRadius="8"
-                Margin="0,0,7,7"
-                BorderThickness="1">
-            <Border.Effect>
-                <DropShadowEffect Opacity="0.7"/>
-            </Border.Effect>
-            <SelectiveScrollingGrid>
+    <Border x:Name="MainBorder"
+            CornerRadius="8"
+            Margin="{Binding BorderMargin}"
+            d:Margin="0,0,7,7"
+            BorderThickness="{Binding BorderThickness}"
+            d:BorderThickness="1"
+            Effect="{Binding BorderEffect}">
+        <SelectiveScrollingGrid>
                 <SelectiveScrollingGrid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />

@@ -6,7 +6,10 @@
       xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
       xmlns:pages="clr-namespace:DownTube.Views.Pages"
       xmlns:downTube="clr-namespace:DownTube"
+      xmlns:li="clr-namespace:LoadingIndicators.WPF;assembly=LoadingIndicators.WPF"
+      xmlns:engine="clr-namespace:DownTube.Engine"
       Title="MusicDownloadPage"
+      FontFamily="AtkinsonHyperlegible"
       d:DesignHeight="388"
       d:DesignWidth="635"
       Style="{StaticResource UiPageScrollable}"
@@ -24,8 +27,7 @@
 
         <TextBlock Grid.Row="0"
                    FontSize="20"
-                   FontWeight="Medium"
-                   Text="Music Downloads" />
+                   Text="Music Downloads"/>
 
         <Grid Grid.Row="1"
               Margin="0,18">
@@ -102,34 +104,55 @@
         <ListBox Grid.Row="2"
                  ItemsSource="{Binding CachedResults}" >
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="{x:Type downTube:SearchResult}">
-                    <wpfui:CardAction Padding="0" Margin="0" Glyph="{Binding LoadingGlyph}">
+                <DataTemplate DataType="{x:Type engine:SearchResult}">
+                    <wpfui:CardAction Padding="0" Margin="0" Click="SearchResult_Click">
                         <SelectiveScrollingGrid>
                             <SelectiveScrollingGrid.ColumnDefinitions>
+                                <ColumnDefinition Width="50" />
                                 <ColumnDefinition Width="70" />
                                 <ColumnDefinition />
                             </SelectiveScrollingGrid.ColumnDefinitions>
+                            <Grid Grid.Column="0" HorizontalAlignment="Left">
+                                <li:LoadingIndicator Style="{StaticResource LoadingIndicatorPulseStyleKey}"
+                                                     SpeedRatio="1.3"
+                                                     HorizontalAlignment="Stretch"
+                                                     Visibility="{Binding PollingVisibility}"/>
+                                <wpfui:Icon FontSize="28"
+                                            HorizontalAlignment="Center"
+                                            Glyph="ArrowDownload48"
+                                            Visibility="{Binding IdleVisibility}" />
+                                <li:LoadingIndicator Style="{StaticResource LoadingIndicatorArcsStyleKey}"
+                                                     SpeedRatio="1.3"
+                                                     Visibility="{Binding DownloadingVisibility}">
+                                    <li:LoadingIndicator.LayoutTransform>
+                                        <ScaleTransform ScaleX="0.7" ScaleY="0.7"/>
+                                    </li:LoadingIndicator.LayoutTransform>
+                                </li:LoadingIndicator>
+                                <wpfui:Icon FontSize="28"
+                                            HorizontalAlignment="Center"
+                                            Glyph="CheckmarkCircle48"
+                                            Visibility="{Binding CompleteVisibility}" />
+                            </Grid>
                             <Grid Width="70"
-                                  Grid.Row="0"
+                                  Grid.Column="1"
                                   Height="40">
                                 <Image Width="70"
-                                       Grid.Row="0"
                                        Height="53"
                                        Source="{Binding Thumbnail}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center">
                                     <Image.Clip>
-                                        <RectangleGeometry Rect="0 7 70 38" />
+                                        <RectangleGeometry Rect="0 7 70 38" RadiusX="4" RadiusY="4" />
                                     </Image.Clip>
                                 </Image>
                             </Grid>
-                            <StackPanel Orientation="Vertical"
-                                        Grid.Column="1"
-                                        Margin="10,0,0,0">
-                                <TextBlock Text="{Binding Title}" />
-                                <TextBlock Text="{Binding Author}"
+                            <UniformGrid Grid.Column="2" Rows="{Binding Children.Count, Mode=OneWay, RelativeSource={RelativeSource Self}}" Columns="1"
+                                  Margin="10,0,0,0">
+                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Author}" VerticalAlignment="Center"
                                            Foreground="{DynamicResource UiBrushForegroundSecondary}" />
-                            </StackPanel>
+                                <ProgressBar Visibility="Collapsed" />
+                            </UniformGrid>
                         </SelectiveScrollingGrid>
                     </wpfui:CardAction>
                 </DataTemplate>

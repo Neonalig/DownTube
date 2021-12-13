@@ -50,10 +50,10 @@ public static class ObjectExtensions {
     /// <typeparam name="T">The type of the object.</typeparam>
     /// <param name="Obj">The object to test.</param>
     /// <param name="Expression">The name of the object.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was null.</exception>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     public static T CatchNull<T>( [NotNull] this T? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) {
         if ( Obj is null ) {
+            // ReSharper disable once ExceptionNotDocumented
             throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
         }
         return Obj;
@@ -120,5 +120,17 @@ public static class ObjectExtensions {
                 throw new InvalidCastException($"{ParameterName} of type {Input?.GetType().Name ?? "<NULL>"} is unable to be cast to type {typeof(TOut)}");
         }
     }
+
+    /// <summary>
+    /// Invokes a function when the <paramref name="Input"/> value is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="TIn">The type of the input.</typeparam>
+    /// <typeparam name="TOut">The type of the output.</typeparam>
+    /// <param name="Input">The input value. Can be <see langword="null"/>.</param>
+    /// <param name="WhenNotNull">The function to invoke when <paramref name="Input"/> is <b>not</b> <see langword="null"/>.</param>
+    /// <param name="WhenNull">The value to return when <paramref name="Input"/> is <see langword="null"/>.</param>
+    /// <returns>The output value of <paramref name="WhenNotNull"/> or <paramref name="WhenNull"/> depending on the given <paramref name="Input"/>.</returns>
+    /// <exception cref="Exception">The <paramref name="WhenNotNull"/> <see langword="delegate"/> callback throws an exception.</exception>
+    public static TOut WithValue<TIn, TOut>( this TIn? Input, Func<TIn, TOut> WhenNotNull, TOut WhenNull ) => Input is { } In ? WhenNotNull(In) : WhenNull;
 
 }
