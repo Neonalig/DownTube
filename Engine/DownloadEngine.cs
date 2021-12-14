@@ -20,11 +20,16 @@ public static class DownloadEngine {
     /// <summary>
     /// The file containing the YouTube V3 API key.
     /// </summary>
-    public static readonly FileInfo YtKeyFile = FileSystemInfoExtensions.AppDir.CreateSubfile("Key.json");
+    public static readonly FileInfo YtKeyFile = FileSystemInfoExtensions.AppDir.CreateSubfile("Key.json")!;
 
     /// <summary>
     /// Initialises the instance.
     /// </summary>
+    /// <exception cref="UnauthorizedAccessException"><see cref="YtKeyFile"/> is read-only or is a directory.</exception>
+    /// <exception cref="IOException"><see cref="YtKeyFile"/> is already open.</exception>
+    /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
+    /// <exception cref="ArgumentException"><see cref="YtKeyFile"/> does not support reading.</exception>
+    /// <exception cref="ArgumentNullException"><see cref="YtKeyFile"/> is <see langword="null" />.</exception>
     public static void Init() {
         JsonKeyFile JKF = YtKeyFile.Deserialise<JsonKeyFile>().CatchNull();
         Request.ApiKey = JKF.Key;

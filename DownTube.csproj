@@ -19,6 +19,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wpfui\**" />
+    <Compile Remove="_Git\**" />
+    <EmbeddedResource Remove="wpfui\**" />
+    <EmbeddedResource Remove="_Git\**" />
+    <None Remove="wpfui\**" />
+    <None Remove="_Git\**" />
+    <Page Remove="wpfui\**" />
+    <Page Remove="_Git\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\Banner.png" />
     <None Remove="Resources\BannerGreen.png" />
     <None Remove="Resources\BannerMagenta.png" />
@@ -46,7 +57,6 @@
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" PrivateAssets="All" />
     <PackageReference Include="ReactiveUI.WPF" Version="17.1.6" />
-    <PackageReference Include="WPF-UI" Version="1.1.1-prerelease48" />
     <PackageReference Include="YoutubeDLSharp" Version="0.4.0" />
     <PackageReference Include="YoutubeSnoop" Version="1.2.0" />
   </ItemGroup>
@@ -65,6 +75,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MVVMUtils\MVVMUtils.csproj" />
+    <ProjectReference Include="wpfui\WPFUI\WPFUI.csproj" />
   </ItemGroup>
 
 </Project>

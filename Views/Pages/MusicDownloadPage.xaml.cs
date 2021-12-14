@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -179,6 +180,8 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
 /// <summary> Viewmodel for <see cref="MusicDownloadPage"/>. </summary>
 public class MusicDownloadPage_ViewModel : ViewModel<MusicDownloadPage> {
     /// <summary> The save folder location. </summary>
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented"),
+     SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public Uri SaveFolderLocation { get; set; } = FileSystemInfoExtensions.Desktop.GetUri();
 
     /// <summary> The current user search query. </summary>

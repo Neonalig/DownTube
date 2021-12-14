@@ -67,8 +67,19 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
             //new() { Icon = Common.Icon.Accessibility48, Name = "Settings", Tag = "settings", Type = typeof(Pages.Dashboard)}
         };
 
-        RootNavigation.Navigated += OnNavigate;
+        RootNavigation.Navigated += RootNavigation_Navigated; ;
         RootNavigation.Navigate("MusicDownloadPage");
+    }
+
+    /// <summary>
+    /// Handles the OnNavigate event of the <see cref="INavigation"/> control.
+    /// </summary>
+    /// <param name="Sender">The source of the event.</param>
+    /// <param name="E">The name of the page that was navigated to.</param>
+    static void RootNavigation_Navigated( object Sender, RoutedEventArgs E ) {
+        if ( Sender is NavigationFluent NF ) {
+            Debug.WriteLine($"Navigated to {NF.PageNow}!");
+        }
     }
 
     /// <summary>
@@ -89,16 +100,6 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         Debug.WriteLine("Root dialog custom right button was clicked!");
 
         RootDialog.Show = false;
-    }
-
-    /// <summary>
-    /// Handles the OnNavigate event of the <see cref="INavigation"/> control.
-    /// </summary>
-    /// <param name="Sender">The source of the event.</param>
-    /// <param name="Page">The name of the page that was navigated to.</param>
-    // ReSharper disable once MemberCanBeMadeStatic.Local
-    void OnNavigate( INavigation Sender, string Page ) {
-        Debug.WriteLine("Page now is: " + Page);
     }
 
     /// <inheritdoc />
