@@ -43,7 +43,6 @@
     <PackageReference Include="LoadingIndicators.WPF" Version="0.0.1" />
     <PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
     <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" PrivateAssets="All" />
     <PackageReference Include="ReactiveUI.WPF" Version="17.1.6" />

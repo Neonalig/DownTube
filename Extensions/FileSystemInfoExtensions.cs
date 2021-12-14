@@ -1,10 +1,17 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
+using System.Security;
+
+using DownTube.DataTypes.Common;
 
 using Newtonsoft.Json;
 
-namespace DownTube.Extensions; 
+namespace DownTube.Extensions;
 
+/// <summary>
+/// Extension methods and shorthand for <see cref="FileSystemInfo"/>.
+/// </summary>
 public static class FileSystemInfoExtensions {
 
     /// <summary>
@@ -17,6 +24,7 @@ public static class FileSystemInfoExtensions {
         try {
             File = new FileInfo(Path);
             return true;
+            // ReSharper disable once CatchAllClause
         } catch {
             File = null!;
             return false;
@@ -33,6 +41,7 @@ public static class FileSystemInfoExtensions {
         try {
             Dir = new DirectoryInfo(Path);
             return true;
+            // ReSharper disable once CatchAllClause
         } catch {
             Dir = null!;
             return false;
@@ -47,27 +56,66 @@ public static class FileSystemInfoExtensions {
     /// <param name="Value">The <see langword="out"/> value from the try method.</param>
     /// <returns>The passed <paramref name="Value"/>.</returns>
     /// <exception cref="ArgumentNullException">The try method returned <see langword="null"/>.</exception>
-    public static T Force<T>( this bool Success, T Value ) => Success ? Value : throw new ArgumentNullException(nameof(Value));
+    public static T Force<T>( [DoesNotReturnIf(false)] this bool Success, T Value ) => Success ? Value : throw new ArgumentNullException(nameof(Value));
+
+
+    /// <summary>
+    /// Forces a 'try' method, returning the value if successful, or throwing an <see cref="ArgumentNullException"/> if not.
+    /// </summary>
+    /// <typeparam name="T">The output data type.</typeparam>
+    /// <param name="Result">The result t force.</param>
+    /// <returns>The passed <paramref name="Result.Value"/>.</returns>
+    /// <exception cref="ArgumentNullException"><see cref="Result{T}.Value"/> was <see langword="null"/>.</exception>
+    public static T Force<T>( this Result<T?> Result ) => Result.Value ?? throw new ArgumentNullException(nameof(Result));
 
     /// <summary>
     /// Gets a <see cref="FileInfo"/> instance pointing to the given <paramref name="Path"/>.
     /// </summary>
     /// <param name="Path">The path to the file.</param>
     /// <returns>A new <see cref="FileInfo"/> instance.</returns>
-    public static FileInfo GetFile( this string Path ) => TryGetFile(Path, out FileInfo FI).Force(FI);
+    public static Result<FileInfo> GetFile( this string Path ) {
+        try {
+            return new FileInfo(Path);
+        } catch ( SecurityException SecEx ) {
+            return SecEx;
+        } catch ( UnauthorizedAccessException UnAuthEx ) {
+            return UnAuthEx;
+        } catch ( ArgumentException ArgEx ) {
+            return ArgEx;
+        } catch ( PathTooLongException LongPathEx ) {
+            return LongPathEx;
+        } catch ( NotSupportedException NoSuppEx ) {
+            return NoSuppEx;
+        }
+    }
 
     /// <summary>
     /// Gets a <see cref="DirectoryInfo"/> instance pointing to the given <paramref name="Path"/>.
     /// </summary>
     /// <param name="Path">The path to the file.</param>
     /// <returns>A new <see cref="DirectoryInfo"/> instance.</returns>
-    public static DirectoryInfo GetDirectory( this string Path ) => TryGetDirectory(Path, out DirectoryInfo DI).Force(DI);
+    public static Result<DirectoryInfo> GetDirectory( this string Path ) {
+        try {
+            return new DirectoryInfo(Path);
+        } catch ( SecurityException SecEx ) {
+            return SecEx;
+        } catch ( ArgumentNullException ArgNullEx ) {
+            return ArgNullEx;
+        } catch ( ArgumentException ArgEx ) {
+            return ArgEx;
+        } catch ( PathTooLongException LongPathEx ) {
+            return LongPathEx;
+        }
+    }
 
     /// <summary>
     /// Gets a <see cref="DirectoryInfo"/> instance pointing to the given <paramref name="SpecialFolder"/>.
     /// </summary>
     /// <param name="SpecialFolder">The special folder to point the instance towards.</param>
     /// <returns>A new <see cref="DirectoryInfo"/> instance.</returns>
+    /// <exception cref="ArgumentException"><paramref name="SpecialFolder" /> is not a member of <see cref="Environment.SpecialFolder" />.</exception>
+    /// <exception cref="PlatformNotSupportedException">The current platform is not supported.</exception>
+    /// <exception cref="ArgumentNullException">The try method returned <see langword="null"/>.</exception>
     public static DirectoryInfo GetDirectory( this Environment.SpecialFolder SpecialFolder ) => TryGetDirectory(Environment.GetFolderPath(SpecialFolder), out DirectoryInfo DI).Force(DI);
 
     /// <summary>
@@ -77,9 +125,13 @@ public static class FileSystemInfoExtensions {
     /// <param name="FileName">The name of the file to create.</param>
     /// <param name="Create">Whether to create the file if it doesn't exist already.</param>
     /// <returns>A new <see cref="FileInfo"/> instance relative to the <paramref name="Directory"/>.</returns>
-    public static FileInfo CreateSubfile( this DirectoryInfo Directory, string FileName, bool Create = true ) {
-        FileInfo F = Path.Combine(Directory.FullName.Replace('/', '\\').TrimEnd('\\') + '\\', FileName).GetFile();
-        if ( Create && !F.Exists ) { F.Create().Dispose(); }
+    /// <exception cref="ArgumentException">.NET Framework and .NET Core versions older than 2.1: <paramref name="Directory" /> or <paramref name="FileName" /> contains one or more of the invalid characters defined in <see cref="Path.GetInvalidPathChars" />.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="Directory" /> or <paramref name="FileName" /> is <see langword="null" />.</exception>
+    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+    /// <exception cref="PathTooLongException">The fully qualified path and file name exceed the system-defined maximum length.</exception>
+    public static FileInfo? CreateSubfile( this DirectoryInfo Directory, string FileName, bool Create = true ) {
+        FileInfo? F = Path.Combine(Directory.FullName.Replace('/', '\\').TrimEnd('\\') + '\\', FileName).GetFile();
+        if ( Create && F is not null && !F.Exists ) { F.Create().Dispose(); }
         return F;
     }
 
@@ -88,6 +140,35 @@ public static class FileSystemInfoExtensions {
     /// </summary>
     /// <param name="FSI">The path to point towards.</param>
     /// <returns>A new <see cref="Uri"/> instance.</returns>
+    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+    /// <exception cref="PathTooLongException">The fully qualified path and file name exceed the system-defined maximum length.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="FSI" /> is <see langword="null" />.</exception>
+    /// <exception cref="UriFormatException">Note: In the .NET for Windows Store apps or the Portable Class Library, catch the base class exception, <see cref="FormatException" />, instead.
+    /// <paramref name="FSI" /> is empty.  
+    ///  -or-  
+    ///  The scheme specified in <paramref name="FSI" /> is not correctly formed. See <see cref="String" />).  
+    ///  -or-  
+    ///  <paramref name="FSI" /> contains too many slashes.  
+    ///  -or-  
+    ///  The password specified in <paramref name="FSI" /> is not valid.  
+    ///  -or-  
+    ///  The host name specified in <paramref name="FSI" /> is not valid.  
+    ///  -or-  
+    ///  The file name specified in <paramref name="FSI" /> is not valid.  
+    ///  -or-  
+    ///  The user name specified in <paramref name="FSI" /> is not valid.  
+    ///  -or-  
+    ///  The host or authority name specified in <paramref name="FSI" /> cannot be terminated by backslashes.  
+    ///  -or-  
+    ///  The port number specified in <paramref name="FSI" /> is not valid or cannot be parsed.  
+    ///  -or-  
+    ///  The length of <paramref name="FSI" /> exceeds 65519 characters.  
+    ///  -or-  
+    ///  The length of the scheme specified in <paramref name="FSI" /> exceeds 1023 characters.  
+    ///  -or-  
+    ///  There is an invalid character sequence in <paramref name="FSI" />.  
+    ///  -or-  
+    ///  The MS-DOS path specified in <paramref name="FSI" /> must start with c:\.</exception>
     public static Uri GetUri( this FileSystemInfo FSI ) => new Uri(FSI.FullName);
 
     /// <summary> The path to the application executable. </summary>
@@ -107,11 +188,15 @@ public static class FileSystemInfoExtensions {
     };
 
     /// <summary>
-    /// Serialises the given object into the <paramref name="Destination"/> file as json data.
+    /// Serialises the given <see langword="object"/> into the <paramref name="Destination"/> file as json data.
     /// </summary>
     /// <param name="Obj">The object to serialise.</param>
     /// <param name="Destination">The destination file.</param>
     /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    /// <exception cref="UnauthorizedAccessException">The path specified when creating an instance of the <see cref="FileInfo" /> object is read-only or is a directory.</exception>
+    /// <exception cref="DirectoryNotFoundException">The path specified when creating an instance of the <see cref="FileInfo" /> object is invalid, such as being on an unmapped drive.</exception>
+    /// <exception cref="ArgumentException">The <paramref name="Destination"/> <see cref="FileStream"/> is not writable.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="Destination"/> <see cref="FileStream"/> is <see langword="null" />.</exception>
     public static void Serialise( this object Obj, FileInfo Destination, JsonSerializer? Serialiser = null) {
         using (FileStream FS = Destination.OpenWrite() ) {
             using (StreamWriter SW = new StreamWriter(FS) ) {
@@ -123,11 +208,37 @@ public static class FileSystemInfoExtensions {
     }
 
     /// <summary>
+    /// Serialises the given data into the <paramref name="Destination"/> file as json data.
+    /// </summary>
+    /// <typeparam name="T">The data type.</typeparam>
+    /// <param name="Val">The data to serialise.</param>
+    /// <param name="Destination">The destination file.</param>
+    /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    /// <exception cref="UnauthorizedAccessException">The path specified when creating an instance of the <see cref="FileInfo" /> object is read-only or is a directory.</exception>
+    /// <exception cref="DirectoryNotFoundException">The path specified when creating an instance of the <see cref="FileInfo" /> object is invalid, such as being on an unmapped drive.</exception>
+    /// <exception cref="ArgumentException">The <paramref name="Destination"/> <see cref="FileStream"/> is not writable.</exception>
+    /// <exception cref="ArgumentNullException">The <paramref name="Destination"/> <see cref="FileStream"/> is <see langword="null" />.</exception>
+    public static void Serialise<T>( this T Val, FileInfo Destination, JsonSerializer? Serialiser = null ) {
+        using ( FileStream FS = Destination.OpenWrite() ) {
+            using ( StreamWriter SW = new StreamWriter(FS) ) {
+                using ( JsonTextWriter JTW = new JsonTextWriter(SW) ) {
+                    (Serialiser ?? DefaultJsonSerialiser).Serialize(JTW, Val);
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Deserialises the json data stored in the <paramref name="Location"/> file, and constructs a new object instance with the deserialised data.
     /// </summary>
     /// <param name="Location">The file to read from.</param>
     /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
     /// <returns>A new instance of <typeparamref name="T"/> as provided by <see cref="JsonSerializer.Deserialize{T}(JsonReader)"/></returns>
+    /// <exception cref="UnauthorizedAccessException"><paramref name="Location"/> is read-only or is a directory.</exception>
+    /// <exception cref="IOException">The file is already open.</exception>
+    /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
+    /// <exception cref="ArgumentException"><paramref name="Location"/> does not support reading.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="Location"/> is <see langword="null" />.</exception>
     public static T? Deserialise<T>( this FileInfo Location, JsonSerializer? Serialiser = null ) {
         using ( FileStream FS = Location.OpenRead() ) {
             using ( StreamReader SR = new StreamReader(FS) ) {

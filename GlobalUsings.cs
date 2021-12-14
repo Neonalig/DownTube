@@ -1,5 +1,5 @@
 ﻿global using DownTube.Extensions;
-global using DownTube.DataTypes.Numerals;
+global using DownTube.DataTypes.Common;
 
 global using System;
 global using System.Diagnostics;

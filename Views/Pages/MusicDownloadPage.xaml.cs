@@ -1,17 +1,12 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
-using System.Windows.Threading;
 
 using DownTube.Engine;
 
 using MVVMUtils;
-
-using Newtonsoft.Json;
 
 using Ookii.Dialogs.Wpf;
 
@@ -19,6 +14,7 @@ using WPFUI.Controls;
 
 using YoutubeSnoop;
 
+using Button = System.Windows.Controls.Button;
 using Hyperlink = System.Windows.Documents.Hyperlink;
 
 namespace DownTube.Views.Pages;
@@ -40,8 +36,9 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         InitializeAsync();
     }
 
+    // ReSharper disable once NotAccessedPositionalProperty.Local
     /// <summary> Class made for testing purposes. </summary>
-    public record TestClass( List<SearchResult> Results );
+    record struct TestClass( List<SearchResult> Results );
 
     //[JsonObject] public class TestClass {
     //    [JsonProperty] public List<SearchResult> Results { get; set; }
@@ -51,6 +48,10 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
     //    public TestClass() : this(new List<SearchResult>()) { }
     //}
 
+    /// <summary>
+    /// Invokes a search with the given <paramref name="Query"/> to the YouTube V3 API, populating <see cref="MusicDownloadPage_ViewModel.CachedResults"/> with the returned results.
+    /// </summary>
+    /// <param name="Query">The video search query.</param>
     public void PromptUserSearch( string Query ) {
         VM.CachedResults.Clear();
         // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
@@ -61,10 +62,13 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         }
     }
 
+    /// <summary>
+    /// Runs asynchronous initialisation methods.
+    /// </summary>
     void InitializeAsync() {
         DownloadEngine.Init();
 
-        FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json");
+        FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json")!;
 
         const bool Search = false;
 #pragma warning disable CS0162
@@ -87,29 +91,23 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         //VM.CachedResults.Add(new SearchResult("aka On Me - a-ha - Brooklyn Duo at Carnegie Hall", "Brooklyn Duo", "https://i.ytimg.com/vi/DHbLuIxw3y4/default.jpg", "https://www.google.com"));
     }
 
-    void ActionCardIcons_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("icons");
+    //void ActionCardIcons_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("icons");
 
-    void ActionCardColours_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("colours");
+    //void ActionCardColours_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("colours");
 
-    void ActionCardControls_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("controls");
+    //void ActionCardControls_Click( object Sender, RoutedEventArgs E ) => (Application.Current.MainWindow as MainWindow)?.RootNavigation.Navigate("controls");
 
-    [SuppressMessage("ReSharper", "CatchAllClause")]
-    internal static bool TryGetUri( string Text, out Uri Made ) {
-        try {
-            Made = new Uri(Text);
-            return true;
-        } catch {
-            Made = null!;
-            return false;
-        }
-    }
-
+    /// <summary>
+    /// Occurs when the <see cref="Hyperlink"/> text is clicked on.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void Hyperlink_Path_Click( object Sender, RoutedEventArgs E ) {
         static Uri? GetUri( object Snd ) {
             if ( Snd is Hyperlink Hl ) {
                 foreach( Inline Inline in Hl.Inlines ) {
                     if ( Inline is InlineUIContainer { Child: TextBlock Tb } ) {
-                        if ( TryGetUri(Tb.Text, out Uri U) ) {
+                        if ( Tb.Text.GetUri().Out(out Uri U) ) {
                             return U;
                         }
                     }
@@ -120,7 +118,7 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         }
 
         if ( GetUri(Sender) is { } U ) {
-            string Url = Uri.UnescapeDataString(U.AbsolutePath).Replace('/', '\\');
+            string Url = U.GetRawPath();
             Debug.WriteLine($"Clicked on {Url}");
             if ( File.Exists(Url) ) {
                 Debug.Write($"Invoking explorer.exe /select, \"{Url}\"");
@@ -134,6 +132,11 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         }
     }
 
+    /// <summary>
+    /// Occurs when the <see cref="Button.OnClick"/> <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void Hyperlink_PathEdit_Click( object Sender, RoutedEventArgs E ) {
         VistaFolderBrowserDialog VFBD = new VistaFolderBrowserDialog {
             Description = "Select a path to save downloaded songs in",
@@ -146,12 +149,22 @@ public partial class MusicDownloadPage : IView<MusicDownloadPage_ViewModel> {
         }
     }
 
+    /// <summary>
+    /// Occurs when the <see cref="Button.OnClick"/> <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void SearchButton_Click( object Sender, RoutedEventArgs E ) {
         string Query = VM.SearchQuery;
         if ( string.IsNullOrEmpty(Query) ) { return; }
         PromptUserSearch(Query);
     }
 
+    /// <summary>
+    /// Occurs when the <see cref="CardAction.OnClick"/> <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void SearchResult_Click( object Sender, RoutedEventArgs E ) {
         if ( Sender is CardAction { TemplatedParent: ContentPresenter { Content: SearchResult SR } } ) {
             SR.State = SearchResultState.Downloading;

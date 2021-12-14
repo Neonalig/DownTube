@@ -21,4 +21,13 @@ public interface IResult<T> : IResult where T : IResult<T> {
     /// The result of the conversion.
     /// </returns>
     public static abstract implicit operator T( bool Success );
+
+    /// <summary>
+    /// Performs an <see langword="implicit"/> conversion from <see cref="Exception"/> to <see cref="T"/>.
+    /// </summary>
+    /// <param name="Ex">The exception, or <see langword="null"/>. If <see langword="null" />, the result is intended as successful (<c>0x0000</c>).</param>
+    /// <returns>
+    /// The result of the conversion.
+    /// </returns>
+    public static abstract implicit operator T( Exception? Ex );
 }

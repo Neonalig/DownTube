@@ -51,4 +51,10 @@ public readonly struct Result : IResult<Result> {
 
     /// <inheritdoc />
     public static implicit operator Result( bool Success ) => new Result(Success);
+
+    /// <inheritdoc />
+    public static implicit operator Result( Exception? Ex ) => Ex switch {
+        { } E => new Result(false, E.HResult, Ex.ToString()),
+        _     => new Result(true, 0x0000, "Success")
+    };
 }

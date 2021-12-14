@@ -39,7 +39,8 @@ public static class DownloadEngine {
     public static List<YoutubeSearchResult> Search( string Query, int ReturnAmount = 20 ) => new YoutubeSearch(new SearchSettings {
         Query = Query,
         PublishedBefore = DateTime.Now,
-        Order = SearchOrder.Relevance
+        Order = SearchOrder.Relevance,
+        Type = ResourceKind.Video
     }).Grab(ReturnAmount).AsList();
 
     /// <summary>

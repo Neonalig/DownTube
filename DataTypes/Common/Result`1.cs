@@ -53,11 +53,28 @@ public readonly struct Result<T> : IResult<Result<T>> {
         }
     }
 
+    /// <summary>
+    /// Represents a <see langword="null"/> reference of type <see cref="T"/>.
+    /// </summary>
+    static readonly T? _NoData = (T?)(dynamic)null!;
+
     /// <inheritdoc />
     public static implicit operator bool( Result<T> Result ) => Result.Success;
 
+    // ReSharper disable once ArrangeDefaultValueWhenTypeNotEvident
     /// <inheritdoc />
-    public static implicit operator Result<T>( bool Success ) => new Result<T>(Success ? default : (T?)(dynamic)null!);
+#pragma warning disable IDE0034 // Simplify 'default' expression
+    public static implicit operator Result<T>( bool Success ) => new Result<T>(Success ? default(T) : _NoData);
+#pragma warning restore IDE0034 // Simplify 'default' expression
+
+    /// <inheritdoc />
+    public static implicit operator Result<T>( Exception? Ex ) => Ex switch {
+        { } E => new Result<T>(_NoData, false, E.HResult, Ex.ToString()),
+        // ReSharper disable once ArrangeDefaultValueWhenTypeNotEvident
+#pragma warning disable IDE0034 // Simplify 'default' expression
+        _     => new Result<T>(default(T), true, 0x0000, "Success")
+#pragma warning restore IDE0034 // Simplify 'default' expression
+    };
 
     /// <summary>
     /// Performs an <see langword="implicit"/> conversion from <typeparamref name="T"/> to <see cref="Result{T}"/>.
@@ -67,4 +84,23 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// The result of the conversion.
     /// </returns>
     public static implicit operator Result<T>( T? Value ) => new Result<T>(Value);
+
+    /// <summary>
+    /// Performs an <see langword="implicit"/> conversion from <see cref="Result{T}"/> to <see cref="T"/>.
+    /// </summary>
+    /// <param name="Result">The result.</param>
+    /// <returns>
+    /// The result of the conversion.
+    /// </returns>
+    public static implicit operator T?(Result<T> Result) => Result.Value;
+
+    /// <summary>
+    /// Outputs the value of the result.
+    /// </summary>
+    /// <param name="Value">The value.</param>
+    /// <returns>Whether the result was a success.</returns>
+    public bool Out( out T Value ) {
+        Value = this.Value!;
+        return Success;
+    }
 }
