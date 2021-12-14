@@ -117,6 +117,10 @@ public static class DownloadEngine {
         return BitmapSource;
     }
 
+    public static async Task DownloadAsync( SearchResult Result, DirectoryInfo DestinationFolder ) {
+        //YoutubeDLSharp.YoutubeDL.
+    }
+
     /// <summary>
     /// Simple <see langword="record"/> type which contains a YouTube V3 API key.
     /// </summary>

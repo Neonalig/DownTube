@@ -4,7 +4,7 @@
 /// Represents a type of json serialisable data which automatically determines when values become dirty and provides a method to save/revert any changes.
 /// </summary>
 /// <seealso cref="IJsonSerialisable" />
-internal interface ISaveData : IJsonSerialisable {
+public interface ISaveData : IJsonSerialisable {
     /// <summary>
     /// Gets a value indicating whether <see langword="this"/> instance is dirty.
     /// </summary>

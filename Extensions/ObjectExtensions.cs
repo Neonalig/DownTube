@@ -3,6 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace DownTube.Extensions;
 
+/// <summary>
+/// Extension methods and shorthand for <see cref="object"/>.
+/// </summary>
 public static class ObjectExtensions {
 
     /// <summary>
@@ -53,8 +56,9 @@ public static class ObjectExtensions {
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     public static T CatchNull<T>( [NotNull] this T? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) {
         if ( Obj is null ) {
-            // ReSharper disable once ExceptionNotDocumented
+            // ReSharper disable ExceptionNotDocumented
             throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
+            // ReSharper restore ExceptionNotDocumented
         }
         return Obj;
     }
@@ -83,6 +87,8 @@ public static class ObjectExtensions {
     /// <param name="ParameterName">The name of the input value.</param>
     /// <returns>A cast value of type <typeparamref name="TOut"/>.</returns>
     /// <exception cref="InvalidCastException"><paramref name="Input"/> of type <typeparamref name="TIn"/> is unable to be cast to type <typeparamref name="TOut"/>.</exception>
+    /// <exception cref="OverflowException"><paramref name="Input" /> represents a number that is out of the range of <typeparamref name="TOut"/>.</exception>
+    /// <exception cref="FormatException"><typeparamref name="TIn"/> is not in a format recognised by <typeparamref name="TOut"/>.</exception>
     [return: NotNullIfNotNull("Input")]
     public static TOut? Cast<TIn, TOut>( this TIn? Input, [CallerArgumentExpression("Input")] string? ParameterName = null ) {
         switch ( Input ) {
@@ -91,7 +97,9 @@ public static class ObjectExtensions {
             case TOut Output:
                 return Output;
             default:
+                // ReSharper disable ExceptionNotDocumentedOptional
                 if ( Convert.ChangeType(Input, typeof(TOut)) is TOut OutputConv ) {
+                    // ReSharper restore ExceptionNotDocumentedOptional
                     return OutputConv;
                 }
                 throw new InvalidCastException($"{ParameterName} of type {typeof(TIn)} is unable to be cast to type {typeof(TOut)}");
@@ -105,7 +113,9 @@ public static class ObjectExtensions {
     /// <param name="Input">The input value to cast.</param>
     /// <param name="ParameterName">The name of the input value.</param>
     /// <returns>A cast value of type <typeparamref name="TOut"/>.</returns>
-    /// <exception cref="InvalidCastException"><paramref name="Input"/> is unable to be cast to type <typeparamref name="TOut"/>.</exception>
+    /// <exception cref="InvalidCastException"><paramref name="Input"/> of type <paramref name="Input"/><c>.GetType()</c> is unable to be cast to type <typeparamref name="TOut"/>.</exception>
+    /// <exception cref="OverflowException"><paramref name="Input" /> represents a number that is out of the range of <typeparamref name="TOut"/>.</exception>
+    /// <exception cref="FormatException"><paramref name="Input"/><c>.GetType()</c> is not in a format recognised by <typeparamref name="TOut"/>.</exception>
     [return: NotNullIfNotNull("Input")]
     public static TOut? Cast<TOut>( this object? Input, [CallerArgumentExpression("Input")] string? ParameterName = null ) {
         switch ( Input ) {
@@ -114,12 +124,26 @@ public static class ObjectExtensions {
             case TOut Output:
                 return Output;
             default:
+                // ReSharper disable ExceptionNotDocumentedOptional
                 if ( Convert.ChangeType(Input, typeof(TOut)) is TOut OutputConv ) {
+                    // ReSharper restore ExceptionNotDocumentedOptional
                     return OutputConv;
                 }
-                throw new InvalidCastException($"{ParameterName} of type {Input?.GetType().Name ?? "<NULL>"} is unable to be cast to type {typeof(TOut)}");
+                throw new InvalidCastException($"{ParameterName} of type {Input.GetType().Name} is unable to be cast to type {typeof(TOut)}");
         }
     }
+
+    /// <summary>
+    /// Invokes a function when the <paramref name="InputResult"/> value is not <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="TIn">The type of the input.</typeparam>
+    /// <typeparam name="TOut">The type of the output.</typeparam>
+    /// <param name="InputResult">The input value. Can be <see langword="null"/>.</param>
+    /// <param name="WhenNotNull">The function to invoke when <paramref name="InputResult"/> is <b>not</b> <see langword="null"/>.</param>
+    /// <param name="WhenNull">The value to return when <paramref name="InputResult"/> is <see langword="null"/>.</param>
+    /// <returns>The output value of <paramref name="WhenNotNull"/> or <paramref name="WhenNull"/> depending on the given <paramref name="InputResult"/>.</returns>
+    /// <exception cref="Exception">The <paramref name="WhenNotNull"/> <see langword="delegate"/> callback throws an exception.</exception>
+    public static TOut WithValue<TIn, TOut>( this Result<TIn>? InputResult, Func<TIn, TOut> WhenNotNull, TOut WhenNull ) => InputResult is { Success: true } In ? WhenNotNull(In.Value!) : WhenNull;
 
     /// <summary>
     /// Invokes a function when the <paramref name="Input"/> value is not <see langword="null"/>.
@@ -132,5 +156,23 @@ public static class ObjectExtensions {
     /// <returns>The output value of <paramref name="WhenNotNull"/> or <paramref name="WhenNull"/> depending on the given <paramref name="Input"/>.</returns>
     /// <exception cref="Exception">The <paramref name="WhenNotNull"/> <see langword="delegate"/> callback throws an exception.</exception>
     public static TOut WithValue<TIn, TOut>( this TIn? Input, Func<TIn, TOut> WhenNotNull, TOut WhenNull ) => Input is { } In ? WhenNotNull(In) : WhenNull;
+
+    /// <summary>
+    /// Forces the try attempt into a value, or <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="Success">Whether the attempt was successful.</param>
+    /// <param name="Value">The attempt's value.</param>
+    /// <returns>The attempt's return <paramref name="Value"/> or <see langword="null"/>.</returns>
+    public static T? OrNull<T>( this bool Success, T? Value ) where T : struct => Success ? Value : default;
+
+    /// <summary>
+    /// Forces the try attempt into a value, or <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="Success">Whether the attempt was successful.</param>
+    /// <param name="Value">The attempt's value.</param>
+    /// <returns>The attempt's return <paramref name="Value"/> or <see langword="null"/>.</returns>
+    public static T? OrNull<T>( this bool Success, T? Value ) where T : class => Success ? Value : null;
 
 }

@@ -37,4 +37,20 @@ public interface IResult {
     /// The message relating to the <see cref="ErrorCode"/>.
     /// </summary>
     string Message { get; }
+
+    /// <summary>
+    /// Gets the default success result.
+    /// </summary>
+    /// <value>
+    /// The success result.
+    /// </value>
+    public static abstract IResult DefaultSuccess { get; }
+
+    /// <summary>
+    /// Gets the default unexpected error result.
+    /// </summary>
+    /// <value>
+    /// The unexpected error result.
+    /// </value>
+    public static abstract IResult DefaultError { get; }
 }

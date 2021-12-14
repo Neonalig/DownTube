@@ -46,9 +46,43 @@ public static class EnumerableExtensions {
     public static IEnumerable<T> Grab<T>( this IEnumerable<T> Enum, int Amount ) => Enumerable.Take(Enum, Amount);
 
     /// <inheritdoc cref="Enumerable.ToList{TSource}(IEnumerable{TSource})"/>
+    // ReSharper disable once RedundantNullableFlowAttribute
     public static List<T> AsList<T>( this IEnumerable<T> Enum ) => Enum switch {
         List<T> Ls => Ls,
         // ReSharper disable once ExceptionNotDocumentedOptional
         _           => Enum.ToList()
     };
+
+    /// <summary>
+    /// Attempts to get the first item in the collection.
+    /// </summary>
+    /// <typeparam name="T">The enumerable containing type.</typeparam>
+    /// <param name="Enum">The enumerable to iterate.</param>
+    /// <param name="Found">The found item.</param>
+    /// <returns><see langword="true"/> if an item was found; otherwise <see langword="false"/>.</returns>
+    public static bool TryGetFirst<T>( this IEnumerable<T>? Enum, out T Found ) {
+        if ( Enum is not null ) {
+            foreach ( T Item in Enum ) {
+                Found = Item;
+                return true;
+            }
+        }
+        Found = default!;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the first item in the collection, returning <see langword="default"/> if no items are found.
+    /// </summary>
+    /// <typeparam name="T">The enumerable containing type.</typeparam>
+    /// <param name="Enum">The enumerable to iterate.</param>
+    /// <returns>The first item in the collection, or <see langword="default"/>.</returns>
+    public static T? GetFirstOrDefault<T>( this IEnumerable<T?>? Enum ) {
+        if ( Enum is not null ) {
+            foreach ( T? Item in Enum ) {
+                return Item;
+            }
+        }
+        return default;
+    }
 }

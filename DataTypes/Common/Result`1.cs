@@ -77,6 +77,16 @@ public readonly struct Result<T> : IResult<Result<T>> {
     };
 
     /// <summary>
+    /// Determines whether the result was a success, returning the <paramref name="Value"/> if successful.
+    /// </summary>
+    /// <param name="Value">The result value.</param>
+    /// <returns><see langword="true"/> if the result was successful; otherwise <see langword="false"/>.</returns>
+    public bool IsSuccess( out T Value ) {
+        Value = this.Value!;
+        return Success;
+    }
+
+    /// <summary>
     /// Performs an <see langword="implicit"/> conversion from <typeparamref name="T"/> to <see cref="Result{T}"/>.
     /// </summary>
     /// <param name="Value">The value.</param>
@@ -103,4 +113,10 @@ public readonly struct Result<T> : IResult<Result<T>> {
         Value = this.Value!;
         return Success;
     }
+
+    /// <inheritdoc />
+    public static IResult DefaultSuccess { get; } = new Result<T>(default, true, 0x0000, "Success.");
+
+    /// <inheritdoc />
+    public static IResult DefaultError { get; } = new Result<T>(_NoData, false, 0x0001, "An unexpected error occurred.");
 }

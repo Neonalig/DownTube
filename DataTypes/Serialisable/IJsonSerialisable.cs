@@ -7,7 +7,7 @@ namespace DownTube.DataTypes;
 /// <summary>
 /// Represents a dataform which supports json (de/)serialisation.
 /// </summary>
-internal interface IJsonSerialisable {
+public interface IJsonSerialisable {
     /// <summary>
     /// Deserialises the json data supplied by the <paramref name="Reader"/>, utilising the specified serialiser.
     /// </summary>

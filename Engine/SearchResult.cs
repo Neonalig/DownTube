@@ -9,6 +9,8 @@ using PropertyChanged;
 using ReactiveUI;
 
 using YoutubeSnoop;
+using YoutubeSnoop.Api.Entities;
+using YoutubeSnoop.Enums;
 
 namespace DownTube.Engine;
 
@@ -163,7 +165,7 @@ public class SearchResult : ReactiveObject {
         Title = Result.Title.Truncate(70, "...");
         Author = Result.ChannelTitle.Truncate(70, "...");
         // ReSharper disable once ExceptionNotDocumentedOptional //Justification: Exception cannot occur.
-        ThumbnailUrl = Result.Thumbnails.FirstOrDefault() is var KVP ? KVP.Value.Url : "https://picsum.photos/120/90";
+        ThumbnailUrl = Result.Thumbnails.TryGetFirst( out KeyValuePair<ThumbnailSize, Thumbnail> KVP ) ? KVP.Value.Url : "https://picsum.photos/120/90";
         Url = Result.Url;
         ResultOrigination = Result;
 

@@ -1,4 +1,5 @@
 ﻿global using DownTube.Extensions;
+global using DownTube.Exceptions;
 global using DownTube.DataTypes.Common;
 
 global using System;

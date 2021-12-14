@@ -9,7 +9,7 @@ namespace DownTube.DataTypes;
 /// Represents a datatype which automatically determines when values become dirty and provides a method to save/revert any changes.
 /// </summary>
 /// <seealso cref="IJsonSerialisable" />
-internal class SaveData : ReactiveObject, ISaveData {
+public abstract class SaveData : ReactiveObject, ISaveData {
     /// <summary>
     /// The collection of currently changed property names.
     /// </summary>
@@ -18,7 +18,7 @@ internal class SaveData : ReactiveObject, ISaveData {
     /// <summary>
     /// The collection of properties as of the last save.
     /// </summary>
-    internal readonly Dictionary<string, object?> Properties = new Dictionary<string, object?>();
+    internal readonly Dictionary<string, object?> CachedProperties = new Dictionary<string, object?>();
 
     /// <summary>
     /// Sets the property if the new value is different to the current, saving an original copy if <c>this</c> is the first modification since the last save.
@@ -27,13 +27,15 @@ internal class SaveData : ReactiveObject, ISaveData {
     /// <param name="Value">The value.</param>
     /// <param name="NewValue">The new value.</param>
     /// <param name="ValueName">The name of the value.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="NewValue"/> was <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentException">An element with the same key already exists in the <see cref="Dictionary{TKey, TValue}" />.</exception>
     internal void SetProperty<T>( [NotNullIfNotNull("NewValue")] ref T? Value, T? NewValue, [CallerMemberName] string? ValueName = null ) {
         ValueName.CatchNull();
-        if ( !Properties.ContainsKey(ValueName) ) {
-            Properties.Add(ValueName, Value);
+        // ReSharper disable ExceptionNotDocumentedOptional
+        lock ( CachedProperties ) {
+            if ( !CachedProperties.ContainsKey(ValueName) ) {
+                CachedProperties.Add(ValueName, Value);
+            }
         }
+        // ReSharper restore ExceptionNotDocumentedOptional
 
         if ( Value is null ? NewValue is not null : NewValue is null || !Value.Equals(NewValue) ) {
             this.RaisePropertyChanging(ValueName);
@@ -56,7 +58,61 @@ internal class SaveData : ReactiveObject, ISaveData {
     /// <returns>
     /// <see langword="true" /> if the property is dirty; otherwise, <see langword="false" />.
     /// </returns>
-    /// <exception cref="ArgumentNullException"><paramref name="PropertyName"/> was null.</exception>
     /// <exception cref="ArgumentException"><see cref="StringComparison.InvariantCultureIgnoreCase"/> is not a <see cref="StringComparison" /> value.</exception>
     public bool IsPropertyDirty( [CallerMemberName] string? PropertyName = null ) => ChangedProperties.Contains(PropertyName.CatchNull(), StringComparison.InvariantCultureIgnoreCase);
+
+    //public abstract IEnumerable<(string PropertyName, object? Value)> GetCurrentProperties();
+
+    /// <summary>
+    /// Gets the value of the property with the given name.
+    /// </summary>
+    /// <param name="PropertyName">Name of the property to search for.</param>
+    /// <returns>The property's current value.</returns>
+    internal abstract object? GetProp( string PropertyName );
+
+    /// <summary>
+    /// Sets the value of the property with the given name.
+    /// </summary>
+    /// <param name="PropertyName">Name of the property to search for.</param>
+    /// <param name="Value">The new value to apply to the found property.</param>
+    internal abstract void SetProp( string PropertyName, object? Value );
+
+    /// <summary>
+    /// Saves the dirty changes in <see langword="this"/> instance.
+    /// </summary>
+    public virtual void Save() {
+        lock ( CachedProperties ) {
+            lock ( ChangedProperties ) {
+                foreach ( string PropertyName in ChangedProperties ) { //Update the old cache
+                    // ReSharper disable ExceptionNotDocumentedOptional
+                    object? Value = GetProp(PropertyName);
+
+                    if ( CachedProperties.ContainsKey(PropertyName) ) {
+                        CachedProperties[PropertyName] = Value;
+                    } else {
+                        CachedProperties.Add(PropertyName, Value);
+                    }
+                    // ReSharper restore ExceptionNotDocumentedOptional
+                }
+                ChangedProperties.Clear(); //Clear any indication that there are unsaved changes.
+            }
+        }
+    }
+
+    /// <summary>
+    /// Saves the dirty changes in <see langword="this"/> instance.
+    /// </summary>
+    public virtual void Revert() {
+        lock ( CachedProperties ) {
+            lock ( ChangedProperties ) {
+                foreach ( string PropertyName in ChangedProperties ) { //Apply the old cache
+                    // ReSharper disable ExceptionNotDocumentedOptional
+                    object? Value = CachedProperties[PropertyName];
+                    SetProp(PropertyName, Value);
+                    // ReSharper restore ExceptionNotDocumentedOptional
+                }
+                ChangedProperties.Clear(); //Clear any indication that there are unsaved changes.
+            }
+        }
+    }
 }

@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
+using DownTube.Engine;
 using DownTube.Views.Pages;
 
 using MVVMUtils;
@@ -23,12 +24,15 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
+        Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
+
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
         };
 
         if ( Mica.IsSupported() ) {
             Debug.WriteLine("System supports Mica.");
+            // ReSharper disable once ExceptionNotDocumentedOptional
             Mica.Apply(this);
         } else {
             Debug.WriteLine("System does not support Mica.");
@@ -51,24 +55,34 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// <summary> Initialises frame navigation in the window. </summary>
     void InitialiseNavigation() {
         RootNavigation.Frame = RootFrame;
-        RootNavigation.Items = new ObservableCollection<NavItem> {
-            new() { Name = "Music Downloads", Tag = "MusicDownloadPage", Type = typeof(MusicDownloadPage) }
-            //new() { ImageUri = assetsPath + "microsoft-shell-desktop.ico", Name = "Dashboard", Tag = "dashboard", Type = typeof(Pages.Dashboard)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-accessibility.ico", Name = "Forms", Tag = "forms", Type = typeof(Pages.Forms)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-settings.ico", Name = "Controls", Tag = "controls", Type = typeof(Pages.Controls)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-workspace.ico", Name = "Actions", Tag = "actions", Type = typeof(Pages.Actions)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-colours.ico", Name = "Colors", Tag = "colours", Type = typeof(Pages.Colors)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-gallery.ico", Name = "Icons", Tag = "icons", Type = typeof(Pages.Icons)},
-            //new() { ImageUri = assetsPath + "microsoft-shell-monitor.ico", Name = "Windows", Tag = "windows", Type = typeof(Pages.WindowsPage)}
-        };
+        RootNavigation.Navigated += RootNavigation_Navigated;
 
-        RootNavigation.Footer = new ObservableCollection<NavItem>
-        {
-            //new() { Icon = Common.Icon.Accessibility48, Name = "Settings", Tag = "settings", Type = typeof(Pages.Dashboard)}
-        };
+        VM.NavItems.Add(
+            new NavItem {
+                Name = "Search",
+                Tag = nameof(SearchPage),
+                Type = typeof(SearchPage),
+                Icon = WPFUI.Common.Icon.Search48
+            });
 
-        RootNavigation.Navigated += RootNavigation_Navigated; ;
-        RootNavigation.Navigate("MusicDownloadPage");
+        VM.NavFooterItems.Add(
+            new NavItem {
+                Name = "Settings",
+                Tag = "SettingsPage",
+                Type = typeof(SearchPage),
+                Icon = WPFUI.Common.Icon.Settings48
+            });
+
+        void ForceNavigate( object? Sender, EventArgs _ ) { //An issue with data binding the 'Items' property of a NavigationFluent stops it from selecting the first item automatically. To resolve this, we check every time a layout update occurs if there are any items, and if so we navigate to the first found item and stop checking afterwards.
+            if ( RootNavigation.Items.Count > 0 ) {
+                RootNavigation.Navigate(RootNavigation.Items[0].Tag);
+                RootNavigation.LayoutUpdated -= ForceNavigate;
+            }
+        }
+
+        RootNavigation.LayoutUpdated += ForceNavigate;
+
+        //RootNavigation.Navigate("SearchPage", true);
     }
 
     /// <summary>
@@ -183,4 +197,20 @@ public class MainWindow_ViewModel : ViewModel<MainWindow> {
             }
         }
     }
+
+    /// <summary>
+    /// Gets the collection of navigation items to display on the sidebar.
+    /// </summary>
+    /// <value>
+    /// The collection of available sidebar navigation items.
+    /// </value>
+    public ObservableCollection<NavItem> NavItems { get; set; } = new ObservableCollection<NavItem>();
+
+    /// <summary>
+    /// Gets the collection of navigation items to display on the footer.
+    /// </summary>
+    /// <value>
+    /// The collection of available footer navigation items.
+    /// </value>
+    public ObservableCollection<NavItem> NavFooterItems { get; set; } = new ObservableCollection<NavItem>();
 }

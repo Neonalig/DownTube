@@ -3,8 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 
-using DownTube.DataTypes.Common;
-
 using Newtonsoft.Json;
 
 namespace DownTube.Extensions;
@@ -129,10 +127,14 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="ArgumentNullException"><paramref name="Directory" /> or <paramref name="FileName" /> is <see langword="null" />.</exception>
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
     /// <exception cref="PathTooLongException">The fully qualified path and file name exceed the system-defined maximum length.</exception>
-    public static FileInfo? CreateSubfile( this DirectoryInfo Directory, string FileName, bool Create = true ) {
-        FileInfo? F = Path.Combine(Directory.FullName.Replace('/', '\\').TrimEnd('\\') + '\\', FileName).GetFile();
-        if ( Create && F is not null && !F.Exists ) { F.Create().Dispose(); }
-        return F;
+    public static FileInfo CreateSubfile( this DirectoryInfo Directory, string FileName, bool Create = true ) {
+        FileInfo? F = Path.Combine(Directory.FullName.Replace('/', '\\').TrimEnd('\\') + '\\', FileName).GetFile().Value;
+        switch ( F ) {
+            case { } FI when Create && !FI.Exists:
+                FI.Create().Dispose();
+                return FI;
+        }
+        return F ?? throw new ArgumentNullException(nameof(FileName));
     }
 
     /// <summary>
@@ -231,22 +233,69 @@ public static class FileSystemInfoExtensions {
     /// <summary>
     /// Deserialises the json data stored in the <paramref name="Location"/> file, and constructs a new object instance with the deserialised data.
     /// </summary>
+    /// <typeparam name="T">The data type to deserialise into.</typeparam>
     /// <param name="Location">The file to read from.</param>
     /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
     /// <returns>A new instance of <typeparamref name="T"/> as provided by <see cref="JsonSerializer.Deserialize{T}(JsonReader)"/></returns>
-    /// <exception cref="UnauthorizedAccessException"><paramref name="Location"/> is read-only or is a directory.</exception>
+    public static Result<T> Deserialise<T>( this FileInfo Location, JsonSerializer? Serialiser = null ) {
+        try {
+            using ( FileStream FS = Location.OpenRead() ) {
+                using ( StreamReader SR = new StreamReader(FS) ) {
+                    using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
+                        return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
+                    }
+                }
+            }
+        } catch ( UnauthorizedAccessException UnAuthEx ) {
+            return UnAuthEx;
+        } catch ( DirectoryNotFoundException NotFoundEx ) {
+            return NotFoundEx;
+        } catch ( IOException IOEx ) {
+            return IOEx;
+        } catch ( ArgumentException ArgEx ) {
+            return ArgEx;
+        }
+    }
+
+    /// <summary>
+    /// Deserialises the json data stored in the <paramref name="Location"/> file, and constructs a new object instance with the deserialised data.
+    /// </summary>
+    /// <typeparam name="T">The data type to deserialise into.</typeparam>
+    /// <param name="Location">The file to read from.</param>
+    /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    /// <param name="Token">The cancellation token.</param>
+    /// <returns>A new instance of <typeparamref name="T"/> as provided by <see cref="JsonSerializer.Deserialize{T}(JsonReader)"/></returns>
     /// <exception cref="IOException">The file is already open.</exception>
     /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
     /// <exception cref="ArgumentException"><paramref name="Location"/> does not support reading.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="Location"/> is <see langword="null" />.</exception>
-    public static T? Deserialise<T>( this FileInfo Location, JsonSerializer? Serialiser = null ) {
-        using ( FileStream FS = Location.OpenRead() ) {
-            using ( StreamReader SR = new StreamReader(FS) ) {
-                using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
-                    return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
-                }
+    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+    /// <exception cref="PathTooLongException">The fully qualified path and file name exceed the system-defined maximum length.</exception>
+    /// <exception cref="FileNotFoundException">The file cannot be found.</exception>
+    public static async Task<T?> DeserialiseAsync<T>( this FileInfo Location, JsonSerializer? Serialiser = null, CancellationToken Token = default ) {
+        string Text = await File.ReadAllTextAsync(Location.FullName, Token);
+        using (StreamReader SR = new StreamReader(Text) ) {
+            using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
+                return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
             }
         }
     }
 
+    /// <summary>
+    /// Gets a <see cref="bool"/> indicating whether the file exists or not.
+    /// </summary>
+    /// <param name="FI">The file to check.</param>
+    /// <returns><see langword="true"/> if the file currently exists.</returns>
+    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+    /// <exception cref="PathTooLongException">The fully qualified path and file name exceed the system-defined maximum length.</exception>
+    public static bool GetExists( this FileInfo? FI ) => FI is not null && File.Exists(FI.FullName);
+
+    /// <summary>
+    /// Gets a <see cref="bool"/> indicating whether the directory exists or not.
+    /// </summary>
+    /// <param name="DI">The directory to check.</param>
+    /// <returns><see langword="true"/> if the directory currently exists.</returns>
+    /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
+    /// <exception cref="PathTooLongException">The fully qualified path exceeds the system-defined maximum length.</exception>
+    public static bool GetExists( this DirectoryInfo? DI ) => DI is not null && Directory.Exists(DI.FullName);
 }

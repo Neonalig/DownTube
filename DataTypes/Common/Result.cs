@@ -13,6 +13,12 @@ public readonly struct Result : IResult<Result> {
     /// <inheritdoc />
     public string Message { get; }
 
+    /// <inheritdoc />
+    public static IResult DefaultSuccess { get; } = new Result(true);
+
+    /// <inheritdoc />
+    public static IResult DefaultError { get; } = new Result(false);
+
     /// <summary>
     /// Initialises a new instance of the <see cref="Result"/> struct.
     /// </summary>
