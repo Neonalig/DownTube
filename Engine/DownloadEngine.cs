@@ -20,7 +20,7 @@ public static class DownloadEngine {
     /// <summary>
     /// The file containing the YouTube V3 API key.
     /// </summary>
-    public static readonly FileInfo YtKeyFile = FileSystemInfoExtensions.AppDir.CreateSubfile("Key.json")!;
+    public static readonly FileInfo YtKeyFile = FileSystemInfoExtensions.AppDir.CreateSubfile("Key.json");
 
     /// <summary>
     /// Initialises the instance.

@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Web;
+using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
@@ -162,8 +163,8 @@ public class SearchResult : ReactiveObject {
     /// </summary>
     /// <param name="Result">The search result from the Youtube V3 API.</param>
     public SearchResult( YoutubeSearchResult Result ) {
-        Title = Result.Title.Truncate(70, "...");
-        Author = Result.ChannelTitle.Truncate(70, "...");
+        Title = HttpUtility.HtmlDecode(Result.Title).Truncate(70, "...");
+        Author = HttpUtility.HtmlDecode(Result.ChannelTitle).Truncate(70, "...");
         // ReSharper disable once ExceptionNotDocumentedOptional //Justification: Exception cannot occur.
         ThumbnailUrl = Result.Thumbnails.TryGetFirst( out KeyValuePair<ThumbnailSize, Thumbnail> KVP ) ? KVP.Value.Url : "https://picsum.photos/120/90";
         Url = Result.Url;
