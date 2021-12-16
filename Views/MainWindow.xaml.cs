@@ -24,7 +24,11 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
+        // ReSharper disable ExceptionNotDocumented
+        // ReSharper disable ExceptionNotDocumentedOptional
         Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
+        // ReSharper restore ExceptionNotDocumentedOptional
+        // ReSharper restore ExceptionNotDocumented
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
@@ -56,22 +60,6 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     void InitialiseNavigation() {
         RootNavigation.Frame = RootFrame;
         RootNavigation.Navigated += RootNavigation_Navigated;
-
-        VM.NavItems.Add(
-            new NavItem {
-                Name = "Search",
-                Tag = nameof(SearchPage),
-                Type = typeof(SearchPage),
-                Icon = WPFUI.Common.Icon.Search48
-            });
-
-        VM.NavFooterItems.Add(
-            new NavItem {
-                Name = "Settings",
-                Tag = "SettingsPage",
-                Type = typeof(SearchPage),
-                Icon = WPFUI.Common.Icon.Settings48
-            });
 
         void ForceNavigate( object? Sender, EventArgs _ ) { //An issue with data binding the 'Items' property of a NavigationFluent stops it from selecting the first item automatically. To resolve this, we check every time a layout update occurs if there are any items, and if so we navigate to the first found item and stop checking afterwards.
             if ( RootNavigation.Items.Count > 0 ) {
@@ -204,7 +192,14 @@ public class MainWindow_ViewModel : ViewModel<MainWindow> {
     /// <value>
     /// The collection of available sidebar navigation items.
     /// </value>
-    public ObservableCollection<NavItem> NavItems { get; set; } = new ObservableCollection<NavItem>();
+    public ObservableCollection<NavItem> NavItems { get; set; } = new ObservableCollection<NavItem> {
+        new NavItem {
+            Name = "Search",
+            Tag = nameof(SearchPage),
+            Type = typeof(SearchPage),
+            Icon = WPFUI.Common.Icon.Search48
+        }
+    };
 
     /// <summary>
     /// Gets the collection of navigation items to display on the footer.
@@ -212,5 +207,12 @@ public class MainWindow_ViewModel : ViewModel<MainWindow> {
     /// <value>
     /// The collection of available footer navigation items.
     /// </value>
-    public ObservableCollection<NavItem> NavFooterItems { get; set; } = new ObservableCollection<NavItem>();
+    public ObservableCollection<NavItem> NavFooterItems { get; set; } = new ObservableCollection<NavItem> {
+        new NavItem {
+            Name = "Settings",
+            Tag = nameof(SettingsPage),
+            Type = typeof(SettingsPage),
+            Icon = WPFUI.Common.Icon.Settings48
+        }
+    };
 }

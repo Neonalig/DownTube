@@ -5,7 +5,7 @@
 /// </summary>
 public readonly struct Result : IResult<Result> {
     /// <inheritdoc />
-    public bool Success { get; }
+    public bool WasSuccess { get; }
 
     /// <inheritdoc />
     public int ErrorCode { get; }
@@ -13,11 +13,12 @@ public readonly struct Result : IResult<Result> {
     /// <inheritdoc />
     public string Message { get; }
 
-    /// <inheritdoc />
-    public static IResult DefaultSuccess { get; } = new Result(true);
 
     /// <inheritdoc />
-    public static IResult DefaultError { get; } = new Result(false);
+    public static Result Success { get; } = new Result(true);
+
+    /// <inheritdoc />
+    public static Result Unexpected { get; } = new Result(false);
 
     /// <summary>
     /// Initialises a new instance of the <see cref="Result"/> struct.
@@ -26,7 +27,7 @@ public readonly struct Result : IResult<Result> {
     /// <param name="ErrorCode">The error code.</param>
     /// <param name="Message">The message.</param>
     public Result( bool Success, int ErrorCode, string Message ) {
-        this.Success = Success;
+        this.WasSuccess = Success;
         this.ErrorCode = ErrorCode;
         this.Message = Message;
     }
@@ -36,10 +37,10 @@ public readonly struct Result : IResult<Result> {
     /// </summary>
     /// <param name="Success">If set to <see langword="true" />, the result is intended as successful (<c>0x0000</c>); otherwise the result is intended as an unexpected error (<c>0x0001</c>).</param>
     public Result( bool Success = true ) {
-        this.Success = Success;
+        this.WasSuccess = Success;
         if ( Success ) {
             ErrorCode = 0x0000;
-            Message = "Success.";
+            Message = "WasSuccess.";
         } else {
             ErrorCode = 0x0001;
             Message = "An unexpected error occurred.";
@@ -53,7 +54,7 @@ public readonly struct Result : IResult<Result> {
     public Result( object? MaybeNullValue = null ) : this(MaybeNullValue is not null) { }
 
     /// <inheritdoc />
-    public static implicit operator bool( Result Result ) => Result.Success;
+    public static implicit operator bool( Result Result ) => Result.WasSuccess;
 
     /// <inheritdoc />
     public static implicit operator Result( bool Success ) => new Result(Success);
@@ -61,6 +62,6 @@ public readonly struct Result : IResult<Result> {
     /// <inheritdoc />
     public static implicit operator Result( Exception? Ex ) => Ex switch {
         { } E => new Result(false, E.HResult, Ex.ToString()),
-        _     => new Result(true, 0x0000, "Success")
+        _     => new Result(true, 0x0000, "WasSuccess")
     };
 }

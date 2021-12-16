@@ -3,6 +3,8 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 
+using DownTube.DataTypes;
+
 using Newtonsoft.Json;
 
 namespace DownTube.Extensions;
@@ -298,4 +300,31 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="SecurityException">The caller does not have the required permission.</exception>
     /// <exception cref="PathTooLongException">The fully qualified path exceeds the system-defined maximum length.</exception>
     public static bool GetExists( this DirectoryInfo? DI ) => DI is not null && Directory.Exists(DI.FullName);
+
+    /// <summary>
+    /// Resolves the specified directory (expanding symbolic links and correcting capitalisation).
+    /// <para/><example>
+    /// <b>Example:</b>
+    /// '<c>c:/windows\system32</c>' becomes '<c>C:\Windows\System32\</c>'
+    /// </example>
+    /// </summary>
+    /// <remarks>As per the WIN32 standard, all slashes become backslashes ('\'), and the path will end with a backslash.</remarks>
+    /// <param name="DI">The directory.</param>
+    /// <returns>A fully resolved <see cref="DirectoryInfo"/> instance.</returns>
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
+    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    public static DirectoryInfo Resolve( this DirectoryInfo DI ) => new DirectoryInfo(PInvoke.GetFinalPathName(DI.FullName) + '\\');
+
+    /// <summary>
+    /// Resolves the specified file (expanding symbolic links and correcting capitalisation).
+    /// <para/><example>
+    /// <b>Example:</b>
+    /// '<c>c:/windows\system32/calc.exe</c>' becomes '<c>C:\Windows\System32\calc.exe</c>'
+    /// </example>
+    /// </summary>
+    /// <param name="FI">The file.</param>
+    /// <returns>A fully resolved <see cref="FileInfo"/> instance.</returns>
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
+    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    public static FileInfo Resolve( this FileInfo FI ) => new FileInfo(PInvoke.GetFinalPathName(FI.FullName));
 }

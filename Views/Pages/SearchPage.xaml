@@ -55,7 +55,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Label Width="50" Content="0" HorizontalContentAlignment="Center" VerticalAlignment="Center" FontSize="30"/>
+                <Label Width="50" Content="{Binding TimesDownloaded}" HorizontalContentAlignment="Center" VerticalAlignment="Center" FontSize="30"/>
                 <!--<Image Width="70"
                        RenderOptions.BitmapScalingMode="HighQuality"
                        Source="pack://application:,,,/Assets/microsoft-icon-store.png" />-->

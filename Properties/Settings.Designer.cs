@@ -58,5 +58,17 @@ namespace DownTube.Properties {
                 this["OutputFolder"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int TimesDownloaded {
+            get {
+                return ((int)(this["TimesDownloaded"]));
+            }
+            set {
+                this["TimesDownloaded"] = value;
+            }
+        }
     }
 }

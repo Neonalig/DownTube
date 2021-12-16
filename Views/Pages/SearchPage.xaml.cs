@@ -33,10 +33,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     /// </summary>
     public SearchPage() {
         InitializeComponent();
-        // ReSharper disable once ExceptionNotDocumented
-        // ReSharper disable ExceptionNotDocumentedOptional
         VM = DataContext.Cast<SearchPage_ViewModel>();
-        // ReSharper restore ExceptionNotDocumentedOptional
         InitializeAsync();
     }
 
@@ -66,7 +63,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
 
         //VM.CachedResults.Clear();
         //return;
-        FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json")!;
+        FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json");
 
         const bool Search = false;
 #pragma warning disable CS0162
@@ -85,6 +82,14 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
         }
         // ReSharper restore HeuristicUnreachableCode
 #pragma warning restore CS0162
+
+        KeyDown += ( _, E ) => {
+            switch ( E.Key ) {
+                case System.Windows.Input.Key.E when E.IsDown:
+                    Props.TimesDownloaded += 1;
+                    break;
+            }
+        };
     }
 
     /// <summary>
@@ -187,6 +192,21 @@ public class SearchPage_ViewModel : ViewModel<SearchPage> {
 
     /// <summary> The current user search query. </summary>
     public string SearchQuery { get; set; } = string.Empty;
+
+    /// <inheritdoc cref="Props.TimesDownloaded"/>
+    public int TimesDownloaded { get; private set; } = 0;
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="SearchPage_ViewModel"/> class.
+    /// </summary>
+    public SearchPage_ViewModel() {
+        TimesDownloaded = Props.TimesDownloaded;
+        Props.PropertyChangedEventHandler += E => {
+            if ( E.PropertyName == nameof( Props.TimesDownloaded ) ) {
+                TimesDownloaded = Props.TimesDownloaded;
+            }
+        };
+    }
 
     //public ObservableCollection<SearchResult> CachedResults { get; } = new ObservableCollection<SearchResult>();
     /// <summary>

@@ -30,4 +30,20 @@ public interface IResult<T> : IResult where T : IResult<T> {
     /// The result of the conversion.
     /// </returns>
     public static abstract implicit operator T( Exception? Ex );
+
+    /// <summary>
+    /// Gets the default success result.
+    /// </summary>
+    /// <value>
+    /// The success result.
+    /// </value>
+    public static abstract T Success { get; }
+
+    /// <summary>
+    /// Gets the default unexpected error result.
+    /// </summary>
+    /// <value>
+    /// The unexpected error result.
+    /// </value>
+    public static abstract T Unexpected { get; }
 }

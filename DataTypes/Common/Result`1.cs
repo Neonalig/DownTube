@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace DownTube.DataTypes.Common; 
 
@@ -7,7 +8,7 @@ namespace DownTube.DataTypes.Common;
 /// </summary>
 public readonly struct Result<T> : IResult<Result<T>> {
     /// <inheritdoc />
-    public bool Success { get; }
+    public bool WasSuccess { get; }
 
     /// <inheritdoc />
     public int ErrorCode { get; }
@@ -21,7 +22,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <value>
     /// The return value of the result.
     /// </value>
-    [MemberNotNullWhen(true, nameof(Success))] public T? Value { get; }
+    [MemberNotNullWhen(true, nameof(WasSuccess))] public T? Value { get; }
 
     /// <summary>
     /// Initialises a new instance of the <see cref="Result"/> struct.
@@ -32,7 +33,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <param name="Message">The message.</param>
     public Result( T? Value, bool Success, int ErrorCode, string Message ) {
         this.Value = Value;
-        this.Success = Success;
+        this.WasSuccess = Success;
         this.ErrorCode = ErrorCode;
         this.Message = Message;
     }
@@ -43,10 +44,10 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <param name="Value">The return value of the result. If <see langword="null" />, the result is intended as an unexpected error (<c>0x0001</c>); otherwise the result is intended as successful (<c>0x0000</c>).</param>
     public Result( T? Value = default ) {
         this.Value = Value;
-        Success = Value is not null;
-        if ( Success ) {
+        WasSuccess = Value is not null;
+        if ( WasSuccess ) {
             ErrorCode = 0x0000;
-            Message = "Success.";
+            Message = "WasSuccess.";
         } else {
             ErrorCode = 0x0001;
             Message = "An unexpected error occurred.";
@@ -59,7 +60,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     static readonly T? _NoData = (T?)(dynamic)null!;
 
     /// <inheritdoc />
-    public static implicit operator bool( Result<T> Result ) => Result.Success;
+    public static implicit operator bool( Result<T> Result ) => Result.WasSuccess;
 
     // ReSharper disable once ArrangeDefaultValueWhenTypeNotEvident
     /// <inheritdoc />
@@ -72,7 +73,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
         { } E => new Result<T>(_NoData, false, E.HResult, Ex.ToString()),
         // ReSharper disable once ArrangeDefaultValueWhenTypeNotEvident
 #pragma warning disable IDE0034 // Simplify 'default' expression
-        _     => new Result<T>(default(T), true, 0x0000, "Success")
+        _     => new Result<T>(default(T), true, 0x0000, "WasSuccess")
 #pragma warning restore IDE0034 // Simplify 'default' expression
     };
 
@@ -83,7 +84,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <returns><see langword="true"/> if the result was successful; otherwise <see langword="false"/>.</returns>
     public bool IsSuccess( out T Value ) {
         Value = this.Value!;
-        return Success;
+        return WasSuccess;
     }
 
     /// <summary>
@@ -105,18 +106,50 @@ public readonly struct Result<T> : IResult<Result<T>> {
     public static implicit operator T?(Result<T> Result) => Result.Value;
 
     /// <summary>
+    /// Performs an explicit conversion from <see cref="Result{T}"/> to <see cref="Result"/>.
+    /// </summary>
+    /// <param name="ResultWithValue">The result with a value.</param>
+    /// <returns>
+    /// The result of the conversion.
+    /// </returns>
+    public static explicit operator Result( Result<T> ResultWithValue ) => new Result(ResultWithValue.WasSuccess, ResultWithValue.ErrorCode, ResultWithValue.Message);
+
+    /// <summary>
+    /// Performs an explicit conversion from <see cref="Result"/> to <see cref="Result{T}"/>.
+    /// </summary>
+    /// <param name="Result">The result.</param>
+    /// <returns>
+    /// The result of the conversion.
+    /// </returns>
+    public static explicit operator Result<T>( Result Result ) => new Result<T>(Result.WasSuccess ? default(T) : _NoData, Result.WasSuccess, Result.ErrorCode, Result.Message);
+
+    /// <summary>
     /// Outputs the value of the result.
     /// </summary>
     /// <param name="Value">The value.</param>
     /// <returns>Whether the result was a success.</returns>
     public bool Out( out T Value ) {
         Value = this.Value!;
-        return Success;
+        return WasSuccess;
     }
 
     /// <inheritdoc />
-    public static IResult DefaultSuccess { get; } = new Result<T>(default, true, 0x0000, "Success.");
+    public static Result<T> Success { get; } = new Result<T>(default, true, 0x0000, "WasSuccess.");
 
     /// <inheritdoc />
-    public static IResult DefaultError { get; } = new Result<T>(_NoData, false, 0x0001, "An unexpected error occurred.");
+    public static Result<T> Unexpected { get; } = new Result<T>(_NoData, false, 0x0001, "An unexpected error occurred.");
+
+    /// <summary>
+    /// Retrieves the result, throwing an <see cref="ArgumentNullException"/> if the given value is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    /// <returns>The original object (if not <see langword="null"/>).</returns>
+    public T CatchNull() {
+        if ( Value is { } Val ) {
+            return Val;
+        }
+        // ReSharper disable ExceptionNotDocumented
+        throw new ArgumentNullException(nameof(Value), $"{nameof(Value)} was null.");
+        // ReSharper restore ExceptionNotDocumented
+    }
 }

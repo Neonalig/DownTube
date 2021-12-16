@@ -51,6 +51,22 @@ public static class ObjectExtensions {
     /// Throws an <see cref="ArgumentNullException"/> if the given value is <see langword="null"/>.
     /// </summary>
     /// <typeparam name="T">The type of the object.</typeparam>
+    /// <param name="Res">The object to test.</param>
+    /// <param name="Expression">The name of the object.</param>
+    /// <returns>The original object (if not <see langword="null"/>).</returns>
+    public static T CatchNull<T>( [NotNull] this Result<T>? Res, [CallerArgumentExpression("Res")] string? Expression = null ) {
+        if ( Res is { Value: { } Val } ) {
+            return Val;
+        }
+        // ReSharper disable ExceptionNotDocumented
+        throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
+        // ReSharper restore ExceptionNotDocumented
+    }
+
+    /// <summary>
+    /// Throws an <see cref="ArgumentNullException"/> if the given value is <see langword="null"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of the object.</typeparam>
     /// <param name="Obj">The object to test.</param>
     /// <param name="Expression">The name of the object.</param>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
@@ -113,10 +129,8 @@ public static class ObjectExtensions {
     /// <param name="Input">The input value to cast.</param>
     /// <param name="ParameterName">The name of the input value.</param>
     /// <returns>A cast value of type <typeparamref name="TOut"/>.</returns>
-    /// <exception cref="InvalidCastException"><paramref name="Input"/> of type <paramref name="Input"/><c>.GetType()</c> is unable to be cast to type <typeparamref name="TOut"/>.</exception>
-    /// <exception cref="OverflowException"><paramref name="Input" /> represents a number that is out of the range of <typeparamref name="TOut"/>.</exception>
-    /// <exception cref="FormatException"><paramref name="Input"/><c>.GetType()</c> is not in a format recognised by <typeparamref name="TOut"/>.</exception>
     [return: NotNullIfNotNull("Input")]
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     public static TOut? Cast<TOut>( this object? Input, [CallerArgumentExpression("Input")] string? ParameterName = null ) {
         switch ( Input ) {
             case null:
@@ -143,7 +157,7 @@ public static class ObjectExtensions {
     /// <param name="WhenNull">The value to return when <paramref name="InputResult"/> is <see langword="null"/>.</param>
     /// <returns>The output value of <paramref name="WhenNotNull"/> or <paramref name="WhenNull"/> depending on the given <paramref name="InputResult"/>.</returns>
     /// <exception cref="Exception">The <paramref name="WhenNotNull"/> <see langword="delegate"/> callback throws an exception.</exception>
-    public static TOut WithValue<TIn, TOut>( this Result<TIn>? InputResult, Func<TIn, TOut> WhenNotNull, TOut WhenNull ) => InputResult is { Success: true } In ? WhenNotNull(In.Value!) : WhenNull;
+    public static TOut WithValue<TIn, TOut>( this Result<TIn>? InputResult, Func<TIn, TOut> WhenNotNull, TOut WhenNull ) => InputResult is { WasSuccess: true } In ? WhenNotNull(In.Value!) : WhenNull;
 
     /// <summary>
     /// Invokes a function when the <paramref name="Input"/> value is not <see langword="null"/>.

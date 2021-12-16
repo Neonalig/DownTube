@@ -27,15 +27,14 @@ public abstract class SaveData : ReactiveObject, ISaveData {
     /// <param name="Value">The value.</param>
     /// <param name="NewValue">The new value.</param>
     /// <param name="ValueName">The name of the value.</param>
+    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     internal void SetProperty<T>( [NotNullIfNotNull("NewValue")] ref T? Value, T? NewValue, [CallerMemberName] string? ValueName = null ) {
         ValueName.CatchNull();
-        // ReSharper disable ExceptionNotDocumentedOptional
         lock ( CachedProperties ) {
             if ( !CachedProperties.ContainsKey(ValueName) ) {
                 CachedProperties.Add(ValueName, Value);
             }
         }
-        // ReSharper restore ExceptionNotDocumentedOptional
 
         if ( Value is null ? NewValue is not null : NewValue is null || !Value.Equals(NewValue) ) {
             this.RaisePropertyChanging(ValueName);

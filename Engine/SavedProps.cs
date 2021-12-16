@@ -1,46 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Windows;
 
 using DownTube.DataTypes;
 using DownTube.Properties;
 
 namespace DownTube.Engine;
-
-/// <summary>
-/// Manages writing to/reading from properties.
-/// </summary>
-public static class Props {
-    /// <summary>
-    /// Initialises the <see cref="Props"/> class.
-    /// </summary>
-    static Props() {
-        //Debug.WriteLine("Static const.");
-        Data = new SavedProps();
-        Application.Current.MainWindow.Closing += ( _, _ ) => Data.Save();
-    }
-
-    /// <summary> The saved property data instance. </summary>
-    public static readonly SavedProps Data;
-
-    /// <inheritdoc cref="SavedProps.FFmpegPath"/>
-    public static FileInfo? FFmpegPath {
-        get => Data.FFmpegPath;
-        set => Data.FFmpegPath = value;
-    }
-
-    /// <inheritdoc cref="SavedProps.YoutubeDLPath"/>
-    public static FileInfo? YoutubeDLPath {
-        get => Data.YoutubeDLPath;
-        set => Data.YoutubeDLPath = value;
-    }
-
-    /// <inheritdoc cref="SavedProps.OutputFolder"/>
-    public static DirectoryInfo? OutputFolder {
-        get => Data.OutputFolder;
-        set => Data.OutputFolder = value;
-    }
-}
 
 /// <summary>
 /// Manages writing to/reading from properties.
@@ -72,10 +36,11 @@ public sealed class SavedProps : SaveData {
         } else {
             FromLocalFile = false;
 
-            _FFmpegPath    = Settings.Default.FFmpegPath.GetFile().Value;
-            _YoutubeDLPath = Settings.Default.YoutubeDLPath.GetFile().Value;
-            _OutputFolder  = Settings.Default.OutputFolder.GetDirectory().Value;
+            _FFmpegPath      = Settings.Default.FFmpegPath.GetFile().Value;
+            _YoutubeDLPath   = Settings.Default.YoutubeDLPath.GetFile().Value;
+            _OutputFolder    = Settings.Default.OutputFolder.GetDirectory().Value;
         }
+        _TimesDownloaded = Settings.Default.TimesDownloaded;
     }
 
     /// <summary>
@@ -136,16 +101,33 @@ public sealed class SavedProps : SaveData {
         set => SetProperty(ref _OutputFolder, value);
     }
 
+    /// <summary>
+    /// The number of times any song/video was been downloaded.
+    /// </summary>
+    int _TimesDownloaded;
+
+    /// <summary>
+    /// Gets or sets the number of times any song/video was been downloaded.
+    /// </summary>
+    /// <value>
+    /// The number of times any song/video was been downloaded.
+    /// </value>
+    public int TimesDownloaded {
+        get => _TimesDownloaded;
+        set => SetProperty(ref _TimesDownloaded, value);
+    }
+
     #endregion
 
     /// <inheritdoc />
     /// <exception cref="ArgumentException">The property with the name <paramref name="PropertyName"/> could not be found.</exception>
     internal override object? GetProp( string PropertyName ) =>
         PropertyName switch {
-            nameof(FFmpegPath)    => FFmpegPath,
-            nameof(YoutubeDLPath) => YoutubeDLPath,
-            nameof(OutputFolder)  => OutputFolder,
-            _                     => throw new ArgumentException($"The property with the name '{PropertyName}' could not be found.")
+            nameof(FFmpegPath)      => FFmpegPath,
+            nameof(YoutubeDLPath)   => YoutubeDLPath,
+            nameof(OutputFolder)    => OutputFolder,
+            nameof(TimesDownloaded) => TimesDownloaded,
+            _                       => throw new ArgumentException($"The property with the name '{PropertyName}' could not be found.")
         };
 
     /// <inheritdoc />
@@ -160,6 +142,9 @@ public sealed class SavedProps : SaveData {
                 break;
             case nameof(OutputFolder):
                 OutputFolder  = (DirectoryInfo?)Value;
+                break;
+            case nameof(TimesDownloaded):
+                TimesDownloaded = (int?)Value ?? 0;
                 break;
             default:
                 throw new ArgumentException($"The property with the name '{PropertyName}' could not be found.");
@@ -189,8 +174,9 @@ public sealed class SavedProps : SaveData {
                 Settings.Default.FFmpegPath    = FFmpeg;
                 Settings.Default.YoutubeDLPath = YoutubeDL;
                 Settings.Default.OutputFolder  = Output;
-                Settings.Default.Save();
                 break;
         }
+        Settings.Default.TimesDownloaded = TimesDownloaded;
+        Settings.Default.Save();
     }
 }

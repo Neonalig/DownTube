@@ -5,6 +5,9 @@ using System.Net.Http;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
+using YoutubeDLSharp;
+using YoutubeDLSharp.Options;
+
 using YoutubeSnoop;
 using YoutubeSnoop.Api;
 using YoutubeSnoop.Api.Entities;
@@ -25,11 +28,6 @@ public static class DownloadEngine {
     /// <summary>
     /// Initialises the instance.
     /// </summary>
-    /// <exception cref="UnauthorizedAccessException"><see cref="YtKeyFile"/> is read-only or is a directory.</exception>
-    /// <exception cref="IOException"><see cref="YtKeyFile"/> is already open.</exception>
-    /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive.</exception>
-    /// <exception cref="ArgumentException"><see cref="YtKeyFile"/> does not support reading.</exception>
-    /// <exception cref="ArgumentNullException"><see cref="YtKeyFile"/> is <see langword="null" />.</exception>
     public static void Init() {
         JsonKeyFile JKF = YtKeyFile.Deserialise<JsonKeyFile>().CatchNull();
         Request.ApiKey = JKF.Key;
@@ -117,8 +115,74 @@ public static class DownloadEngine {
         return BitmapSource;
     }
 
-    public static async Task DownloadAsync( SearchResult Result, DirectoryInfo DestinationFolder ) {
-        //YoutubeDLSharp.YoutubeDL.
+    /// <summary>
+    /// Gets the initial <see cref="YoutubeDL"/> instance required for a download request.
+    /// </summary>
+    /// <param name="Progress">The progress changed event handler.</param>
+    /// <param name="Dl">The constructed <see cref="YoutubeDL"/> instance.</param>
+    /// <param name="Prog">The constructed <see cref="Progress{T}"/> instance.</param>
+    /// <returns>A <see cref="Result{T}"/> to return and abort early on failure, or <see langword="null"/> if the instance is ready.</returns>
+    internal static Result<string>? GetYoutubeDL( Action<DownloadProgress> Progress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog ) {
+        if ( Props.YoutubeDLPath?.FullName is not { } YDlPath ) {
+            Dl = null!;
+            Prog = null!;
+            return KnownError.NoYoutubeDL.GetResult<string>();
+        }
+        if ( Props.FFmpegPath?.FullName is not { } FFmPath ) {
+            Dl = null!;
+            Prog = null!;
+            return KnownError.NoFFmpeg.GetResult<string>();
+        }
+        if ( Props.OutputFolder?.FullName is not { } OutFld ) {
+            Dl = null!;
+            Prog = null!;
+            return KnownError.NoOutputFolder.GetResult<string>();
+        }
+
+        // ReSharper disable ExceptionNotDocumentedOptional
+        Prog = new Progress<DownloadProgress>(Progress);
+        // ReSharper restore ExceptionNotDocumentedOptional
+
+        Dl = new YoutubeDL {
+            YoutubeDLPath = YDlPath,
+            FFmpegPath = FFmPath,
+            OutputFolder = OutFld
+        };
+
+        return null;
+    }
+
+    /// <summary>
+    /// Asynchronously downloads the search result's video, returning the destination path when complete.
+    /// </summary>
+    /// <param name="Result">The search result to download the video of.</param>
+    /// <param name="DownloadProgress">The download progress change handler.</param>
+    /// <param name="Token">The cancellation token.</param>
+    /// <returns>The downloaded file's path.</returns>
+    public static async Task<Result<string>> DownloadVideoAsync( SearchResult Result, Action<DownloadProgress> DownloadProgress, CancellationToken Token = default ) {
+        if ( GetYoutubeDL(DownloadProgress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog) is { } ErrRes ) {
+            return ErrRes;
+        }
+
+        RunResult<string> Res = await Dl.RunVideoDownload(Result.Url, progress: Prog, ct: Token);
+        return new Result<string>(Res.Data);
+    }
+
+    /// <summary>
+    /// Asynchronously downloads the search result's video, returning the destination path when complete.
+    /// </summary>
+    /// <param name="Result">The search result to download the video of.</param>
+    /// <param name="AudioFormat">The format to convert the audio track into (i.e. <see cref="AudioConversionFormat.Mp3"/>)</param>
+    /// <param name="DownloadProgress">The download progress change handler.</param>
+    /// <param name="Token">The cancellation token.</param>
+    /// <returns>The downloaded file's path.</returns>
+    public static async Task<Result<string>> DownloadAudioAsync( SearchResult Result, AudioConversionFormat AudioFormat, Action<DownloadProgress> DownloadProgress, CancellationToken Token = default ) {
+        if ( GetYoutubeDL(DownloadProgress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog) is { } ErrRes ) {
+            return ErrRes;
+        }
+
+        RunResult<string> Res = await Dl.RunAudioDownload(Result.Url, AudioFormat, progress: Prog, ct: Token);
+        return new Result<string>(Res.Data);
     }
 
     /// <summary>
