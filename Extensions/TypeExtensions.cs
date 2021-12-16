@@ -1,4 +1,12 @@
-﻿namespace DownTube.Extensions;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+namespace DownTube.Extensions;
 
 public static class TypeExtensions {
     public static string GetTypeName( this Type Type ) => Type.GetTypeCode(Type) switch {
@@ -20,6 +28,6 @@ public static class TypeExtensions {
         TypeCode.Decimal  => "decimal",
         TypeCode.DateTime => nameof(DateTime),
         TypeCode.String   => "string",
-        _                 => throw new NotImplementedException(),
+        _                 => throw new NotImplementedException()
     };
 }

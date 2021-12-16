@@ -1,4 +1,12 @@
-﻿namespace DownTube.Extensions;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+namespace DownTube.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="IEnumerable{T}"/> types.
@@ -43,7 +51,7 @@ public static class EnumerableExtensions {
     }
 
     /// <inheritdoc cref="Enumerable.Take{TSource}(IEnumerable{TSource}, int)"/>
-    public static IEnumerable<T> Grab<T>( this IEnumerable<T> Enum, int Amount ) => Enumerable.Take(Enum, Amount);
+    public static IEnumerable<T> Grab<T>( this IEnumerable<T> Enum, int Amount ) => Enum.Take( Amount);
 
     /// <inheritdoc cref="Enumerable.ToList{TSource}(IEnumerable{TSource})"/>
     // ReSharper disable once RedundantNullableFlowAttribute

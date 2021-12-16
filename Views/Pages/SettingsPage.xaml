@@ -18,9 +18,9 @@
         </SelectiveScrollingGrid.RowDefinitions>
         <TextBlock Grid.Row="0"
                    FontSize="20"
-                   Text="Settings"/>
+                   Text="Settings" />
         <controls:FolderPicker Grid.Row="1"
-                               Height="40" 
-                               MustExist="True"/>
+                               Height="40"
+                               MustExist="True" />
     </SelectiveScrollingGrid>
 </Page>

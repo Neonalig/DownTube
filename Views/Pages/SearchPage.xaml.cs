@@ -1,9 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Navigation;
 
 using DownTube.Engine;
@@ -16,8 +27,9 @@ using WPFUI.Controls;
 
 using YoutubeSnoop;
 
-using Button = System.Windows.Controls.Button;
 using Hyperlink = System.Windows.Documents.Hyperlink;
+
+#endregion
 
 namespace DownTube.Views.Pages;
 
@@ -85,7 +97,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
 
         KeyDown += ( _, E ) => {
             switch ( E.Key ) {
-                case System.Windows.Input.Key.E when E.IsDown:
+                case Key.E when E.IsDown:
                     Props.TimesDownloaded += 1;
                     break;
             }
@@ -93,7 +105,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="Hyperlink"/> text is clicked on.
+    /// Occurs when the <see cref="System.Windows.Documents.Hyperlink"/> text is clicked on.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
@@ -128,7 +140,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="Button.OnClick"/> <see langword="event"/> is raised.
+    /// Occurs when the <see cref="System.Windows.Controls.Button.OnClick"/> <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
@@ -145,7 +157,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="Button.OnClick"/> <see langword="event"/> is raised.
+    /// Occurs when the <see cref="System.Windows.Controls.Button.OnClick"/> <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
@@ -168,7 +180,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="CardAction.OnClick"/> <see langword="event"/> is raised.
+    /// Occurs when the <see cref="WPFUI.Controls.CardAction.OnClick"/> <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
@@ -186,8 +198,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
 /// <summary> Viewmodel for <see cref="SearchPage"/>. </summary>
 public class SearchPage_ViewModel : ViewModel<SearchPage> {
     /// <summary> The save folder location. </summary>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented"),
-     SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    [ SuppressMessage("ReSharper", "ExceptionNotDocumented")][ SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public Uri SaveFolderLocation { get; set; } = FileSystemInfoExtensions.Desktop.GetUri();
 
     /// <summary> The current user search query. </summary>

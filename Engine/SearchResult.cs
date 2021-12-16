@@ -1,4 +1,14 @@
-﻿using System.Web;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Web;
 using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -12,6 +22,8 @@ using ReactiveUI;
 using YoutubeSnoop;
 using YoutubeSnoop.Api.Entities;
 using YoutubeSnoop.Enums;
+
+#endregion
 
 namespace DownTube.Engine;
 
@@ -82,7 +94,7 @@ public class SearchResult : ReactiveObject {
     /// <value>
     /// The visibility of <see cref="SearchResultState.Polling"/> related elements.
     /// </value>
-    [JsonIgnore, DependsOn(nameof(State))]
+    [ JsonIgnore][ DependsOn(nameof(State))]
     public Visibility PollingVisibility => State == SearchResultState.Polling ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>
@@ -91,7 +103,7 @@ public class SearchResult : ReactiveObject {
     /// <value>
     /// The visibility of <see cref="SearchResultState.Idle"/> related elements.
     /// </value>
-    [JsonIgnore, DependsOn(nameof(State))]
+    [ JsonIgnore][ DependsOn(nameof(State))]
     public Visibility IdleVisibility => State == SearchResultState.Idle ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>
@@ -100,7 +112,7 @@ public class SearchResult : ReactiveObject {
     /// <value>
     /// The visibility of <see cref="SearchResultState.Downloading"/> related elements.
     /// </value>
-    [JsonIgnore, DependsOn(nameof(State))]
+    [ JsonIgnore][ DependsOn(nameof(State))]
     public Visibility DownloadingVisibility => State == SearchResultState.Downloading ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>
@@ -109,7 +121,7 @@ public class SearchResult : ReactiveObject {
     /// <value>
     /// The visibility of <see cref="SearchResultState.Complete"/> related elements.
     /// </value>
-    [JsonIgnore, DependsOn(nameof(State))]
+    [ JsonIgnore][ DependsOn(nameof(State))]
     public Visibility CompleteVisibility => State == SearchResultState.Complete ? Visibility.Visible : Visibility.Collapsed;
 
     /// <summary>
@@ -118,7 +130,7 @@ public class SearchResult : ReactiveObject {
     /// <value>
     /// The visibility of <see cref="SearchResultState.Error"/> related elements.
     /// </value>
-    [JsonIgnore, DependsOn(nameof(State))]
+    [ JsonIgnore][ DependsOn(nameof(State))]
     public Visibility ErrorVisibility => State == SearchResultState.Error ? Visibility.Visible : Visibility.Collapsed;
 
     #endregion

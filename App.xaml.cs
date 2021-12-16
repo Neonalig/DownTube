@@ -1,4 +1,18 @@
-﻿using System.Windows;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Windows;
+
+using WPFUI.Theme;
+
+#endregion
 
 namespace DownTube; 
 
@@ -6,6 +20,6 @@ namespace DownTube;
 public partial class App  {
     protected override void OnStartup( StartupEventArgs E ) {
         //base.OnStartup(E);
-        WPFUI.Theme.Manager.SetSystemTheme();
+        Manager.SetSystemTheme();
     }
 }

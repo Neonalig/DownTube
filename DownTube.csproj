@@ -32,6 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
+    <None Remove=".gitmodules" />
     <None Remove="Resources\Banner.png" />
     <None Remove="Resources\BannerGreen.png" />
     <None Remove="Resources\BannerMagenta.png" />
@@ -69,10 +72,6 @@
     <Resource Include="Resources\BannerMagenta.png" />
     <Resource Include="Resources\Fonts\Segoe Fluent Icons.ttf" />
     <Resource Include="Resources\Icon.ico" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\Windows\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,16 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Diagnostics.CodeAnalysis;
+
+#endregion
 
 namespace DownTube.DataTypes.Common; 
 
@@ -33,7 +44,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <param name="Message">The message.</param>
     public Result( T? Value, bool Success, int ErrorCode, string Message ) {
         this.Value = Value;
-        this.WasSuccess = Success;
+        WasSuccess = Success;
         this.ErrorCode = ErrorCode;
         this.Message = Message;
     }
