@@ -23,18 +23,28 @@ using WPFUI.Common;
 namespace DownTube.Views.Controls;
 
 /// <summary>
-/// Interaction logic for FolderPicker.xaml
+/// Interaction logic for FilePicker.xaml
 /// </summary>
-public partial class FolderPicker : INotifyPropertyChanged {
+public partial class FilePicker : INotifyPropertyChanged {
     /// <summary>
-    /// Initialises a new instance of the <see cref="FolderPicker"/> class.
+    /// Initialises a new instance of the <see cref="FilePicker"/> class.
     /// </summary>
     [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public FolderPicker() {
+    public FilePicker() {
         InitializeComponent();
         Path = DefaultPath;
         TextPath = Path.FullName;
+    }
+
+    /// <summary>
+    /// Sets the glyph to the specified <see cref="Icon"/> and fill.
+    /// </summary>
+    /// <param name="Glyph">The glyph.</param>
+    /// <param name="Filled">If <see langword="true" />, the icon is filled; otherwise the icon is an outline.</param>
+    public void SetGlyph( Icon Glyph = Icon.Document48, bool Filled = true ) {
+        Ico.Glyph = Glyph;
+        Ico.Filled = Filled;
     }
 
     /// <summary>
@@ -43,7 +53,7 @@ public partial class FolderPicker : INotifyPropertyChanged {
     /// <value>
     /// The default path.
     /// </value>
-    public DirectoryInfo DefaultPath { get; set; } = FileSystemInfoExtensions.AppDir;
+    public FileInfo DefaultPath { get; set; } = FileSystemInfoExtensions.App;
 
     /// <summary>
     /// Whether the path must exist to be considered valid.
@@ -61,21 +71,25 @@ public partial class FolderPicker : INotifyPropertyChanged {
                 _MustExist = value;
                 this.InvokeOnPropertyChanged();
                 if ( !Path.Exists ) {
-                    Path = DefaultPath; 
+                    Path = DefaultPath;
                 }
             }
         }
     }
 
     /// <summary>
-    /// Sets the glyph to the specified <see cref="Icon"/> and fill.
+    /// Gets or sets the glyph displayed on the 'Browse' button.
     /// </summary>
-    /// <param name="Glyph">The glyph.</param>
-    /// <param name="Filled">If <see langword="true" />, the icon is filled; otherwise the icon is an outline.</param>
-    public void SetGlyph(Icon Glyph = Icon.Folder48, bool Filled = true ) {
-        Ico.Glyph = Glyph;
-        Ico.Filled = Filled;
-    }
+    /// <value>
+    /// The glyph displayed to the right of the 'Browse' text.
+    /// </value>
+    public Icon Glyph { get; set; } = Icon.Document48;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the <see cref="Glyph"/> is filled.
+    /// </summary>
+    /// <value> <see langword="true" /> if <see cref="Glyph"/> is filled; otherwise, <see langword="false" />. </value>
+    public bool GlyphFilled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the selected path.
@@ -83,7 +97,7 @@ public partial class FolderPicker : INotifyPropertyChanged {
     /// <value>
     /// The selected path.
     /// </value>
-    public DirectoryInfo Path { get; set; }
+    public FileInfo Path { get; set; }
 
     /// <summary>
     /// Gets or sets the text path.
@@ -126,9 +140,9 @@ public partial class FolderPicker : INotifyPropertyChanged {
     /// </summary>
     void Validate() {
         Debug.WriteLine($"Validating {TextPath}...");
-        if ( TextPath.GetDirectory().Out(out DirectoryInfo Dir) && ( !MustExist || Dir.Exists ) ) {
-            Debug.WriteLine($"\tValid! ({Dir.FullName})");
-            Path = Dir.Resolve();
+        if ( TextPath.GetFile().Out(out FileInfo Fl) && (!MustExist || Fl.Exists) ) {
+            Debug.WriteLine($"\tValid! ({Fl.FullName})");
+            Path = Fl.Resolve();
         } else {
             Debug.WriteLine($"\tInvalid! (Resetting to {Path.FullName})");
         }

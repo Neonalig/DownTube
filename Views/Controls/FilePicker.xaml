@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="DownTube.Views.Controls.FolderPicker"
+﻿<UserControl x:Class="DownTube.Views.Controls.FilePicker"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,12 +19,13 @@
                     <TextBlock Text="Browse"
                                Margin="0,0,10,0" />
                     <controls:Icon x:Name="Ico"
-                                   Glyph="Folder48" Filled="True"/>
+                                   Glyph="Document48" Filled="True" />
                 </StackPanel>
             </Button.Content>
         </Button>
         <TextBox x:Name="TB"
                  LostKeyboardFocus="TextBox_LostKeyboardFocus"
-                 PreviewKeyDown="TextBox_PreviewKeyDown" VerticalContentAlignment="Center" />
+                 PreviewKeyDown="TextBox_PreviewKeyDown"
+                 VerticalContentAlignment="Center" />
     </DockPanel>
 </UserControl>

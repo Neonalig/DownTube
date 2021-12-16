@@ -3,6 +3,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:pages="clr-namespace:DownTube.Views.Pages"
       xmlns:controls="clr-namespace:DownTube.Views.Controls"
       mc:Ignorable="d"
       FontFamily="AtkinsonHyperlegible"
@@ -19,8 +20,61 @@
         <TextBlock Grid.Row="0"
                    FontSize="20"
                    Text="Settings" />
-        <controls:FolderPicker Grid.Row="1"
-                               Height="40"
-                               MustExist="True" />
+        <ListView Background="Transparent"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  VerticalAlignment="Stretch"
+                  Grid.Row="1">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"
+                                IsItemsHost="True" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}">
+                    <Setter Property="Focusable" Value="False"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected"
+                                 Value="True">
+                            <Setter Property="Background"
+                                    Value="{x:Null}" />
+                            <Setter Property="BorderBrush"
+                                    Value="{x:Null}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate DataType="{x:Type pages:SettingsField}">
+                    <Grid Height="40">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}"
+                                   ToolTip="{Binding ToolTip}"
+                                   Grid.Column="0"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontSize="16" />
+                        <ContentPresenter Content="{Binding Content}"
+                                          Grid.Column="1" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Items>
+                <pages:SettingsField Name="FFmpeg Path: "
+                                     ToolTip="The path to the ffmpeg.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field.">
+                    <pages:SettingsField.Content>
+                        <controls:FolderPicker />
+                    </pages:SettingsField.Content>
+                </pages:SettingsField>
+                <pages:SettingsField Name="YoutubeDL Path: ">
+                    <pages:SettingsField.Content>
+                        <controls:FolderPicker />
+                    </pages:SettingsField.Content>
+                </pages:SettingsField>
+            </ListView.Items>
+        </ListView>
     </SelectiveScrollingGrid>
 </Page>
