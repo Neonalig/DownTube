@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using DownTube.Converters;
@@ -64,6 +65,7 @@ public static class UpdateChecker {
             Debug.WriteLine($"Current version is {Current}");
 
             Repository Repo = await Client.Repository.Get("starflash-studios", "DownTube");
+            RepoUrl = Repo.HtmlUrl;
             Debug.WriteLine($"Repo is {Repo}");
             Release Latest = await Client.Repository.Release.GetLatest(Repo.Id);
             Debug.WriteLine($"Release is {Latest}");
@@ -188,6 +190,26 @@ public static class UpdateChecker {
     public static Release? LatestRelease {
         get => _LatestRelease;
         private set => ChangeProperty(ref _LatestRelease, value);
+    }
+
+    #endregion
+
+    #region RepoUrl
+
+    /// <summary>
+    /// The repository's URL
+    /// </summary>
+    static string _RepoUrl = string.Empty;
+
+    /// <summary>
+    /// Gets the URL for the repository.
+    /// </summary>
+    /// <value>
+    /// The repository's URL.
+    /// </value>
+    public static string RepoUrl {
+        get => _RepoUrl;
+        private set => ChangeProperty(ref _RepoUrl, value);
     }
 
     #endregion

@@ -3,10 +3,20 @@ using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 
+using DownTube.DataTypes.Helpers;
+
+using Octokit;
+
 using ReactiveUI;
 
 namespace DownTube.DataTypes.Common;
 
+/// <summary>
+/// Represents a request to download a file from the internet.
+/// </summary>
+/// <seealso cref="ReactiveObject" />
+[SuppressMessage("ReSharper", "ExceptionNotDocumented")]
+[SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
 public class DownloadRequest : ReactiveObject {
 
     #region Static Properties
@@ -145,17 +155,18 @@ public class DownloadRequest : ReactiveObject {
     #region Public Methods
 
     /// <summary>
-    /// Starts the download.
+    /// Starts the download in a new thread.
     /// </summary>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public void Start() => Task.Run(async () => await DownloadFileInternalAsync(), TokenSource.Token);
+
+    /// <summary>
+    /// Asynchronously starts the download in the current thread.
+    /// </summary>
+    public async Task StartAsync() => await DownloadFileInternalAsync();
 
     /// <summary>
     /// Cancels the download.
     /// </summary>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public void Cancel() {
         TokenSource.Cancel();
         Destination.Delete();
@@ -269,9 +280,26 @@ public class DownloadRequest : ReactiveObject {
     /// <param name="Url">The URL to the file.</param>
     /// <param name="Dest">The destination file path.</param>
     /// <param name="Buffer">The memory download buffer.</param>
+    /// <param name="DownloadStarted">Raised when the download is started.</param>
+    /// <param name="ProgressUpdated">Raised when the download progress updates.</param>
+    /// <param name="DownloadComplete">Raised when the download completes.</param>
     /// <param name="Token">The cancellation token.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    public static async Task DownloadFileAsync( string Url, FileInfo Dest, Memory<byte> Buffer, DownloadStartedEventArgs DownloadStarted, ProgressUpdatedEventArgs ProgressUpdated, DownloadCompleteEventArgs DownloadComplete, CancellationTokenSource? Token = null ) {
+        DownloadRequest Req = new DownloadRequest(Url, Dest, Token ?? new CancellationTokenSource()) {
+            DownloadStarted = DownloadStarted,
+            ProgressUpdated = ProgressUpdated,
+            DownloadComplete = DownloadComplete
+        };
+        await Req.StartAsync();
+    }
+
+    /// <summary>
+    /// Asynchronously downloads a file.
+    /// </summary>
+    /// <param name="Url">The URL to the file.</param>
+    /// <param name="Dest">The destination file path.</param>
+    /// <param name="Buffer">The memory download buffer.</param>
+    /// <param name="Token">The cancellation token.</param>
     public static async Task DownloadFileAsync( string Url, FileInfo Dest, Memory<byte> Buffer, CancellationToken Token = default ) {
         HttpResponseMessage Msg = await DownloadClient.GetAsync(Url, Token);
 
@@ -290,6 +318,38 @@ public class DownloadRequest : ReactiveObject {
                     await FS.WriteAsync(Remainder, Token);
                 }
             }
+        }
+    }
+
+    public static async Task DownloadRelease( Release Release, DirectoryInfo Destination, DownloadStartedEventArgs DownloadStarted, ProgressUpdatedEventArgs ProgressUpdated, DownloadCompleteEventArgs DownloadComplete, int BufferSize = 16384, bool CreateSubdirectory = false, CancellationTokenSource? Token = null ) {
+        Token ??= new CancellationTokenSource();
+
+        //Search through all assets for the '*.zip' file and assume the first is what we want.
+        foreach ( ReleaseAsset Asset in Release.Assets ) {
+            string AN = Asset.Name;
+            if ( !AN.ToLowerInvariant().EndsWith(".zip") ) { continue; }
+
+            //Create a pointer file such as {Destination}\{Asset.Name} (i.e. C:\Users\Release.zip)
+            FileInfo FileDest = Destination.CreateSubfile(AN, false);
+            //Also create the subdirectory if requested (with the same name as the asset, but without the extension at the end)
+            if ( CreateSubdirectory ) {
+                Destination = Destination.CreateSubdirectory(Path.GetFileNameWithoutExtension(AN));
+            }
+
+            //Download the asset to the pointer file
+            string DownloadUrl = Asset.BrowserDownloadUrl;
+            Memory<byte> Buffer = new byte[BufferSize];
+            await DownloadFileAsync(DownloadUrl, FileDest, Buffer, DownloadStarted, ProgressUpdated, DownloadComplete, Token);
+
+            //Once downloaded, extract the archive to {Destination}
+            //We don't need to create a subdirectory if requested as that was already done prior
+            FileDest.Extract(false);
+
+            //Delete the original .zip file
+            FileDest.Delete();
+
+            //Profit :D
+            break;
         }
     }
 

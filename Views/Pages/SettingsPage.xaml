@@ -12,12 +12,13 @@
       d:DesignHeight="388"
       d:DesignWidth="635"
       Style="{StaticResource UiPageScrollable}"
-      Title="Settings">
+      Title="Settings"
+      d:DataContext="{x:Type pages:SettingsPage_ViewModel}">
     <Page.Resources>
         <common:StaticBindings x:Key="StatInfo"/>
         <converters:VersionToStringConverter x:Key="VerToStringConv" />
     </Page.Resources>
-    <SelectiveScrollingGrid Margin="0,0,0,12" d:Margin="0,0,0,0">
+    <SelectiveScrollingGrid Margin="0,0,0,0" d:Margin="0,0,0,0">
         <SelectiveScrollingGrid.RowDefinitions>
             <RowDefinition Height="30"/>
             <RowDefinition />
@@ -63,28 +64,37 @@
                 </pages:SettingsField>
             </ItemsControl.Items>
         </ItemsControl>
-        <SelectiveScrollingGrid Grid.Row="2" Background="{DynamicResource AccentFillColorDefaultBrush}">
-            <SelectiveScrollingGrid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </SelectiveScrollingGrid.ColumnDefinitions>
-            <StackPanel Orientation="Vertical" VerticalAlignment="Center"
-                        Grid.Column="1"
-                        HorizontalAlignment="Center">
-                <TextBlock Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"
-                           HorizontalAlignment="Center" />
-                <TextBlock HorizontalAlignment="Center">
-                    <Hyperlink TextDecorations="None">
-                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
-                    </Hyperlink>
-                </TextBlock>
-                <TextBlock HorizontalAlignment="Center">
-                    <Run Text="©" />
-                    <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" />
-                    <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}"/>
-                </TextBlock>
-            </StackPanel>
-        </SelectiveScrollingGrid>
+        <Border Grid.Row="2"
+                Background="{DynamicResource AccentFillColorDisabledBrush}"
+                CornerRadius="4"
+                Margin="5">
+            <SelectiveScrollingGrid>
+                <SelectiveScrollingGrid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </SelectiveScrollingGrid.ColumnDefinitions>
+                <StackPanel Orientation="Vertical"
+                            VerticalAlignment="Center"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"
+                               HorizontalAlignment="Center" />
+                    <TextBlock HorizontalAlignment="Center">
+                        <Hyperlink TextDecorations="None"
+                                   Click="CurrentVersion_Click"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
+                        </Hyperlink>
+                    </TextBlock>
+                    <TextBlock HorizontalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                        <Run Text="©" />
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" />
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}"/>
+                    </TextBlock>
+                </StackPanel>
+            </SelectiveScrollingGrid>
+        </Border>
     </SelectiveScrollingGrid>
 </Page>
