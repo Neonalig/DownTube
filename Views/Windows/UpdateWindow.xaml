@@ -129,21 +129,25 @@
                 </SelectiveScrollingGrid>
             </SelectiveScrollingGrid>
 
-
-            <!--  Dialogue is above all controls except the navigation buttons. So it covers all the content, but allows you to close or move the application.  -->
-            <controls:Dialog x:Name="RootDialog"
+            <controls:Dialog x:Name="UpdateDialog"
                              Grid.Row="0"
                              Grid.RowSpan="2"
-                             DialogHeight="220"
-                             Show="True"
+                             DialogHeight="255"
+                             Show="{Binding UpdateDialogVisible}"
+                             d:Show="True"
                              Click="ManualInstall_OnClick"
                              ButtonLeftAppearance="Secondary"
                              ButtonLeftName="Open GitHub"
                              ButtonRightClick="AutomaticInstall_OnClick"
                              ButtonRightAppearance="Primary"
                              ButtonRightName="Automatic Install">
-                <Grid>
+                <Grid Width="360">
                     <StackPanel>
+                        <StackPanel.Resources>
+                            <windows:InstallProgressToIntermediateConverter x:Key="ProgToInterConv"/>
+                            <windows:InstallProgressToVisibilityConverter x:Key="ProgToVisConv"/>
+                            <windows:InstallProgressToStringConverter x:Key="ProgToTxtConv"/>
+                        </StackPanel.Resources>
                         <TextBlock FontWeight="Medium"
                                    Text="INSTALL UPDATE"
                                    Margin="0,0,0,10"/>
@@ -153,6 +157,21 @@
                             <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"/>
                             <Run Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update."/>
                         </TextBlock>
+                        <Grid Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
+                              Margin="0,10,0,0"
+                              Height="20">
+                            <ProgressBar Minimum="0"
+                                         SmallChange="0.01"
+                                         Maximum="1"
+                                         Height="20"
+                                         Value="{Binding InstallProgress, Mode=OneWay}"
+                                         IsIndeterminate="{Binding InstallProgress, Converter={StaticResource ProgToInterConv}, Mode=OneWay}" />
+                            <Label Padding="0"
+                                   Content="{Binding InstallProgress, Converter={StaticResource ProgToTxtConv}, Mode=OneWay}"
+                                   d:Content="32.46%"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                        </Grid>
                     </StackPanel>
                 </Grid>
             </controls:Dialog>

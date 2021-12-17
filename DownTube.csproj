@@ -21,12 +21,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Updater\**" />
     <Compile Remove="wpfui\**" />
     <Compile Remove="_Git\**" />
+    <EmbeddedResource Remove="Updater\**" />
     <EmbeddedResource Remove="wpfui\**" />
     <EmbeddedResource Remove="_Git\**" />
+    <None Remove="Updater\**" />
     <None Remove="wpfui\**" />
     <None Remove="_Git\**" />
+    <Page Remove="Updater\**" />
     <Page Remove="wpfui\**" />
     <Page Remove="_Git\**" />
   </ItemGroup>
