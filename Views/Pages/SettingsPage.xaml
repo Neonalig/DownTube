@@ -78,9 +78,13 @@
                             VerticalAlignment="Center"
                             Grid.Column="1"
                             HorizontalAlignment="Center">
-                    <TextBlock Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"
-                               HorizontalAlignment="Center" />
                     <TextBlock HorizontalAlignment="Center">
+                        <Hyperlink TextDecorations="None"
+                                   Click="MainRepo_Click"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
+                        </Hyperlink>
+                        <Run Text="-" />
                         <Hyperlink TextDecorations="None"
                                    Click="CurrentVersion_Click"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using DownTube.Converters;
@@ -153,6 +152,18 @@ public static class UpdateChecker {
 
     #endregion
 
+    #region CurrentReleaseUrl
+
+    /// <summary>
+    /// Gets the current version.
+    /// </summary>
+    /// <value>
+    /// The current version.
+    /// </value>
+    public static Version CurrentVersion => StaticBindings.AppVersion;
+
+    #endregion
+
     #region LatestVersion
 
     /// <summary>
@@ -175,7 +186,6 @@ public static class UpdateChecker {
 
     #region LatestRelease
 
-
     /// <summary>
     /// The latest release.
     /// </summary>
@@ -194,12 +204,32 @@ public static class UpdateChecker {
 
     #endregion
 
+    #region CurrentRelease
+
+    /// <summary>
+    /// The current release.
+    /// </summary>
+    static Release? _CurrentRelease;
+
+    /// <summary>
+    /// Gets the current release.
+    /// </summary>
+    /// <value>
+    /// The current release.
+    /// </value>
+    public static Release? CurrentRelease {
+        get => _CurrentRelease;
+        private set => ChangeProperty(ref _CurrentRelease, value);
+    }
+
+    #endregion
+
     #region RepoUrl
 
     /// <summary>
     /// The repository's URL
     /// </summary>
-    static string _RepoUrl = string.Empty;
+    static string? _RepoUrl = null;
 
     /// <summary>
     /// Gets the URL for the repository.
@@ -207,7 +237,7 @@ public static class UpdateChecker {
     /// <value>
     /// The repository's URL.
     /// </value>
-    public static string RepoUrl {
+    public static string? RepoUrl {
         get => _RepoUrl;
         private set => ChangeProperty(ref _RepoUrl, value);
     }
@@ -215,6 +245,20 @@ public static class UpdateChecker {
     #endregion
 
     #endregion
+
+    /// <summary>
+    /// Initialises the <see cref="UpdateChecker"/> class.
+    /// </summary>
+    static UpdateChecker() {
+        Task.Run(async () => await InitAsync());
+    }
+
+    /// <summary>
+    /// Runs asynchronous initialisation methods.
+    /// </summary>
+    static async Task InitAsync() {
+        CurrentRelease = await Client.Repository.Release.Get("starflash-studios", "DownTube", $"v{CurrentVersion.ToString(3)}");
+    }
 
 }
 

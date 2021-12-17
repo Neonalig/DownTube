@@ -41,19 +41,32 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void CurrentVersion_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.GitHubRepo) { UseShellExecute = true });
+    void MainRepo_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.RepoUrl) { UseShellExecute = true });
+
+    /// <summary>
+    /// Occurs when the Click <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void CurrentVersion_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.CurrentReleaseUrl) { UseShellExecute = true });
 }
 
 public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
     public SettingsPage_ViewModel() {
-        GitHubRepo = "https://github.com/starflash-studios/DownTube"; //<-- fallback URL which is properly resolved after checking for updates.
+        RepoUrl = UpdateChecker.RepoUrl ?? "https://github.com/starflash-studios/DownTube"; //<-- fallback
+        CurrentReleaseUrl = UpdateChecker.CurrentRelease?.HtmlUrl ?? "https://github.com/starflash-studios/DownTube/releases/tag/v0.2.0"; //<-- fallback
+        //fallback URLs (above) are dynamically resolved at runtime after checking for updates, and are only used for the interim period before the initial check for updates, or if any error occurs during the update checking.
         UpdateChecker.StaticPropertyChanged += ( _, _, PropertyName ) => {
             Debug.WriteLine($"Prop changed {PropertyName}");
             // ReSharper disable once ConvertSwitchStatementToSwitchExpression
             switch ( PropertyName ) {
-                case nameof(UpdateChecker.RepoUrl):
+                case nameof(UpdateChecker.RepoUrl) when UpdateChecker.RepoUrl is { } RepU:
                     Debug.WriteLine($"Updating repo url to: {UpdateChecker.RepoUrl}");
-                    GitHubRepo = UpdateChecker.RepoUrl;
+                    RepoUrl = RepU;
+                    break;
+                case nameof(UpdateChecker.CurrentRelease) when UpdateChecker.CurrentRelease is { } CurR:
+                    Debug.WriteLine($"Updating current release url to: {CurR.HtmlUrl}");
+                    CurrentReleaseUrl = CurR.HtmlUrl!;
                     break;
             }
         };
@@ -65,7 +78,15 @@ public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
     /// <value>
     /// The GitHub repository's <c>HtmlUrl</c>.
     /// </value>
-    public string GitHubRepo { get; private set; }
+    public string RepoUrl { get; private set; }
+
+    /// <summary>
+    /// Gets the current version's release URL.
+    /// </summary>
+    /// <value>
+    /// The current version's release URL.
+    /// </value>
+    public string CurrentReleaseUrl { get; private set; }
 }
 
 /// <summary>
