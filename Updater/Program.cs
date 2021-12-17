@@ -1,13 +1,11 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 
 static DirectoryInfo GetSub( DirectoryInfo Parent, string Child ) => new DirectoryInfo(Path.Combine(Parent.FullName, Child));
 static FileInfo GetSubFile( DirectoryInfo Parent, string Child ) => new FileInfo(Path.Combine(Parent.FullName, Child));
 
-FileInfo App = new FileInfo(Assembly.GetExecutingAssembly().Location); // expect .../DownTube/Updater/updater.exe
 DirectoryInfo
-    AppDir = App.Directory!,  // expect .../DownTube/Updater
+    AppDir = new DirectoryInfo(AppContext.BaseDirectory),  // expect .../DownTube/Updater
     MainDir = AppDir.Parent!, // expect .../DownTube
     ExDir = GetSub(AppDir, "_Update"); // expect .../DownTube/Updater/_Update/*.*
 
