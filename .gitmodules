@@ -1,3 +1,6 @@
 [submodule "wpfui"]
 	path = wpfui
 	url = https://github.com/starflash-studios/wpfui
+[submodule "Updater"]
+	path = Updater
+	url = https://github.com/starflash-studios/DownTube-Updater
