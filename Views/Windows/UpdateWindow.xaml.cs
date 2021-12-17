@@ -8,6 +8,8 @@ using DownTube.Engine;
 
 using MVVMUtils;
 
+using Octokit;
+
 namespace DownTube.Views.Windows;
 
 /// <summary>
@@ -27,19 +29,31 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     public UpdateWindow_ViewModel VM { get; }
 
     /// <summary>
-    /// Occurs when the OnClick <see langword="event"/> is raised.
+    /// Checks if the updater already exists, and downloads it if not.
     /// </summary>
-    /// <param name="Sender">The source of the <see langword="event"/>.</param>
-    /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    async void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
-        //TODO: Determine if Updater/updater.exe exists, and download it if not.
-        VM.InstallProgress = -1;
-        if ( UpdateChecker.LatestRelease is null ) { return; }
-        DirectoryInfo UpdateDest = FileSystemInfoExtensions.AppDir.CreateSubdirectory("Updater").CreateSubdirectory("_Update");
-        CancellationTokenSource CTS = new CancellationTokenSource();
+    async Task DownloadUpdater( DirectoryInfo UpdaterDest, CancellationTokenSource CTS ) {
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach ( FileInfo Fl in UpdaterDest.GetFiles() ) {
+            if (Fl.Name.Equals("updater.exe", StringComparison.InvariantCultureIgnoreCase) ) {
+                return;
+            }
+        }
+
+        if ( await UpdateChecker.Client.Repository.Release.GetLatest("starflash-studios", "DownTube-Updater") is { } UpdaterRelease ) {
+            await Download(UpdaterRelease, UpdaterDest, CTS);
+        }
+    }
+
+    /// <summary>
+    /// Downloads the specified release.
+    /// </summary>
+    /// <param name="Release">The release.</param>
+    /// <param name="Destination">The destination.</param>
+    /// <param name="CTS">The cancellation token.</param>
+    async Task Download( Release Release, DirectoryInfo Destination, CancellationTokenSource CTS ) {
         await DownloadRequest.DownloadRelease(
-            Release: UpdateChecker.LatestRelease,
-            Destination: UpdateDest,
+            Release: Release,
+            Destination: Destination,
             DownloadStarted: _ => {
                 Debug.WriteLine("Download started.");
             },
@@ -60,7 +74,32 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
             CreateSubdirectory: false,
             Token: CTS);
         VM.InstallProgress = 1;
-        //TODO: Run Updater/updater.exe
+    }
+
+    /// <summary>
+    /// Occurs when the OnClick <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    async void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
+        VM.InstallProgress = -1;
+        if ( UpdateChecker.LatestRelease is null ) { return; }
+
+        DirectoryInfo
+            UpdaterDest = FileSystemInfoExtensions.AppDir.CreateSubdirectory("Updater"),
+            ExtractedUpdateDest = UpdaterDest.CreateSubdirectory("_Update");
+        CancellationTokenSource CTS = new CancellationTokenSource();
+        await DownloadUpdater(UpdaterDest, CTS);
+        await Download(UpdateChecker.LatestRelease, ExtractedUpdateDest, CTS);
+        VM.InstallProgress = -1;
+        FileInfo Updater = UpdaterDest.CreateSubfile("updater.exe", false);
+        if ( Updater.Exists
+             && Process.Start(new ProcessStartInfo(Updater.FullName) {
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }) is { } UpdateProcess ) {
+            await UpdateProcess.WaitForExitAsync(CTS.Token);
+        }
     }
 
     /// <summary>
@@ -74,6 +113,27 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
             VM.UpdateDialogVisible = false;
         }
     }
+
+    void SkipVersionButton_Click( object Sender, RoutedEventArgs E ) {
+        //TODO: IgnoredVersions as Props, CustomProp method (type is just (de/)serialised to a json string)
+    }
+
+    /// <summary>
+    /// Occurs when the Click <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void NotifyLaterButton_Click( object Sender, RoutedEventArgs E ) {
+        MainWindow.Instance.Show();
+        Close();
+    }
+
+    /// <summary>
+    /// Occurs when the Click <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void InstallNowButton_Click( object Sender, RoutedEventArgs E ) => VM.UpdateDialogVisible = true;
 }
 
 public class UpdateWindow_ViewModel : Window_ViewModel<UpdateWindow> {
@@ -95,7 +155,7 @@ public class UpdateWindow_ViewModel : Window_ViewModel<UpdateWindow> {
     /// <value>
     /// <see langword="true" /> if the update dialog is visible; otherwise, <see langword="false" />.
     /// </value>
-    public bool UpdateDialogVisible { get; set; } = true;
+    public bool UpdateDialogVisible { get; set; }
 
     /// <summary>
     /// Gets or sets the current automatic installation progress.
@@ -147,4 +207,59 @@ public class InstallProgressToStringConverter : ValueConverter<double, string> {
 
     /// <inheritdoc />
     public override double Reverse( string To, object? Parameter = null, CultureInfo? Culture = null ) => 0d;
+}
+
+/// <summary>
+/// A collection of ignored update versions.
+/// </summary>
+public class IgnoredVersions : ICollection<Version> {
+
+    /// <summary>
+    /// The collection of ignored versions.
+    /// </summary>
+    readonly HashSet<Version> _Ignored = new HashSet<Version>();
+
+    /// <inheritdoc />
+    public IEnumerator<Version> GetEnumerator() => _Ignored.GetEnumerator();
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>
+    /// The current version. All ignored versions below <see cref="Current"/> are irrelevant.
+    /// </summary>
+    public static readonly Version Current = UpdateChecker.CurrentVersion;
+
+    /// <inheritdoc />
+    /// <remarks>Only versions greater than <see cref="Current"/> will be added, as those below it are irrelevant.</remarks>
+    public void Add( Version Item ) {
+        if ( Item > Current ) {
+            _Ignored.Add(Item);
+        }
+    }
+
+    /// <inheritdoc />
+    public void Clear() => _Ignored.Clear();
+
+    /// <summary>
+    /// Whether the version should be ignored.
+    /// </summary>
+    /// <param name="Version">The version.</param>
+    /// <returns><see langword="true"/> if <paramref name="Version"/> is &lt;= <see cref="Current"/> or if the collection of ignored versions contains it.</returns>
+    public bool ShouldIgnore( Version Version ) => Version <= Current || _Ignored.Contains(Version);
+
+    /// <inheritdoc />
+    public bool Contains( Version Item ) => _Ignored.Contains(Item);
+
+    /// <inheritdoc />
+    public void CopyTo( Version[] Array, int ArrayIndex ) => _Ignored.CopyTo(Array, ArrayIndex);
+
+    /// <inheritdoc />
+    public bool Remove( Version Item ) => _Ignored.Remove(Item);
+
+    /// <inheritdoc />
+    public int Count => _Ignored.Count;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => false;
 }

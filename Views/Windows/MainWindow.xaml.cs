@@ -11,8 +11,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
 using DownTube.Engine;
@@ -23,8 +21,6 @@ using MVVMUtils;
 using WPFUI.Background;
 using WPFUI.Common;
 using WPFUI.Controls;
-
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 using Icon = WPFUI.Common.Icon;
 
@@ -37,6 +33,11 @@ namespace DownTube.Views.Windows;
 /// </summary>
 public partial class MainWindow : IView<MainWindow_ViewModel> {
     //const string assetsPath = "pack://application:,,,/Assets/";
+
+    /// <summary>
+    /// The singleton instance.
+    /// </summary>
+    public static MainWindow Instance { get; private set; } = null!;
 
     /// <summary>
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
@@ -64,6 +65,8 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         InitialiseNavigation();
 
         VM.Setup(this);
+
+        Instance = this;
 
         UpdateChecker.CheckForUpdates(Res => {
             if ( Res.HasUpdate ) {

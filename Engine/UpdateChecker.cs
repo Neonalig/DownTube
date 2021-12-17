@@ -65,7 +65,7 @@ public static class UpdateChecker {
 
             Repository Repo = await Client.Repository.Get("starflash-studios", "DownTube");
             RepoUrl = Repo.HtmlUrl;
-            Debug.WriteLine($"Repo is {Repo}");
+            Debug.WriteLine($"Repo is {Repo.FullName}");
             Release Latest = await Client.Repository.Release.GetLatest(Repo.Id);
             Debug.WriteLine($"Release is {Latest}");
             Version? V = _VerToStr.Reverse(Latest.TagName);

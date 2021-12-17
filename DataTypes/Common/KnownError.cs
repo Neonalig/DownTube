@@ -85,19 +85,19 @@ public sealed class KnownError : SmartEnum<KnownError> {
     /// <returns>A dynamic <see cref="UnexpectedType"/> variant.</returns>
     public static KnownError GetUnexpectedTypeError( string ObjName, Type ActualType, Type WantedType ) => new KnownError(nameof(UnexpectedType), 0x0006, $"{ObjName} ({ActualType.GetTypeName()}) was not of the expected type {WantedType.GetTypeName()}.");
 
-    /// <inheritdoc cref="GetUnexpectedTypeError"/>
+    /// <inheritdoc cref="GetUnexpectedTypeError(string, Type, Type)"/>
     /// <param name="Obj">The object.</param>
     /// <param name="WantedType">The expected type.</param>
     /// <param name="ObjName">The name of the object.</param>
     public static KnownError GetUnexpectedTypeError( object Obj, Type WantedType, [CallerArgumentExpression("Obj")] string? ObjName = null ) => GetUnexpectedTypeError(ObjName ?? string.Empty, Obj.GetType(), WantedType);
 
-    /// <inheritdoc cref="GetUnexpectedTypeError"/>
+    /// <inheritdoc cref="GetUnexpectedTypeError(string, Type, Type)"/>
     /// <typeparam name="TWanted">The expected type.</typeparam>
     /// <param name="Obj">The object.</param>
     /// <param name="ObjName">The name of the object.</param>
     public static KnownError GetUnexpectedTypeError<TWanted>( object Obj, [CallerArgumentExpression("Obj")] string? ObjName = null ) => GetUnexpectedTypeError(ObjName ?? string.Empty, Obj.GetType(), typeof(TWanted));
 
-    /// <inheritdoc cref="GetUnexpectedTypeError"/>
+    /// <inheritdoc cref="GetUnexpectedTypeError(string, Type, Type)"/>
     /// <typeparam name="TActual">The (unexpected) type of the actual object.</typeparam>
     /// <typeparam name="TWanted">The expected type.</typeparam>
     /// <param name="Obj">The object.</param>
@@ -105,11 +105,11 @@ public sealed class KnownError : SmartEnum<KnownError> {
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Used in CallerArgumentExpression attribute.")]
     public static KnownError GetUnexpectedTypeError<TActual, TWanted>( TActual Obj, [CallerArgumentExpression("Obj")] string? ObjName = null ) => GetUnexpectedTypeError(ObjName ?? string.Empty, typeof(TActual), typeof(TWanted));
 
-    /// <inheritdoc cref="GetUnexpectedTypeError"/>
+    /// <inheritdoc cref="GetUnexpectedTypeError(string, Type, Type)"/>
     /// <param name="ObjName">The name of the object.</param>
     /// <param name="ActualType">The (unexpected) type of the actual object.</param>
     /// <param name="WantedTypes">The collection of expected types.</param>
-    [ SuppressMessage("ReSharper", "ExceptionNotDocumented")][ SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented")][ SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static KnownError GetUnexpectedTypeError( string ObjName, Type ActualType, Type[] WantedTypes ) {
         StringBuilder SB = new StringBuilder();
         int L = WantedTypes.Length;

@@ -112,18 +112,21 @@
                     <Button Grid.Column="0"
                             Margin="5"
                             Padding="0"
+                            Click="SkipVersionButton_Click"
                             Background="{DynamicResource AccentFillColorDisabledBrush}"
                             Content="Skip this Version"
                             VerticalAlignment="Stretch" />
                     <Button Grid.Column="2"
                             Margin="5"
                             Padding="0"
+                            Click="NotifyLaterButton_Click"
                             Background="{DynamicResource AccentFillColorDisabledBrush}"
                             Content="Remind me later"
                             VerticalAlignment="Stretch" />
                     <Button Grid.Column="3"
                             Margin="5"
                             Padding="0"
+                            Click="InstallNowButton_Click"
                             Content="Install Update"
                             VerticalAlignment="Stretch" />
                 </SelectiveScrollingGrid>
