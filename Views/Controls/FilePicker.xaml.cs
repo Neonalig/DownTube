@@ -35,6 +35,16 @@ public partial class FilePicker : INotifyPropertyChanged {
         InitializeComponent();
         Path = DefaultPath;
         TextPath = Path.FullName;
+        SetGlyph(Glyph, GlyphFilled);
+        PropertyChanged += ( S, E ) => {
+            if ( S is not FilePicker FP ) { return; }
+            switch ( E.PropertyName ) {
+                case nameof(Glyph):
+                case nameof(GlyphFilled):
+                    FP.SetGlyph(Glyph, GlyphFilled);
+                    break;
+            }
+        };
     }
 
     /// <summary>

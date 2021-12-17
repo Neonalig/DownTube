@@ -3,55 +3,41 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:pages="clr-namespace:DownTube.Views.Pages"
       xmlns:controls="clr-namespace:DownTube.Views.Controls"
+      xmlns:pages="clr-namespace:DownTube.Views.Pages"
+      xmlns:common="clr-namespace:DownTube.DataTypes.Common"
+      xmlns:converters="clr-namespace:DownTube.Converters"
       mc:Ignorable="d"
       FontFamily="AtkinsonHyperlegible"
       d:DesignHeight="388"
       d:DesignWidth="635"
       Style="{StaticResource UiPageScrollable}"
       Title="Settings">
+    <Page.Resources>
+        <common:StaticBindings x:Key="StatInfo"/>
+        <converters:VersionToStringConverter x:Key="VerToStringConv" />
+    </Page.Resources>
     <SelectiveScrollingGrid Margin="0,0,0,12" d:Margin="0,0,0,0">
         <SelectiveScrollingGrid.RowDefinitions>
+            <RowDefinition Height="30"/>
             <RowDefinition />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="60"/>
         </SelectiveScrollingGrid.RowDefinitions>
         <TextBlock Grid.Row="0"
                    FontSize="20"
                    Text="Settings" />
-        <ListView Background="Transparent"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                  VerticalAlignment="Stretch"
-                  Grid.Row="1">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"
-                                IsItemsHost="True" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <ListView.ItemContainerStyle>
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="Focusable" Value="False"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsSelected"
-                                 Value="True">
-                            <Setter Property="Background"
-                                    Value="{x:Null}" />
-                            <Setter Property="BorderBrush"
-                                    Value="{x:Null}" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
+        <ItemsControl Grid.Row="1"
+                      HorizontalAlignment="Stretch"
+                      Padding="5">
+            <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type pages:SettingsField}">
-                    <Grid Height="40">
+                    <Grid Height="40"
+                          Margin="0,0,0,5">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding Name}"
+                        <TextBlock Text="{Binding FieldName}"
                                    ToolTip="{Binding ToolTip}"
                                    Grid.Column="0"
                                    HorizontalAlignment="Left"
@@ -61,20 +47,44 @@
                                           Grid.Column="1" />
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-            <ListView.Items>
-                <pages:SettingsField Name="FFmpeg Path: "
+            </ItemsControl.ItemTemplate>
+            <ItemsControl.Items>
+                <pages:SettingsField FieldName="FFmpeg Path: "
                                      ToolTip="The path to the ffmpeg.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field.">
-                    <pages:SettingsField.Content>
-                        <controls:FolderPicker />
-                    </pages:SettingsField.Content>
+                    <controls:FilePicker />
                 </pages:SettingsField>
-                <pages:SettingsField Name="YoutubeDL Path: ">
-                    <pages:SettingsField.Content>
-                        <controls:FolderPicker />
-                    </pages:SettingsField.Content>
+                <pages:SettingsField FieldName="YoutubeDL Path: "
+                                     ToolTip="The path to the youtube-dl.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field.">
+                    <controls:FilePicker />
                 </pages:SettingsField>
-            </ListView.Items>
-        </ListView>
+                <pages:SettingsField FieldName="Output Folder"
+                                     ToolTip="The folder to download videos to.">
+                    <controls:FolderPicker />
+                </pages:SettingsField>
+            </ItemsControl.Items>
+        </ItemsControl>
+        <SelectiveScrollingGrid Grid.Row="2" Background="{DynamicResource AccentFillColorDefaultBrush}">
+            <SelectiveScrollingGrid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </SelectiveScrollingGrid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center"
+                        Grid.Column="1"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"
+                           HorizontalAlignment="Center" />
+                <TextBlock HorizontalAlignment="Center">
+                    <Hyperlink TextDecorations="None">
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock HorizontalAlignment="Center">
+                    <Run Text="©" />
+                    <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" />
+                    <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}"/>
+                </TextBlock>
+            </StackPanel>
+        </SelectiveScrollingGrid>
     </SelectiveScrollingGrid>
 </Page>

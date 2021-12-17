@@ -8,13 +8,13 @@
 
 #region Using Directives
 
-using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 #endregion
 
-namespace DownTube.Views.Pages; 
+namespace DownTube.Views.Pages;
 
 /// <summary>
 /// Interaction logic for SettingsPage.xaml
@@ -28,7 +28,8 @@ public partial class SettingsPage {
 /// <summary>
 /// Represents a named field for the <see cref="SettingsPage"/>.
 /// </summary>
-public class SettingsField {
+[ContentProperty(nameof(Content))]
+public class SettingsField : ReactiveUI.ReactiveObject {
     /// <summary>
     /// Initialises a new instance of the <see cref="SettingsField"/> class.
     /// </summary>
@@ -37,13 +38,13 @@ public class SettingsField {
     /// <summary>
     /// Initialises a new instance of the <see cref="SettingsField"/> class.
     /// </summary>
-    /// <param name="Name">The setting name.</param>
+    /// <param name="FieldName">The setting name.</param>
     /// <param name="ToolTip">The tooltip.</param>
     /// <param name="Content">The displayed content.</param>
-    public SettingsField( string Name, string ToolTip, UIElement Content ) {
-        this.Name = Name;
+    public SettingsField( string FieldName, string ToolTip, UIElement Content ) {
+        this.FieldName = FieldName;
         this.ToolTip = ToolTip;
-        this.Content = Content;
+        _Content = Content;
     }
 
     /// <summary>
@@ -52,7 +53,7 @@ public class SettingsField {
     /// <value>
     /// The setting name.
     /// </value>
-    public string Name { get; set; }
+    public string FieldName { get; set; }
 
     /// <summary>
     /// Gets or sets the tooltip.
@@ -62,11 +63,12 @@ public class SettingsField {
     /// </value>
     public string ToolTip { get; set; }
 
-    /// <summary>
-    /// Gets or sets the displayed content.
-    /// </summary>
-    /// <value>
-    /// The displayed content.
-    /// </value>
-    public UIElement Content { get; set; }
+    /// <summary> The data used to generate the child element. </summary>
+    UIElement _Content;
+
+    /// <summary> Gets or sets the data used to generate the child element. </summary>
+    public UIElement Content {
+        get => _Content;
+        set => this.SetAndRaise(ref _Content, value);
+    }
 }

@@ -1,0 +1,165 @@
+﻿<Window x:Class="DownTube.Views.Windows.UpdateWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:windows="clr-namespace:DownTube.Views.Windows"
+        xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        xmlns:common="clr-namespace:DownTube.DataTypes.Common"
+        xmlns:converters="clr-namespace:DownTube.Converters"
+        mc:Ignorable="d"
+        d:Background="#202020"
+        AllowsTransparency="True"
+        WindowState="Normal"
+        d:WindowState="Normal"
+        WindowStyle="None"
+        Style="{StaticResource UiWindow}"
+        WindowStartupLocation="CenterScreen"
+        Title="Updates are available"
+        Height="450"
+        d:MinHeight="450"
+        d:MaxHeight="450"
+        Width="810"
+        d:MinWidth="810"
+        d:MaxWidth="810"
+        ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance Type=windows:UpdateWindow_ViewModel}">
+    <Window.Resources>
+        <common:StaticBindings x:Key="StatInfo" />
+        <converters:VersionToStringConverter x:Key="VerToStrConv" Major="Display" Minor="Display" Build="Display" Revision="DisplayIfNonZero" Prefix="v" />
+    </Window.Resources>
+    <Border x:Name="MainBorder"
+            CornerRadius="8"
+            Margin="{Binding BorderMargin}"
+            d:Margin="0,0,7,7"
+            BorderThickness="{Binding BorderThickness}"
+            d:BorderThickness="1"
+            Effect="{Binding BorderEffect}">
+        <SelectiveScrollingGrid>
+            <SelectiveScrollingGrid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </SelectiveScrollingGrid.RowDefinitions>
+            <SelectiveScrollingGrid Grid.Row="1">
+                <SelectiveScrollingGrid.RowDefinitions>
+                    <RowDefinition Height="1.5*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="1*"/>
+                </SelectiveScrollingGrid.RowDefinitions>
+                <StackPanel Grid.Row="0"
+                            Orientation="Vertical"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="New Update is Available"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="30"
+                               Margin="0,0,0,10"/>
+                    <TextBlock HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="18"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}">
+                        <Run Text="A new version of" />
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
+                        <Run Text="is available." />
+                    </TextBlock>
+                </StackPanel>
+                <Grid Grid.Row="1" Width="400" Height="100">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Current Version:"
+                               Grid.Row="0"
+                               Grid.Column="0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="{Binding Source={StaticResource StatInfo}, Converter={StaticResource VerToStrConv}, Path=AppVersion}"
+                               Grid.Row="1"
+                               Grid.Column="0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="32"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <controls:Icon Glyph="ArrowRight48" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" FontSize="40" />
+                    <TextBlock Text="New Version:"
+                               Grid.Row="0"
+                               Grid.Column="2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="18" />
+                    <TextBlock Text="{Binding LatestVersion, Converter={StaticResource VerToStrConv}}"
+                               d:Text="v0.1.1"
+                               Grid.Row="1"
+                               Grid.Column="2"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="35" />
+                </Grid>
+                <SelectiveScrollingGrid Grid.Row="2" Height="50" VerticalAlignment="Bottom">
+                    <SelectiveScrollingGrid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </SelectiveScrollingGrid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Margin="5"
+                            Padding="0"
+                            Background="{DynamicResource AccentFillColorDisabledBrush}"
+                            Content="Skip this Version"
+                            VerticalAlignment="Stretch" />
+                    <Button Grid.Column="2"
+                            Margin="5"
+                            Padding="0"
+                            Background="{DynamicResource AccentFillColorDisabledBrush}"
+                            Content="Remind me later"
+                            VerticalAlignment="Stretch" />
+                    <Button Grid.Column="3"
+                            Margin="5"
+                            Padding="0"
+                            Content="Install Update"
+                            VerticalAlignment="Stretch" />
+                </SelectiveScrollingGrid>
+            </SelectiveScrollingGrid>
+
+
+            <!--  Dialogue is above all controls except the navigation buttons. So it covers all the content, but allows you to close or move the application.  -->
+            <controls:Dialog x:Name="RootDialog"
+                             Grid.Row="0"
+                             Grid.RowSpan="2"
+                             DialogHeight="220"
+                             Show="True"
+                             Click="ManualInstall_OnClick"
+                             ButtonLeftAppearance="Secondary"
+                             ButtonLeftName="Open GitHub"
+                             ButtonRightClick="AutomaticInstall_OnClick"
+                             ButtonRightAppearance="Primary"
+                             ButtonRightName="Automatic Install">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock FontWeight="Medium"
+                                   Text="INSTALL UPDATE"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   TextAlignment="Justify"
+                                   TextWrapping="WrapWithOverflow">
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"/>
+                            <Run Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update."/>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </controls:Dialog>
+            <controls:TitleBar Grid.Row="0"
+                               ApplicationNavigation="True"
+                               ShowMaximize="False"
+                               ShowMinimize="False"/>
+        </SelectiveScrollingGrid>
+    </Border>
+</Window>

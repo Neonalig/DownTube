@@ -16,6 +16,8 @@ using System.Windows;
 
 using DownTube.DataTypes;
 
+using ReactiveUI;
+
 #endregion
 
 namespace DownTube.Extensions;
@@ -23,22 +25,20 @@ namespace DownTube.Extensions;
 /// <summary>
 /// Extension methods and shorthand for <see cref="DependencyObject"/> and <see cref="DependencyProperty"/>.
 /// </summary>
+[SuppressMessage("ReSharper", "ExceptionNotDocumented")]
+[SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
 public static class DependencyExtensions {
 
     /// <inheritdoc cref="DependencyObject.GetValue(DependencyProperty)"/>
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="DepObj">The dependency object to get the property from.</param>
     /// <param name="Prop">The dependency property to get the value from.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static T GetVal<T>( this DependencyObject DepObj, DependencyProperty Prop ) => (T)DepObj.GetValue(Prop);
 
     /// <inheritdoc cref="DependencyObject.GetValue(DependencyProperty)"/>
     /// <typeparam name="T">The value type.</typeparam>
     /// <param name="DepObj">The dependency object to get the property from.</param>
     /// <param name="PropKey">The dependency property to get the value from.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static T GetVal<T>( this DependencyObject DepObj, DependencyPropertyKey PropKey ) => (T)DepObj.GetValue(PropKey.DependencyProperty);
 
     /// <inheritdoc cref="DependencyObject.SetValue(DependencyProperty, object)"/>
@@ -46,7 +46,6 @@ public static class DependencyExtensions {
     /// <param name="DepObj">The dependency object to get the property from.</param>
     /// <param name="Prop">The dependency property to set the value on.</param>
     /// <param name="Value">The value to set the property to.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static void SetVal<T>( this DependencyObject DepObj, DependencyProperty Prop, T Value ) => DepObj.SetValue(Prop, Value);
 
     /// <inheritdoc cref="DependencyObject.SetValue(DependencyProperty, object)"/>
@@ -54,7 +53,6 @@ public static class DependencyExtensions {
     /// <param name="DepObj">The dependency object to get the property from.</param>
     /// <param name="PropKey">The dependency property to set the value on.</param>
     /// <param name="Value">The value to set the property to.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static void SetVal<T>( this DependencyObject DepObj, DependencyPropertyKey PropKey, T Value ) => DepObj.SetValue(PropKey, Value);
 
     /// <summary>
@@ -62,7 +60,6 @@ public static class DependencyExtensions {
     /// </summary>
     /// <param name="NotifyAndRaise">The object to raise the <see langword="event"/> on.</param>
     /// <param name="PropertyName">The name of the property.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     public static Result InvokeOnPropertyChanged( this INotifyAndRaisePropertyChanged NotifyAndRaise, [CallerMemberName] string? PropertyName = null ) {
         PropertyName.CatchNull();
         NotifyAndRaise.OnPropertyChanged(PropertyName);
@@ -74,7 +71,6 @@ public static class DependencyExtensions {
     /// </summary>
     /// <param name="Notify">The object to raise the <see langword="event"/> on.</param>
     /// <param name="PropertyName">The name of the property.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     public static Result InvokeOnPropertyChanged( this INotifyPropertyChanged Notify, [CallerMemberName] string? PropertyName = null ) {
         PropertyName.CatchNull();
         return Notify.Raise(nameof(INotifyPropertyChanged.PropertyChanged), new PropertyChangedEventArgs(PropertyName));
@@ -85,8 +81,64 @@ public static class DependencyExtensions {
     /// </summary>
     /// <param name="DepObj">The dependency object to raise the <see langword="event"/> on.</param>
     /// <param name="E">The property changed event arguments.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     public static Result InvokeOnPropertyChanged( this DependencyObject DepObj, DependencyPropertyChangedEventArgs E ) => DepObj.Raise("NotifyPropertyChange", E);
+
+    /// <summary>
+    /// Invokes the <see cref="ReactiveObject"/><c>.RaisePropertyChanged</c> method.
+    /// </summary>
+    /// <param name="ReacObj">The reactive object to raise the <see langword="event"/> on.</param>
+    /// <param name="PropertyName">The name of the changed property.</param>
+    public static void InvokeOnPropertyChanged( this ReactiveObject ReacObj, [CallerMemberName] string? PropertyName = null ) => ReacObj.RaisePropertyChanged(PropertyName);
+
+    /// <summary>
+    /// Sets the value to the new value if changed, and invokes the <see cref="INotifyAndRaisePropertyChanged.PropertyChanged"/> method.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="NotifyAndRaise">The object to raise the <see langword="event"/> on.</param>
+    /// <param name="Value">The value to change.</param>
+    /// <param name="NewValue">The new value to set.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    public static void SetAndRaise<T>( this INotifyAndRaisePropertyChanged NotifyAndRaise, [NotNullIfNotNull("NewValue")] ref T? Value, T? NewValue, [CallerMemberName] string? PropertyName = null ) {
+        PropertyName.CatchNull();
+        if ( Value is null ? NewValue is not null : NewValue is null | !Value.Equals(NewValue) ) {
+            Value = NewValue;
+            NotifyAndRaise.OnPropertyChanged(PropertyName);
+        }
+    }
+
+    /// <summary>
+    /// Sets the value to the new value if changed, and invokes the <see cref="INotifyPropertyChanged.PropertyChanged"/> method.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="Notify">The object to raise the <see langword="event"/> on.</param>
+    /// <param name="Value">The value to change.</param>
+    /// <param name="NewValue">The new value to set.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    public static Result SetAndRaise<T>( this INotifyPropertyChanged Notify, [NotNullIfNotNull("NewValue")] ref T? Value, T? NewValue, [CallerMemberName] string? PropertyName = null ) {
+        PropertyName.CatchNull();
+        if ( Value is null ? NewValue is not null : NewValue is null | !Value.Equals(NewValue) ) {
+            Value = NewValue;
+            return Notify.Raise(nameof(INotifyPropertyChanged.PropertyChanged), new PropertyChangedEventArgs(PropertyName));
+        }
+        return Result.Success; //No value change is still a success
+    }
+
+    /// <summary>
+    /// Sets the value to the new value if changed, and invokes the <see cref="ReactiveObject.PropertyChanged"/> and <see cref="ReactiveObject.PropertyChanging"/> methods.
+    /// </summary>
+    /// <typeparam name="T">The value type.</typeparam>
+    /// <param name="ReacObj">The reactive object to raise the <see langword="event"/> on.</param>
+    /// <param name="Value">The value to change.</param>
+    /// <param name="NewValue">The new value to set.</param>
+    /// <param name="PropertyName">The name of the changed property.</param>
+    public static void SetAndRaise<T>( this ReactiveObject ReacObj, ref T Value, T NewValue, [CallerMemberName] string? PropertyName = null ) {
+        PropertyName.CatchNull();
+        if ( Value is null ? NewValue is not null : NewValue is null | !Value.Equals(NewValue) ) {
+            ReacObj.RaisePropertyChanging(PropertyName);
+            Value = NewValue;
+            ReacObj.RaisePropertyChanged(PropertyName);
+        }
+    }
 
     /// <summary>
     /// Raises the specified event.
@@ -96,6 +148,7 @@ public static class DependencyExtensions {
     /// <param name="EventName">Name of the event.</param>
     /// <param name="EventArgs">The <see cref="TEventArgs"/> instance containing the event data.</param>
     /// <returns></returns>
+    [SuppressMessage("ReSharper", "CatchAllClause")]
     public static Result Raise<TEventArgs>( this object Source, string EventName, TEventArgs EventArgs ) where TEventArgs : notnull {
         try {
             if ( Source.GetType().GetField(EventName, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(Source) is MulticastDelegate MD ) {
@@ -111,7 +164,6 @@ public static class DependencyExtensions {
                     return Result.Success;
                 } catch ( MemberAccessException MembAccEx) {
                     return MembAccEx;
-                    // ReSharper disable once CatchAllClause
                 } catch ( Exception Ex ) {
                     return Ex;
                 }

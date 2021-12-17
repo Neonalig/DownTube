@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project>
+  <PropertyGroup>
+    <Company>Starflash Studios</Company>
+    <Copyright>Copyright © Starflash Studios 2021</Copyright>
+    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>0.1.0</FileVersion>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>

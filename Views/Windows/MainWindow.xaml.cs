@@ -10,6 +10,7 @@
 
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
@@ -21,6 +22,8 @@ using MVVMUtils;
 using WPFUI.Background;
 using WPFUI.Common;
 using WPFUI.Controls;
+
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrayNotify;
 
 using Icon = WPFUI.Common.Icon;
 
@@ -44,6 +47,12 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         // ReSharper restore ExceptionNotDocumentedOptional
         // ReSharper restore ExceptionNotDocumented
 
+        new UpdateWindow().Show();
+        UpdateChecker.CheckForUpdates( Res => {
+            Debug.WriteLine($"Found updates? ({Res.HasUpdate}): {Res.Current} -> {Res.Newest}");
+            Debug.WriteLine($"Latest: {Res.Release?.Url} // {Res.Release?.UploadUrl}");
+        });
+
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
         };
@@ -63,11 +72,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 
         InitialiseNavigation();
 
-        SolidColorBrush SCB = (SolidColorBrush)Background;
-        MainBorder.Background = SCB.WithA(242);
-        const byte Contrast = 8;
-        MainBorder.BorderBrush = SCB.With(222, (byte)(SCB.Color.R - Contrast), (byte)(SCB.Color.G - Contrast), (byte)(SCB.Color.B - Contrast));
-        Background = new SolidColorBrush(new Color { R = 0, G = 0, B = 0, A = 0 });
+        VM.Setup(this);
     }
 
     /// <summary> Initialises frame navigation in the window. </summary>
@@ -125,80 +130,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 /// <summary>
 /// The viewmodel for <see cref="MainWindow"/>.
 /// </summary>
-public class MainWindow_ViewModel : ViewModel<MainWindow> {
-    /// <summary>
-    /// Gets or sets the border margin.
-    /// </summary>
-    /// <value>
-    /// The border margin.
-    /// </value>
-    public Thickness BorderMargin { get; set; } = _BorderMargin_Normal;
-
-    /// <summary> (<see langword="const"/>) Border margin. </summary>
-    static readonly Thickness
-        _BorderMargin_Normal = new Thickness(0, 0, 7, 7),
-        _BorderMargin_Maximised = new Thickness(0, 0, 0, 0);
-
-    /// <summary>
-    /// Gets or sets the border effect.
-    /// </summary>
-    /// <value>
-    /// The border effect.
-    /// </value>
-    public Effect? BorderEffect { get; set; } = _BorderEffect_Normal;
-
-    /// <summary> (<see langword="const"/>) Border effect. </summary>
-    static readonly Effect?
-        _BorderEffect_Normal = new DropShadowEffect { Opacity = 0.7 },
-        _BorderEffect_Maximised = null;
-
-    /// <summary>
-    /// Gets or sets the border thickness.
-    /// </summary>
-    /// <value>
-    /// The border thickness.
-    /// </value>
-    public double BorderThickness { get; set; } = _BorderThickness_Normal;
-
-    // ReSharper disable InconsistentNaming
-    /// <summary> (<see langword="const"/>) Border thickness. </summary>
-    const double
-        _BorderThickness_Normal = 1d,
-        _BorderThickness_Maximised = 0d;
-    // ReSharper restore InconsistentNaming
-
-    /// <summary>
-    /// The window state.
-    /// </summary>
-    WindowState _WindowState = WindowState.Normal;
-
-    /// <summary>
-    /// Gets or sets the state of the window.
-    /// </summary>
-    /// <value>
-    /// The state of the window.
-    /// </value>
-    public WindowState WindowState {
-        get => _WindowState;
-        set {
-            if ( _WindowState != value ) {
-                SetProperty(ref _WindowState, value);
-                switch ( value ) {
-                    case WindowState.Maximized:
-                        BorderMargin = _BorderMargin_Maximised;
-                        BorderEffect = _BorderEffect_Maximised;
-                        BorderThickness = _BorderThickness_Maximised;
-                        break;
-                    default:
-                        BorderMargin = _BorderMargin_Normal;
-                        BorderEffect = _BorderEffect_Normal;
-                        BorderThickness = _BorderThickness_Normal;
-                        break;
-                }
-
-            }
-        }
-    }
+public class MainWindow_ViewModel : Window_ViewModel<MainWindow> {
 
     /// <summary>
     /// Gets the collection of navigation items to display on the sidebar.
@@ -229,4 +161,7 @@ public class MainWindow_ViewModel : ViewModel<MainWindow> {
             Icon = Icon.Settings48
         }
     };
+
+    /// <inheritdoc />
+    public override Border WindowBGBorder => View.MainBorder;
 }
