@@ -321,6 +321,20 @@ public class DownloadRequest : ReactiveObject {
         }
     }
 
+    /// <summary>
+    /// Purges the directory, deleting all files and folders contained within it.
+    /// </summary>
+    /// <param name="Dir">The directory to purge.</param>
+    internal static void PurgeDirectory(DirectoryInfo Dir) {
+        foreach ( FileInfo Fl in Dir.GetFiles() ) {
+            Fl.Delete();
+        }
+        foreach ( DirectoryInfo Di in Dir.GetDirectories() ) {
+            PurgeDirectory(Di);
+            Di.Delete();
+        }
+    }
+
     public static async Task DownloadRelease( Release Release, DirectoryInfo Destination, DownloadStartedEventArgs DownloadStarted, ProgressUpdatedEventArgs ProgressUpdated, DownloadCompleteEventArgs DownloadComplete, int BufferSize = 16384, bool CreateSubdirectory = false, CancellationTokenSource? Token = null ) {
         Token ??= new CancellationTokenSource();
 
@@ -335,6 +349,7 @@ public class DownloadRequest : ReactiveObject {
             if ( CreateSubdirectory ) {
                 Destination = Destination.CreateSubdirectory(Path.GetFileNameWithoutExtension(AN));
             }
+            PurgeDirectory(Destination);
 
             //Download the asset to the pointer file
             string DownloadUrl = Asset.BrowserDownloadUrl;
@@ -344,6 +359,7 @@ public class DownloadRequest : ReactiveObject {
             //Once downloaded, extract the archive to {Destination}
             //We don't need to create a subdirectory if requested as that was already done prior
             FileDest.Extract(false);
+            Debug.WriteLine("Extract complete.");
 
             //Delete the original .zip file
             FileDest.Delete();

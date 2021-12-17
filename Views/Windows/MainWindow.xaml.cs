@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+#region Copyright (C) 2017-2021  Starflash Studios
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 
 using DownTube.Engine;
 using DownTube.Views.Pages;
@@ -41,19 +42,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
-        // ReSharper disable ExceptionNotDocumented
-        // ReSharper disable ExceptionNotDocumentedOptional
         Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
-        // ReSharper restore ExceptionNotDocumentedOptional
-        // ReSharper restore ExceptionNotDocumented
-
-        UpdateChecker.CheckForUpdates(Res => {
-            Debug.WriteLine($"Found updates? ({Res.HasUpdate}): {Res.Current} -> {Res.Newest}");
-            Debug.WriteLine($"Latest: {Res.Release?.Url} // {Res.Release?.UploadUrl}");
-        });
-        //new UpdateWindow().Show();
-        //Close();
-        //return;
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
@@ -75,6 +64,19 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         InitialiseNavigation();
 
         VM.Setup(this);
+
+        UpdateChecker.CheckForUpdates(Res => {
+            if ( Res.HasUpdate ) {
+                Debug.Write($"Update was found! ({Res.Current} -> {Res.Newest})");
+                Dispatcher.Invoke(() => {
+                    UpdateWindow UW = new UpdateWindow();
+                    UW.Show();
+                    Hide();
+                });
+            } else {
+                Debug.WriteLine("Program is up-to-date.");
+            }
+        });
     }
 
     /// <summary> Initialises frame navigation in the window. </summary>

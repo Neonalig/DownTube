@@ -23,10 +23,11 @@ public static class SZip {
         }
         Debug.WriteLine($"Will extract to {Destination.FullName}...");
         try {
-            ZipArchive Archive = ZipFile.OpenRead(File.FullName);
-            Debug.WriteLine($"Extracting from {Archive}");
-            Archive.ExtractToDirectory(Destination.FullName);
-            Debug.WriteLine("Extracted.");
+            using ( ZipArchive Archive = ZipFile.OpenRead(File.FullName) ) {
+                Debug.WriteLine($"Extracting from {Archive}");
+                Archive.ExtractToDirectory(Destination.FullName, true);
+                Debug.WriteLine("Extracted.");
+            }
         } catch (Exception Ex) {
             Debug.WriteLine($"Exception caught: {Ex} :: {Ex.GetType().GetTypeName()} :: {Ex.Message}");
         }

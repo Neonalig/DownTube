@@ -4,12 +4,9 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
-using DownTube.DataTypes.Helpers;
 using DownTube.Engine;
 
 using MVVMUtils;
-
-using Octokit;
 
 namespace DownTube.Views.Windows;
 
@@ -34,36 +31,36 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
-        if ( UpdateChecker.LatestRelease?.Assets is { } Assets ) {
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach ( ReleaseAsset Asset in Assets ) {
-                if ( Asset.Name.ToUpperInvariant().EndsWith(".ZIP") ) {
-                    VM.InstallProgress = - 1;
-                    DownloadRequest Request = new DownloadRequest(Asset.BrowserDownloadUrl, FileSystemInfoExtensions.AppDir.CreateSubfile(Asset.Name, false));
-                    Request.DownloadStarted += _ => {
-                        Debug.WriteLine("Download started.");
-                    };
-                    Request.ProgressUpdated += ( _, P ) => {
-                        Debug.WriteLine($"Download: {P:P2}");
-                        VM.InstallProgress = P;
-                    };
-                    Request.DownloadComplete += ( _, Fl ) => {
-                        Debug.WriteLine($"Download finished. {Fl.FullName}");
-                        Process.Start("explorer.exe", $"/select,\"{Fl.FullName}\"");
-                        VM.InstallProgress = 1;
+    async void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
+        //TODO: Determine if Updater/updater.exe exists, and download it if not.
+        VM.InstallProgress = -1;
+        if ( UpdateChecker.LatestRelease is null ) { return; }
+        DirectoryInfo UpdateDest = FileSystemInfoExtensions.AppDir.CreateSubdirectory("Updater").CreateSubdirectory("_Update");
+        CancellationTokenSource CTS = new CancellationTokenSource();
+        await DownloadRequest.DownloadRelease(
+            Release: UpdateChecker.LatestRelease,
+            Destination: UpdateDest,
+            DownloadStarted: _ => {
+                Debug.WriteLine("Download started.");
+            },
+            ProgressUpdated: ( _, P ) => {
+                Debug.WriteLine($"Download: {P:P2}");
+                VM.InstallProgress = P;
+            },
+            DownloadComplete: ( _, Fl ) => {
+                Debug.WriteLine($"Download finished. {Fl.FullName}");
+                //Process.Start("explorer.exe", $"/select,\"{Fl.FullName}\"");
+                VM.InstallProgress = -1;
 
-                        Debug.WriteLine("Extracting...");
-                        DirectoryInfo Ext = Fl.Extract(true);
-                        Debug.WriteLine($"Extracted to {Ext.FullName}");
-                    };
-                    Debug.WriteLine("Starting request...");
-                    Request.Start();
-                    Debug.WriteLine("Download delegated to new thread.");
-                    break;
-                }
-            }
-        }
+                //Debug.WriteLine("Extracting...");
+                //DirectoryInfo Ext = Fl.Extract(true);
+                //Debug.WriteLine($"Extracted to {Ext.FullName}");
+            },
+            BufferSize: 16384,
+            CreateSubdirectory: false,
+            Token: CTS);
+        VM.InstallProgress = 1;
+        //TODO: Run Updater/updater.exe
     }
 
     /// <summary>
