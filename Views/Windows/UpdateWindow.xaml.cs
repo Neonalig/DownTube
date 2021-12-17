@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Security.Policy;
 using System.Windows;
 using System.Windows.Controls;
 
+using DownTube.DataTypes.Helpers;
 using DownTube.Engine;
 
 using MVVMUtils;
@@ -35,55 +34,36 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    async void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
+    void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
         if ( UpdateChecker.LatestRelease?.Assets is { } Assets ) {
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach ( ReleaseAsset Asset in Assets ) {
                 if ( Asset.Name.ToUpperInvariant().EndsWith(".ZIP") ) {
-                    Debug.WriteLine($"Found asset: {Asset.Name} :: {Asset.BrowserDownloadUrl}");
-                    FileInfo TestFile = FileSystemInfoExtensions.AppDir.CreateSubfile(Asset.Name, false);
-                    byte[] BtBuffer = new byte[16384];
-                    Memory<byte> Buffer = new Memory<byte>(BtBuffer);
-                    Debug.WriteLine("Downloading...");
-                    await DownloadFileAsync(Asset.BrowserDownloadUrl, TestFile, Buffer, new CancellationToken());
-                    Debug.WriteLine($"Fin. {TestFile.FullName}");
-                    Process.Start("explorer.exe", $"/select,\"{TestFile.FullName}\"");
+                    VM.InstallProgress = - 1;
+                    DownloadRequest Request = new DownloadRequest(Asset.BrowserDownloadUrl, FileSystemInfoExtensions.AppDir.CreateSubfile(Asset.Name, false));
+                    Request.DownloadStarted += _ => {
+                        Debug.WriteLine("Download started.");
+                    };
+                    Request.ProgressUpdated += ( _, P ) => {
+                        Debug.WriteLine($"Download: {P:P2}");
+                        VM.InstallProgress = P;
+                    };
+                    Request.DownloadComplete += ( _, Fl ) => {
+                        Debug.WriteLine($"Download finished. {Fl.FullName}");
+                        Process.Start("explorer.exe", $"/select,\"{Fl.FullName}\"");
+                        VM.InstallProgress = 1;
+
+                        Debug.WriteLine("Extracting...");
+                        DirectoryInfo Ext = Fl.Extract(true);
+                        Debug.WriteLine($"Extracted to {Ext.FullName}");
+                    };
+                    Debug.WriteLine("Starting request...");
+                    Request.Start();
+                    Debug.WriteLine("Download delegated to new thread.");
+                    break;
                 }
             }
         }
-    }
-
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public static async Task DownloadFileAsync(string Url, FileInfo Dest, Memory<byte> Buffer, CancellationToken Token = default) {
-        Debug.WriteLine("Creating client...");
-        HttpClient Client = new HttpClient();
-        Debug.WriteLine("Creating get request...");
-        HttpResponseMessage Msg = await Client.GetAsync(Url, Token);
-        Debug.WriteLine("Creating file write stream...");
-
-        await using ( FileStream FS = Dest.Create() ) {
-            Debug.WriteLine("Creating read stream...");
-            await using ( Stream Str = await Msg.Content.ReadAsStreamAsync(Token) ) {
-                long L = Str.Length;
-                int B = Buffer.Length;
-                while ( Str.Position + B < L ) {
-                    Debug.WriteLine("\tRead");
-                    await Str.ReadAsync(Buffer, Token);
-                    Debug.WriteLine("\tWrite");
-                    await FS.WriteAsync(Buffer, Token);
-                }
-                Debug.WriteLine("Some remainder exists.");
-                int R = (int)(L - Str.Position);
-                if ( R > 0 ) {
-                    Memory<byte> Remainder = new byte[R];
-                    Debug.WriteLine($"\tReading remainder {R}...");
-                    await Str.ReadAsync(Remainder, Token);
-                    Debug.WriteLine("Writing remainder...");
-                    await FS.WriteAsync(Remainder, Token);
-                }
-            }
-        }
-        Debug.WriteLine("Download complete.");
     }
 
     /// <summary>
@@ -119,4 +99,55 @@ public class UpdateWindow_ViewModel : Window_ViewModel<UpdateWindow> {
     /// <see langword="true" /> if the update dialog is visible; otherwise, <see langword="false" />.
     /// </value>
     public bool UpdateDialogVisible { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the current automatic installation progress.
+    /// </summary>
+    /// <value>
+    /// The automatic installation progress.
+    /// </value>
+    public double InstallProgress { get; set; }
+}
+
+public class InstallProgressToVisibilityConverter : ValueConverter<double, Visibility> {
+    /// <inheritdoc />
+    public override bool CanReverse => false;
+
+    /// <inheritdoc />
+    public override Visibility Forward( double From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+        0 => Visibility.Collapsed,
+        _ => Visibility.Visible
+    };
+
+    /// <inheritdoc />
+    public override double Reverse( Visibility To, object? Parameter = null, CultureInfo? Culture = null ) => 0;
+}
+
+public class InstallProgressToIntermediateConverter : ValueConverter<double, bool> {
+    /// <inheritdoc />
+    public override bool CanReverse => false;
+
+    /// <inheritdoc />
+    public override bool Forward( double From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+        < 0 => true,
+        _   => false
+    };
+
+    /// <inheritdoc />
+    public override double Reverse( bool To, object? Parameter = null, CultureInfo? Culture = null ) => 0;
+}
+
+public class InstallProgressToStringConverter : ValueConverter<double, string> {
+    /// <inheritdoc />
+    public override bool CanReverse => false;
+
+    /// <inheritdoc />
+    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    public override string Forward( double From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+        < 0 => "Downloading...",
+        _   => From.ToString("P2")
+    };
+
+    /// <inheritdoc />
+    public override double Reverse( string To, object? Parameter = null, CultureInfo? Culture = null ) => 0d;
 }

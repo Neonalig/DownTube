@@ -47,11 +47,13 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         // ReSharper restore ExceptionNotDocumentedOptional
         // ReSharper restore ExceptionNotDocumented
 
-        new UpdateWindow().Show();
         UpdateChecker.CheckForUpdates( Res => {
             Debug.WriteLine($"Found updates? ({Res.HasUpdate}): {Res.Current} -> {Res.Newest}");
             Debug.WriteLine($"Latest: {Res.Release?.Url} // {Res.Release?.UploadUrl}");
         });
+        new UpdateWindow().Show();
+        Close();
+        return;
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
