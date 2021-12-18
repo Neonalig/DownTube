@@ -1,6 +1,10 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
+using JetBrains.Annotations;
+
+using Newtonsoft.Json;
+
 namespace DownTube.Engine;
 
 /// <summary>
@@ -16,7 +20,7 @@ public interface IProperty<T> : IProperty {
     /// <value>
     /// The name of the property.
     /// </value>
-    string PropertyName { get; }
+    [JsonProperty("Name", Order = 0), JsonRequired] string PropertyName { get; }
 
     /// <summary>
     /// Gets the value.
@@ -131,7 +135,7 @@ public class Property<T> : IProperty<T> {
             );
 
     /// <inheritdoc />
-    public string PropertyName { get ; }
+    public string PropertyName { get; }
 
     /// <inheritdoc />
     public T? GetValue() => _Value;
@@ -311,6 +315,7 @@ public sealed class PropertyChanged_PropertyChangeNotifier<T> : IPropertyChangeN
     public bool SupportsOnPropertyChanged => true;
 
     /// <inheritdoc />
+    [NotifyPropertyChangedInvocator]
     public void OnPropertyChanged( string PropertyName, object? OldValue, object? NewValue ) => _Base.Raise(nameof(INotifyPropertyChanged.PropertyChanged), new System.ComponentModel.PropertyChangedEventArgs(PropertyName));
 
     /// <summary>
@@ -343,6 +348,7 @@ public sealed class PropertyChangingChanged_PropertyChangeNotifier<T> : IPropert
     public bool SupportsOnPropertyChanged => true;
 
     /// <inheritdoc />
+    [NotifyPropertyChangedInvocator]
     public void OnPropertyChanged( string PropertyName, object? OldValue, object? NewValue ) => _Base.Raise(nameof(INotifyPropertyChanged.PropertyChanged), new System.ComponentModel.PropertyChangedEventArgs(PropertyName));
 
     /// <summary>
@@ -359,17 +365,26 @@ public sealed class SavedProperty<T> : Property<T>, ISavedProperty<T> {
     /// <inheritdoc />
     public SavedProperty( T? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs<T> PropertyChanged, string PropertyName ) : base(Value, PropertyChanging, PropertyChanged, PropertyName) => Saved = Value;
 
-    /// <inheritdoc />
-    public bool IsDirty => Value is null ? Saved is not null : Saved is null || !Value.Equals(Saved);
+    /// <summary>
+    /// Initialises a new instance of the <see cref="SavedProperty{T}"/> class.
+    /// </summary>
+    /// <remarks>Constructor is intended only for use by <see cref="Newtonsoft.Json"/>.</remarks>
+    /// <param name="Name">The property name.</param>
+    /// <param name="Value">The value.</param>
+    [JsonConstructor]
+    public SavedProperty( string? Name, T? Value ) : this(Value, delegate { }, delegate { }, Name ?? string.Empty) { }
 
     /// <inheritdoc />
-    object? ISavedProperty.Saved {
+    [JsonIgnore] public bool IsDirty => Value is null ? Saved is not null : Saved is null || !Value.Equals(Saved);
+
+    /// <inheritdoc />
+    [JsonIgnore] object? ISavedProperty.Saved {
         get => Saved;
         set => Saved = (T?)value;
     }
 
     /// <inheritdoc />
-    object? ISavedProperty.Value {
+    [JsonIgnore] object? ISavedProperty.Value {
         get => Value;
         set => Value = (T?)value;
     }
@@ -381,10 +396,10 @@ public sealed class SavedProperty<T> : Property<T>, ISavedProperty<T> {
     public void Revert() => Value = Saved;
 
     /// <inheritdoc />
-    public T? Saved { get; set; }
+    [JsonIgnore] public T? Saved { get; set; }
 
     /// <inheritdoc />
-    public T? Value {
+    [JsonProperty(Order = 1), JsonRequired] public T? Value {
         get => GetValue();
         set => SetValue(value);
     }

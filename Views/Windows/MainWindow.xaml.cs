@@ -43,7 +43,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
-        Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
+        //Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");

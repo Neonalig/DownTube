@@ -235,7 +235,9 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="ArgumentException">The <paramref name="Destination"/> <see cref="FileStream"/> is not writable.</exception>
     /// <exception cref="ArgumentNullException">The <paramref name="Destination"/> <see cref="FileStream"/> is <see langword="null" />.</exception>
     public static void Serialise<T>( this T Val, FileInfo Destination, JsonSerializer? Serialiser = null ) {
-        using ( FileStream FS = Destination.OpenWrite() ) {
+        using ( FileStream FS = Destination.Exists
+                   ? File.Open(Destination.FullName, FileMode.Truncate, FileAccess.Write)
+                   : Destination.Create() ) {
             using ( StreamWriter SW = new StreamWriter(FS) ) {
                 using ( JsonTextWriter JTW = new JsonTextWriter(SW) ) {
                     (Serialiser ?? DefaultJsonSerialiser).Serialize(JTW, Val);
