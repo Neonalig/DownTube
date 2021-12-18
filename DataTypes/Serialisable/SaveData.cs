@@ -8,8 +8,11 @@
 
 #region Using Directives
 
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+
+using DownTube.Engine;
 
 using ReactiveUI;
 
@@ -21,91 +24,31 @@ namespace DownTube.DataTypes;
 /// Represents a datatype which automatically determines when values become dirty and provides a method to save/revert any changes.
 /// </summary>
 /// <seealso cref="IJsonSerialisable" />
-public abstract class SaveData : ReactiveObject, ISaveData {
-    /// <summary>
-    /// The collection of currently changed property names.
-    /// </summary>
-    internal readonly HashSet<string> ChangedProperties = new HashSet<string>();
+[SuppressMessage("ReSharper", "ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator")]
+[SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
+[SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
+[SuppressMessage("ReSharper", "LoopCanBePartlyConvertedToQuery")]
+public abstract class SaveData<T> : ReactiveObject, ISaveData<T> where T : ISavedProperty {
 
     /// <summary>
-    /// The collection of properties as of the last save.
+    /// Initialises the <see cref="Properties"/> collection and relevant callbacks.
     /// </summary>
-    internal readonly Dictionary<string, object?> CachedProperties = new Dictionary<string, object?>();
-
-    /// <summary>
-    /// Sets the property if the new value is different to the current, saving an original copy if <c>this</c> is the first modification since the last save.
-    /// </summary>
-    /// <typeparam name="T">The value data type.</typeparam>
-    /// <param name="Value">The value.</param>
-    /// <param name="NewValue">The new value.</param>
-    /// <param name="ValueName">The name of the value.</param>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    internal void SetProperty<T>( [NotNullIfNotNull("NewValue")] ref T? Value, T? NewValue, [CallerMemberName] string? ValueName = null ) {
-        ValueName.CatchNull();
-        lock ( CachedProperties ) {
-            if ( !CachedProperties.ContainsKey(ValueName) ) {
-                CachedProperties.Add(ValueName, Value);
-            }
-        }
-
-        if ( Value is null ? NewValue is not null : NewValue is null || !Value.Equals(NewValue) ) {
-            this.RaisePropertyChanging(ValueName);
-            Value = NewValue;
-            ChangedProperties.Add(ValueName);
-            this.RaisePropertyChanged(ValueName);
+    [MemberNotNull(nameof(Properties))]
+    public virtual void Setup() {
+        Properties = new ObservableCollection<T>(GetInitialProperties());
+        foreach ( T Property in Properties ) {
+            Property.PropertyChanging += P => SavedPropertyChanging((ISavedProperty)P);
+            Property.PropertyChanged += ( P, O, N ) => SavedPropertyChanged((ISavedProperty)P, O, N);
         }
     }
-
-    /// <inheritdoc />
-    public bool IsDirty => ChangedProperties.Count > 0;
-
-    /// <inheritdoc />
-    public IEnumerable<string> GetDirty() => ChangedProperties;
-
-    /// <summary>
-    /// Determines whether the specified property is dirty.
-    /// </summary>
-    /// <param name="PropertyName">The name of the property.</param>
-    /// <returns>
-    /// <see langword="true" /> if the property is dirty; otherwise, <see langword="false" />.
-    /// </returns>
-    /// <exception cref="ArgumentException"><see cref="StringComparison.InvariantCultureIgnoreCase"/> is not a <see cref="StringComparison" /> value.</exception>
-    public bool IsPropertyDirty( [CallerMemberName] string? PropertyName = null ) => ChangedProperties.Contains(PropertyName.CatchNull(), StringComparison.InvariantCultureIgnoreCase);
-
-    //public abstract IEnumerable<(string PropertyName, object? Value)> GetCurrentProperties();
-
-    /// <summary>
-    /// Gets the value of the property with the given name.
-    /// </summary>
-    /// <param name="PropertyName">Name of the property to search for.</param>
-    /// <returns>The property's current value.</returns>
-    internal abstract object? GetProp( string PropertyName );
-
-    /// <summary>
-    /// Sets the value of the property with the given name.
-    /// </summary>
-    /// <param name="PropertyName">Name of the property to search for.</param>
-    /// <param name="Value">The new value to apply to the found property.</param>
-    internal abstract void SetProp( string PropertyName, object? Value );
 
     /// <summary>
     /// Saves the dirty changes in <see langword="this"/> instance.
     /// </summary>
     public virtual void Save() {
-        lock ( CachedProperties ) {
-            lock ( ChangedProperties ) {
-                foreach ( string PropertyName in ChangedProperties ) { //Update the old cache
-                    // ReSharper disable ExceptionNotDocumentedOptional
-                    object? Value = GetProp(PropertyName);
-
-                    if ( CachedProperties.ContainsKey(PropertyName) ) {
-                        CachedProperties[PropertyName] = Value;
-                    } else {
-                        CachedProperties.Add(PropertyName, Value);
-                    }
-                    // ReSharper restore ExceptionNotDocumentedOptional
-                }
-                ChangedProperties.Clear(); //Clear any indication that there are unsaved changes.
+        lock ( Properties ) {
+            foreach ( T Property in Properties ) {
+                Property.Save();
             }
         }
     }
@@ -114,16 +57,168 @@ public abstract class SaveData : ReactiveObject, ISaveData {
     /// Saves the dirty changes in <see langword="this"/> instance.
     /// </summary>
     public virtual void Revert() {
-        lock ( CachedProperties ) {
-            lock ( ChangedProperties ) {
-                foreach ( string PropertyName in ChangedProperties ) { //Apply the old cache
-                    // ReSharper disable ExceptionNotDocumentedOptional
-                    object? Value = CachedProperties[PropertyName];
-                    SetProp(PropertyName, Value);
-                    // ReSharper restore ExceptionNotDocumentedOptional
-                }
-                ChangedProperties.Clear(); //Clear any indication that there are unsaved changes.
+        lock ( Properties ) {
+            foreach ( T Property in Properties ) {
+                Property.Revert();
             }
         }
     }
+
+    /// <inheritdoc />
+    [SuppressMessage("ReSharper", "ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator")]
+    public bool IsDirty {
+        get {
+            lock ( Properties ) {
+                foreach ( T Property in Properties ) {
+                    if ( Property.IsDirty ) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Sets the property value, and raises any relevant <see langword="event"/>(s).
+    /// </summary>
+    /// <param name="Value">The value.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    public void SetProperty( object? Value, [CallerMemberName] string? PropertyName = null ) {
+        T Property = GetProperty(PropertyName);
+        Property.Value = Value;
+    }
+
+    /// <summary>
+    /// Sets the property value, and raises any relevant <see langword="event"/>(s).
+    /// </summary>
+    /// <typeparam name="TX">The property value type.</typeparam>
+    /// <param name="Value">The value.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    public void SetProperty<TX>( TX? Value, [CallerMemberName] string? PropertyName = null ) {
+        ISavedProperty<TX> Property = GetProperty<TX>(PropertyName);
+        Property.Value = Value;
+    }
+
+    /// <summary>
+    /// Gets the property value.
+    /// </summary>
+    /// <param name="PropertyName">The name of the property.</param>
+    /// <returns>The found property.</returns>
+    /// <exception cref="PropertyNotFoundException">No property could be found with the name '<paramref name="PropertyName"/>'.</exception>
+    public T GetProperty( [CallerMemberName] string? PropertyName = null ) {
+        PropertyName.ThrowIfNull();
+        lock ( Properties ) {
+            foreach ( T Property in Properties ) {
+                if ( Property.PropertyName == PropertyName ) {
+                    return Property;
+                }
+            }
+            throw new PropertyNotFoundException(PropertyName);
+        }
+    }
+
+    /// <summary>
+    /// Gets the property value.
+    /// </summary>
+    /// <typeparam name="TX">The property value type.</typeparam>
+    /// <param name="PropertyName">The name of the property.</param>
+    /// <returns>The found property.</returns>
+    /// <exception cref="PropertyNotFoundException{T}">No property could be found with the name '<paramref name="PropertyName"/>', or the property value was not of type <typeparamref name="TX"/>.</exception>
+    public ISavedProperty<TX> GetProperty<TX>( [CallerMemberName] string? PropertyName = null ) {
+        PropertyName.ThrowIfNull();
+        lock ( Properties ) {
+            foreach ( T Property in Properties ) {
+                if ( Property.PropertyName == PropertyName
+                    && Property is ISavedProperty<TX> Prop ) {
+                    return Prop;
+                }
+            }
+            throw new PropertyNotFoundException<TX>(PropertyName);
+        }
+    }
+
+    /// <summary>
+    /// Gets the collection of monitored properties.
+    /// </summary>
+    /// <value>
+    /// The currently monitored properties.
+    /// </value>
+    [PropertyChanged.DoNotNotify] public abstract ObservableCollection<T> Properties { get; set; }
+
+    /// <summary>
+    /// Gets the initial properties.
+    /// </summary>
+    /// <returns>The initial properties to monitor.</returns>
+    public abstract IEnumerable<T> GetInitialProperties();
+
+    /// <inheritdoc />
+    public IEnumerable<T> GetDirty() {
+        lock ( Properties ) {
+            foreach ( T Property in Properties ) {
+                if ( Property.IsDirty ) {
+                    yield return Property;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Occurs when a property is about to change.
+    /// </summary>
+    public event SavedPropertyChangingEventArgs SavedPropertyChanging = delegate { };
+
+    /// <summary>
+    /// Occurs when a property is changed.
+    /// </summary>
+    public event SavedPropertyChangedEventArgs SavedPropertyChanged = delegate { };
+
+    /// <summary>
+    /// Called when a property is about to change.
+    /// </summary>
+    /// <param name="Property">The changing property.</param>
+    protected virtual void OnSavedPropertyChanging( ISavedProperty Property ) => SavedPropertyChanging.Invoke(Property);
+
+    /// <summary>
+    /// Called when property was just changed.
+    /// </summary>
+    /// <param name="Property">The changed property.</param>
+    /// <param name="OldValue">The old property value.</param>
+    /// <param name="NewValue">The new property value.</param>
+    [PropertyChanged.SuppressPropertyChangedWarnings] protected virtual void OnSavedPropertyChanged( ISavedProperty Property, object? OldValue, object? NewValue ) => SavedPropertyChanged.Invoke(Property, OldValue, NewValue);
+}
+
+/// <summary>
+/// Raised when a property value is about to change.
+/// </summary>
+/// <param name="Property">The changing property.</param>
+public delegate void SavedPropertyChangingEventArgs( ISavedProperty Property );
+
+/// <summary>
+/// Raised after a property value was changed.
+/// </summary>
+/// <param name="Property">The changed property.</param>
+public delegate void SavedPropertyChangedEventArgs( ISavedProperty Property, object? OldValue, object? NewValue );
+
+/// <summary>
+/// Exception thrown when a <see cref="ISavedProperty"/> could not be found with the given name.
+/// </summary>
+public class PropertyNotFoundException : KeyNotFoundException {
+    /// <summary>
+    /// Initialises a new instance of the <see cref="PropertyNotFoundException"/> class.
+    /// </summary>
+    /// <param name="PropertyName">The name of the property.</param>
+    public PropertyNotFoundException([CallerMemberName] string? PropertyName = null) : base($"The property '{PropertyName}' could not be found.") { }
+}
+
+/// <summary>
+/// Exception thrown when a <see cref="ISavedProperty{T}"/> could not be found with the given name.
+/// </summary>
+/// <typeparam name="T">The property value type.</typeparam>
+public class PropertyNotFoundException<T> : PropertyNotFoundException {
+    /// <summary>
+    /// Initialises a new instance of the <see cref="PropertyNotFoundException"/> class.
+    /// </summary>
+    /// <param name="PropertyName">The name of the property.</param>
+    public PropertyNotFoundException( [CallerMemberName] string? PropertyName = null ) : base($"The property '{PropertyName}' could not be found, or was found but the value was not of type {typeof(T).GetTypeName()}.") { }
 }

@@ -8,7 +8,6 @@
 
 #region Using Directives
 
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
@@ -30,81 +29,36 @@ public static class Props {
         Application.Current.MainWindow.Closing += ( _, _ ) => Data.Save();
     }
 
-
     /// <summary>
-    /// Raised when a property value is about to be changed.
+    /// The saved data.
     /// </summary>
-    /// <param name="E">The <see cref="System.ComponentModel.PropertyChangingEventArgs"/> instance containing the event data.</param>
-    public delegate void PropChangingEvent( System.ComponentModel.PropertyChangingEventArgs E );
-
-    /// <summary>
-    /// Raised when a property value has just been changed.
-    /// </summary>
-    /// <param name="E">The <see cref="System.ComponentModel.PropertyChangingEventArgs"/> instance containing the event data.</param>
-    public delegate void PropChangedEvent( System.ComponentModel.PropertyChangedEventArgs E );
-
-    /// <summary>
-    /// The property changing event handler.
-    /// </summary>
-    public static event PropChangingEvent PropertyChangingEventHandler = delegate { };
-
-    /// <summary>
-    /// The property changed event handler.
-    /// </summary>
-    public static event PropChangedEvent PropertyChangedEventHandler = delegate { };
-
-    /// <summary> The saved property data instance. </summary>
     public static readonly SavedProps Data;
 
     /// <inheritdoc cref="SavedProps.FFmpegPath"/>
     [SuppressMessage("ReSharper", "EventExceptionNotDocumented")]
     public static FileInfo? FFmpegPath {
         get => Data.FFmpegPath;
-        set {
-            if ( value != Data.FFmpegPath ) {
-                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(FFmpegPath)));
-                Data.FFmpegPath = value;
-                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(FFmpegPath)));
-            }
-        }
+        set => Data.FFmpegPath = value;
     }
 
     /// <inheritdoc cref="SavedProps.YoutubeDLPath"/>
     [SuppressMessage("ReSharper", "EventExceptionNotDocumented")]
     public static FileInfo? YoutubeDLPath {
         get => Data.YoutubeDLPath;
-        set {
-            if ( value != Data.YoutubeDLPath ) {
-                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(YoutubeDLPath)));
-                Data.YoutubeDLPath = value;
-                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(YoutubeDLPath)));
-            }
-        }
+        set => Data.YoutubeDLPath = value;
     }
 
     /// <inheritdoc cref="SavedProps.OutputFolder"/>
     [SuppressMessage("ReSharper", "EventExceptionNotDocumented")]
     public static DirectoryInfo? OutputFolder {
         get => Data.OutputFolder;
-        set {
-            if ( value != Data.OutputFolder ) {
-                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(OutputFolder)));
-                Data.OutputFolder = value;
-                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(OutputFolder)));
-            }
-        }
+        set => Data.OutputFolder = value;
     }
 
     /// <inheritdoc cref="SavedProps.TimesDownloaded"/>
     [SuppressMessage("ReSharper", "EventExceptionNotDocumented")]
     public static int TimesDownloaded {
         get => Data.TimesDownloaded;
-        set {
-            if ( value != Data.TimesDownloaded ) {
-                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(TimesDownloaded)));
-                Data.TimesDownloaded = value;
-                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(TimesDownloaded)));
-            }
-        }
+        set => Data.TimesDownloaded = value;
     }
 }

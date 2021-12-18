@@ -37,7 +37,7 @@ namespace DownTube.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("egg")]
         public string YoutubeDLPath {
             get {
                 return ((string)(this["YoutubeDLPath"]));

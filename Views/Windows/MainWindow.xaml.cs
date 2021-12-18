@@ -11,7 +11,6 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 
 using DownTube.Engine;
 using DownTube.Views.Pages;
@@ -43,7 +42,11 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
-        //Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
+        Properties.Settings.Default.Reset();
+        Properties.Settings.Default.Save();
+        Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
+        Props.Data.Save();
+        Debugger.Break();
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");

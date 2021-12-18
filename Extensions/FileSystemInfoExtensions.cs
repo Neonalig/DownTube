@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Security;
+using System.Text;
 
 using DownTube.Engine;
 
@@ -247,6 +248,21 @@ public static class FileSystemInfoExtensions {
     }
 
     /// <summary>
+    /// Serialises the given data into json data stored in a <see cref="string"/>.
+    /// </summary>
+    /// <typeparam name="T">The data type.</typeparam>
+    /// <param name="Val">The data to serialise.</param>
+    /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    public static string Serialise<T>( this T Val, JsonSerializer? Serialiser = null ) {
+        using ( StringWriter SW = new StringWriter() ) {
+            using ( JsonTextWriter JTW = new JsonTextWriter(SW) ) {
+                (Serialiser ?? DefaultJsonSerialiser).Serialize(JTW, Val);
+                return SW.ToString();
+            }
+        }
+    }
+
+    /// <summary>
     /// Deserialises the json data stored in the <paramref name="Location"/> file, and constructs a new object instance with the deserialised data.
     /// </summary>
     /// <typeparam name="T">The data type to deserialise into.</typeparam>
@@ -293,6 +309,34 @@ public static class FileSystemInfoExtensions {
         using (StreamReader SR = new StreamReader(Text) ) {
             using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
                 return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Deserialises the given json data into a new instance.
+    /// </summary>
+    /// <typeparam name="T">The data type.</typeparam>
+    /// <param name="Str">The data to deserialise.</param>
+    /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    public static T? Deserialise<T>( this string Str, JsonSerializer? Serialiser = null ) {
+        using ( StringReader SR = new StringReader(Str) ) {
+            using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
+                return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Deserialises the given json data into a new instance.
+    /// </summary>
+    /// <param name="Str">The data to deserialise.</param>
+    /// <param name="Tp">The data type.</param>
+    /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
+    public static object? Deserialise( this string Str, Type Tp, JsonSerializer? Serialiser = null ) {
+        using ( StringReader SR = new StringReader(Str) ) {
+            using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
+                return (Serialiser ?? DefaultJsonSerialiser).Deserialize(JTR, Tp);
             }
         }
     }

@@ -12,27 +12,9 @@ namespace DownTube.Engine;
 /// </summary>
 /// <typeparam name="T">The property value type.</typeparam>
 public interface IProperty<T> : IProperty {
-    //T Value { get; }
 
-    /// <summary>
-    /// Gets the name of the property.
-    /// </summary>
-    /// <value>
-    /// The name of the property.
-    /// </value>
-    [JsonProperty("Name", Order = 0), JsonRequired] string PropertyName { get; }
-
-    /// <summary>
-    /// Gets the value.
-    /// </summary>
-    /// <returns>The current value of the property.</returns>
-    new T? GetValue();
-
-    /// <summary>
-    /// Sets the value.
-    /// </summary>
-    /// <param name="NewValue">The new value.</param>
-    void SetValue(T? NewValue);
+    /// <inheritdoc cref="IProperty.Value"/>
+    new T? Value { get; set; }
 
     /// <summary>
     /// Occurs when the property is changed.
@@ -49,16 +31,20 @@ public interface IProperty<T> : IProperty {
 
 public interface IProperty {
     /// <summary>
-    /// Gets the value.
+    /// Gets the name of the property.
     /// </summary>
-    /// <returns>The current value of the property.</returns>
-    object? GetValue();
+    /// <value>
+    /// The name of the property.
+    /// </value>
+    [JsonProperty("Name", Order = 0), JsonRequired] string PropertyName { get; }
 
     /// <summary>
-    /// Sets the value.
+    /// Gets or sets the value.
     /// </summary>
-    /// <param name="NewValue">The new value.</param>
-    void SetValue( object? NewValue );
+    /// <value>
+    /// The value.
+    /// </value>
+    object? Value { get; set; }
 
     /// <summary>
     /// Invokes the <see cref="PropertyChanging"/> <see langword="event"/> handlers.
@@ -81,20 +67,18 @@ public interface IProperty {
     event PropertyChangedEventArgs PropertyChanged;
 }
 
-public delegate void PropertyChangingEventArgs( string PropertyName );
-public delegate void PropertyChangedEventArgs( string PropertyName, object? OldValue, object? NewValue );
-public delegate void PropertyChangedEventArgs<in T>( string PropertyName, T? OldValue, T? NewValue );
+public delegate void PropertyChangingEventArgs( IProperty Property );
+public delegate void PropertyChangedEventArgs( IProperty Property, object? OldValue, object? NewValue );
+public delegate void PropertyChangedEventArgs<in T>( IProperty Property, T? OldValue, T? NewValue );
 
 /// <summary>
 /// Simple property which automates the raising of <see cref="PropertyChanged"/> and <see cref="PropertyChanging"/> events where appropriate.
 /// </summary>
-/// <typeparam name="T">The property value type.</typeparam>
-public class Property<T> : IProperty<T> {
+public class Property : IProperty {
     /// <summary>
     /// The property value.
     /// </summary>
-    T? _Value;
-
+    object? _Value;
 
     /// <summary>
     /// Initialises a new instance of the <see cref="Property{T}"/> class.
@@ -104,7 +88,7 @@ public class Property<T> : IProperty<T> {
     /// <param name="PropertyChanged">The <see langword="event"/> to raise when the property's value was changed.</param>
     /// <param name="PropertyName">The name of the property.</param>
     /// <exception cref="ArgumentNullException"><see cref="PropertyName"/> was <see langword="null"/>.</exception>
-    protected Property( T? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs<T> PropertyChanged, string PropertyName ) {
+    protected Property( object? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs PropertyChanged, string PropertyName ) {
         _Value = Value;
         this.PropertyName = PropertyName ?? throw new ArgumentNullException(nameof(PropertyName));
         this.PropertyChanging = PropertyChanging;
@@ -118,17 +102,17 @@ public class Property<T> : IProperty<T> {
     /// <param name="Value">The value.</param>
     /// <param name="PropertyName">The name of the property.</param>
     /// <returns>A new property instance.</returns>
-    public static Property<T> GetProperty(IPropertyChangeNotifier Sender, T? Value, [CallerMemberName] string? PropertyName = null ) =>
-        new Property<T>(
+    public static Property GetProperty( IPropertyChangeNotifier Sender, object? Value, [CallerMemberName] string? PropertyName = null ) =>
+        new Property(
             Value: Value,
             PropertyChanging: P => {
                 if ( Sender.SupportsOnPropertyChanging ) {
-                    Sender.OnPropertyChanging(P);
+                    Sender.OnPropertyChanging(P.PropertyName);
                 }
             },
-            PropertyChanged: (P, O, N) => {
+            PropertyChanged: ( P, O, N ) => {
                 if ( Sender.SupportsOnPropertyChanged ) {
-                    Sender.OnPropertyChanged(P, O, N);
+                    Sender.OnPropertyChanged(P.PropertyName, O, N);
                 }
             },
             PropertyName: PropertyName.CatchNull()
@@ -136,55 +120,94 @@ public class Property<T> : IProperty<T> {
 
     /// <inheritdoc />
     public string PropertyName { get; }
-
+    
     /// <inheritdoc />
-    public T? GetValue() => _Value;
-
-    /// <inheritdoc />
-    public void SetValue( T? NewValue ) {
-        if ( _Value is null ? NewValue is not null : NewValue is null || !_Value.Equals(NewValue) ) {
-            PropertyChanging.Invoke(PropertyName);
-            T? OldValue = _Value;
-            _Value = NewValue;
-            PropertyChanged.Invoke(PropertyName, OldValue, NewValue);
+    public object? Value {
+        get => _Value;
+        set {
+            if ( _Value is null ? value is not null : value is null || !_Value.Equals(value) ) {
+                PropertyChanging.Invoke(this);
+                object? OldValue = _Value;
+                _Value = value;
+                PropertyChanged.Invoke(this, OldValue, value);
+            }
         }
     }
 
     /// <inheritdoc />
-    void IProperty.OnPropertyChanged( object? OldValue, object? NewValue ) => PropertyChanged(PropertyName, (T?)OldValue, (T?)NewValue);
+    public void OnPropertyChanging() => PropertyChanging.Invoke(this);
+
+    /// <inheritdoc />
+    public void OnPropertyChanged( object? OldValue, object? NewValue ) => PropertyChanged.Invoke(this, OldValue, NewValue);
 
     /// <inheritdoc />
     public event PropertyChangingEventArgs PropertyChanging;
 
     /// <inheritdoc />
-    public event PropertyChangedEventArgs<T> PropertyChanged;
+    public event PropertyChangedEventArgs PropertyChanged;
+}
 
-    /// <inheritdoc />
-    public void OnPropertyChanged( T? OldValue, T? NewValue ) => PropertyChanged.Invoke(PropertyName, OldValue, NewValue);
-
-    /// <inheritdoc />
-    object? IProperty.GetValue() => GetValue();
-
-    /// <inheritdoc />
-    void IProperty.SetValue( object? NewValue ) => SetValue((T?)NewValue);
-
-    /// <inheritdoc />
-    public void OnPropertyChanging() => PropertyChanging.Invoke(PropertyName);
+/// <summary>
+/// Simple property which automates the raising of <see cref="PropertyChanged"/> and <see cref="Property.PropertyChanging"/> events where appropriate.
+/// </summary>
+/// <typeparam name="T">The property value type.</typeparam>
+public class Property<T> : Property, IProperty<T> {
+    /// <summary>
+    /// The property value.
+    /// </summary>
+    T? _Value;
 
     /// <summary>
-    /// The collection of anonymous delegates formed for the <see cref="IProperty.PropertyChanged"/> callback.
+    /// Initialises a new instance of the <see cref="Property{T}"/> class.
     /// </summary>
-    readonly Dictionary<string, PropertyChangedEventArgs<T>> _PropChangedAnonDelegates = new Dictionary<string, PropertyChangedEventArgs<T>>();
+    /// <param name="Value">The value.</param>
+    /// <param name="PropertyChanging">The <see langword="event"/> to raise when the property's value is about to be changed.</param>
+    /// <param name="PropertyChanged">The <see langword="event"/> to raise when the property's value was changed.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    /// <exception cref="ArgumentNullException"><see cref="PropertyName"/> was <see langword="null"/>.</exception>
+    protected Property( T? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs<T> PropertyChanged, string PropertyName ) : base(Value, PropertyChanging, (P, O, N) => PropertyChanged(P, (T?)O, (T?)N), PropertyName) => this.PropertyChanged = PropertyChanged;
+
+    /// <summary>
+    /// Gets a new property instance.
+    /// </summary>
+    /// <param name="Sender">The sender.</param>
+    /// <param name="Value">The value.</param>
+    /// <param name="PropertyName">The name of the property.</param>
+    /// <returns>A new property instance.</returns>
+    public static Property<T> GetProperty(IPropertyChangeNotifier Sender, T? Value, [CallerMemberName] string? PropertyName = null ) =>
+        new Property<T>(
+            Value: Value,
+            PropertyChanging: P => {
+                if ( Sender.SupportsOnPropertyChanging ) {
+                    Sender.OnPropertyChanging(P.PropertyName);
+                }
+            },
+            PropertyChanged: (P, O, N) => {
+                if ( Sender.SupportsOnPropertyChanged ) {
+                    Sender.OnPropertyChanged(P.PropertyName, O, N);
+                }
+            },
+            PropertyName: PropertyName.CatchNull()
+            );
 
     /// <inheritdoc />
-    event PropertyChangedEventArgs IProperty.PropertyChanged {
-        add {
-            void Dlg( string Prop, T? Old, T? New ) => value.Invoke(Prop, Old, New);
-            _PropChangedAnonDelegates.Add(value.Method.Name, Dlg);
-            PropertyChanged += Dlg;
+    public new T? Value {
+        get => _Value;
+        set {
+            if ( _Value is null ? value is not null : value is null || !_Value.Equals(value) ) {
+                OnPropertyChanging();
+                T? OldValue = _Value;
+                _Value = value;
+                OnPropertyChanged(OldValue, value);
+            }
         }
-        remove => PropertyChanged -= _PropChangedAnonDelegates[value.Method.Name];
     }
+    
+    /// <inheritdoc />
+    public new event PropertyChangedEventArgs<T> PropertyChanged;
+
+    /// <inheritdoc />
+    public void OnPropertyChanged( T? OldValue, T? NewValue ) => base.OnPropertyChanged(OldValue, NewValue);
 }
 
 /// <summary>
@@ -361,7 +384,34 @@ public sealed class PropertyChangingChanged_PropertyChangeNotifier<T> : IPropert
     public static implicit operator PropertyChangingChanged_PropertyChangeNotifier<T>( T Base ) => new PropertyChangingChanged_PropertyChangeNotifier<T>(Base);
 }
 
-public sealed class SavedProperty<T> : Property<T>, ISavedProperty<T> {
+public class SavedProperty : Property, ISavedProperty {
+    /// <inheritdoc />
+    public SavedProperty( object? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs PropertyChanged, string PropertyName ) : base(Value, PropertyChanging, PropertyChanged, PropertyName) => Saved = Value;
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="SavedProperty{T}"/> class.
+    /// </summary>
+    /// <remarks>Constructor is intended only for use by <see cref="Newtonsoft.Json"/>.</remarks>
+    /// <param name="Name">The property name.</param>
+    /// <param name="Value">The value.</param>
+    [JsonConstructor]
+    public SavedProperty( string? Name, object? Value ) : this(Value, delegate { }, delegate { }, Name ?? string.Empty) { }
+
+    /// <inheritdoc />
+    [JsonIgnore] public bool IsDirty => Value is null ? Saved is not null : Saved is null || !Value.Equals(Saved);
+
+
+    /// <inheritdoc />
+    public void Save() => Saved = Value;
+
+    /// <inheritdoc />
+    public void Revert() => Value = Saved;
+
+    /// <inheritdoc />
+    [JsonIgnore] public object? Saved { get; set; }
+}
+
+public class SavedProperty<T> : Property<T>, ISavedProperty<T> {
     /// <inheritdoc />
     public SavedProperty( T? Value, PropertyChangingEventArgs PropertyChanging, PropertyChangedEventArgs<T> PropertyChanged, string PropertyName ) : base(Value, PropertyChanging, PropertyChanged, PropertyName) => Saved = Value;
 
@@ -384,12 +434,6 @@ public sealed class SavedProperty<T> : Property<T>, ISavedProperty<T> {
     }
 
     /// <inheritdoc />
-    [JsonIgnore] object? ISavedProperty.Value {
-        get => Value;
-        set => Value = (T?)value;
-    }
-
-    /// <inheritdoc />
     public void Save() => Saved = Value;
 
     /// <inheritdoc />
@@ -397,15 +441,10 @@ public sealed class SavedProperty<T> : Property<T>, ISavedProperty<T> {
 
     /// <inheritdoc />
     [JsonIgnore] public T? Saved { get; set; }
-
-    /// <inheritdoc />
-    [JsonProperty(Order = 1), JsonRequired] public T? Value {
-        get => GetValue();
-        set => SetValue(value);
-    }
 }
 
-public interface ISavedProperty {
+public interface ISavedProperty : IProperty {
+
     /// <summary>
     /// Gets a value indicating whether the property is dirty.
     /// </summary>
@@ -420,15 +459,7 @@ public interface ISavedProperty {
     /// <value>
     /// The saved value.
     /// </value>
-    object? Saved { get; set; }
-
-    /// <summary>
-    /// Gets or sets the current value.
-    /// </summary>
-    /// <value>
-    /// The current value.
-    /// </value>
-    object? Value { get; set; }
+    [JsonIgnore] object? Saved { get; set; }
 
     /// <summary>
     /// Saves the new value.
@@ -443,7 +474,7 @@ public interface ISavedProperty {
 
 public interface ISavedProperty<T> : ISavedProperty {
     /// <inheritdoc cref="ISavedProperty.Saved"/>
-    new T? Saved { get; set; }
+    [JsonIgnore] new T? Saved { get; set; }
 
     /// <inheritdoc cref="ISavedProperty.Value"/>
     new T? Value { get; set; }

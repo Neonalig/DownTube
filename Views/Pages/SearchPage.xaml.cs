@@ -212,8 +212,8 @@ public class SearchPage_ViewModel : ViewModel<SearchPage> {
     /// </summary>
     public SearchPage_ViewModel() {
         TimesDownloaded = Props.TimesDownloaded;
-        Props.PropertyChangedEventHandler += E => {
-            if ( E.PropertyName == nameof( Props.TimesDownloaded ) ) {
+        Props.Data.SavedPropertyChanged += (P, _, _) => {
+            if ( P.PropertyName == nameof( Props.TimesDownloaded ) ) {
                 TimesDownloaded = Props.TimesDownloaded;
             }
         };

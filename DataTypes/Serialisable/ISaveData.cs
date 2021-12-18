@@ -6,13 +6,16 @@
 // More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
 #endregion
 
+using DownTube.Engine;
+
 namespace DownTube.DataTypes;
 
 /// <summary>
 /// Represents a type of json serialisable data which automatically determines when values become dirty and provides a method to save/revert any changes.
 /// </summary>
 /// <seealso cref="IJsonSerialisable" />
-public interface ISaveData : IJsonSerialisable {
+public interface ISaveData<out T> : IJsonSerialisable where T : ISavedProperty {
+
     /// <summary>
     /// Gets a value indicating whether <see langword="this"/> instance is dirty.
     /// </summary>
@@ -25,5 +28,16 @@ public interface ISaveData : IJsonSerialisable {
     /// Gets the names of the dirty properties.
     /// </summary>
     /// <returns>A collection of the dirty property names.</returns>
-    IEnumerable<string> GetDirty();
+    IEnumerable<T> GetDirty();
+
+    /// <summary>
+    /// Saves all unsaved properties.
+    /// </summary>
+    void Save();
+
+    /// <summary>
+    /// Reverts all unsaved properties.
+    /// </summary>
+    void Revert();
+
 }
