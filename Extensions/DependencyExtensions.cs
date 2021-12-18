@@ -147,7 +147,7 @@ public static class DependencyExtensions {
     /// <param name="Source">The source.</param>
     /// <param name="EventName">Name of the event.</param>
     /// <param name="EventArgs">The <see cref="TEventArgs"/> instance containing the event data.</param>
-    /// <returns></returns>
+    /// <returns>The invocation result.</returns>
     [SuppressMessage("ReSharper", "CatchAllClause")]
     public static Result Raise<TEventArgs>( this object Source, string EventName, TEventArgs EventArgs ) where TEventArgs : notnull {
         try {
@@ -179,4 +179,10 @@ public static class DependencyExtensions {
             return ArgEx;
         }
     }
+
+    /// <inheritdoc cref="Raise{TEventArgs}(object, string, TEventArgs)"/>
+    /// <param name="Sender">The sender.</param>
+    /// <param name="EventName">Name of the event.</param>
+    /// <param name="EventArgs">The <see cref="TEventArgs"/> instance containing the event data.</param>
+    public static Result Raise<TSender, TEventArgs>( this TSender Sender, string EventName, TEventArgs EventArgs ) where TSender : notnull where TEventArgs : notnull => Raise(Source: Sender, EventName, EventArgs);
 }

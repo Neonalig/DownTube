@@ -34,14 +34,14 @@ public static class Props {
     /// <summary>
     /// Raised when a property value is about to be changed.
     /// </summary>
-    /// <param name="E">The <see cref="PropertyChangingEventArgs"/> instance containing the event data.</param>
-    public delegate void PropChangingEvent( PropertyChangingEventArgs E );
+    /// <param name="E">The <see cref="System.ComponentModel.PropertyChangingEventArgs"/> instance containing the event data.</param>
+    public delegate void PropChangingEvent( System.ComponentModel.PropertyChangingEventArgs E );
 
     /// <summary>
     /// Raised when a property value has just been changed.
     /// </summary>
-    /// <param name="E">The <see cref="PropertyChangingEventArgs"/> instance containing the event data.</param>
-    public delegate void PropChangedEvent( PropertyChangedEventArgs E );
+    /// <param name="E">The <see cref="System.ComponentModel.PropertyChangingEventArgs"/> instance containing the event data.</param>
+    public delegate void PropChangedEvent( System.ComponentModel.PropertyChangedEventArgs E );
 
     /// <summary>
     /// The property changing event handler.
@@ -62,9 +62,9 @@ public static class Props {
         get => Data.FFmpegPath;
         set {
             if ( value != Data.FFmpegPath ) {
-                PropertyChangingEventHandler(new PropertyChangingEventArgs(nameof(FFmpegPath)));
+                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(FFmpegPath)));
                 Data.FFmpegPath = value;
-                PropertyChangedEventHandler(new PropertyChangedEventArgs(nameof(FFmpegPath)));
+                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(FFmpegPath)));
             }
         }
     }
@@ -75,9 +75,9 @@ public static class Props {
         get => Data.YoutubeDLPath;
         set {
             if ( value != Data.YoutubeDLPath ) {
-                PropertyChangingEventHandler(new PropertyChangingEventArgs(nameof(YoutubeDLPath)));
+                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(YoutubeDLPath)));
                 Data.YoutubeDLPath = value;
-                PropertyChangedEventHandler(new PropertyChangedEventArgs(nameof(YoutubeDLPath)));
+                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(YoutubeDLPath)));
             }
         }
     }
@@ -88,9 +88,9 @@ public static class Props {
         get => Data.OutputFolder;
         set {
             if ( value != Data.OutputFolder ) {
-                PropertyChangingEventHandler(new PropertyChangingEventArgs(nameof(OutputFolder)));
+                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(OutputFolder)));
                 Data.OutputFolder = value;
-                PropertyChangedEventHandler(new PropertyChangedEventArgs(nameof(OutputFolder)));
+                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(OutputFolder)));
             }
         }
     }
@@ -101,9 +101,9 @@ public static class Props {
         get => Data.TimesDownloaded;
         set {
             if ( value != Data.TimesDownloaded ) {
-                PropertyChangingEventHandler(new PropertyChangingEventArgs(nameof(TimesDownloaded)));
+                PropertyChangingEventHandler(new System.ComponentModel.PropertyChangingEventArgs(nameof(TimesDownloaded)));
                 Data.TimesDownloaded = value;
-                PropertyChangedEventHandler(new PropertyChangedEventArgs(nameof(TimesDownloaded)));
+                PropertyChangedEventHandler(new System.ComponentModel.PropertyChangedEventArgs(nameof(TimesDownloaded)));
             }
         }
     }
