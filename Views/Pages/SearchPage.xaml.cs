@@ -198,7 +198,6 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
 /// <summary> Viewmodel for <see cref="SearchPage"/>. </summary>
 public class SearchPage_ViewModel : ViewModel<SearchPage> {
     /// <summary> The save folder location. </summary>
-    [ SuppressMessage("ReSharper", "ExceptionNotDocumented")][ SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public Uri SaveFolderLocation { get; set; } = FileSystemInfoExtensions.Desktop.GetUri();
 
     /// <summary> The current user search query. </summary>

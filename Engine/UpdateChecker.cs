@@ -73,15 +73,15 @@ public static class UpdateChecker {
         Debug.WriteLine("Searching for updates...");
         try {
             Version Current = StaticBindings.AppVersion;
-            Debug.WriteLine($"Current version is {Current}");
 
             Repository Repo = await Client.Repository.Get("starflash-studios", "DownTube");
             RepoUrl = Repo.HtmlUrl;
-            Debug.WriteLine($"Repo is {Repo.FullName}");
+            //Debug.WriteLine($"Repo is {Repo.FullName}");
             Release Latest = await Client.Repository.Release.GetLatest(Repo.Id);
-            Debug.WriteLine($"Release is {Latest}");
+            //Debug.WriteLine($"Release is {Latest}");
             Version? V = _VerToStr.Reverse(Latest.TagName);
-            Debug.WriteLine($"Version is {V}");
+            Debug.WriteLine($"Current version is {Current}");
+            Debug.WriteLine($"Possible update version is {V}");
             if ( V is not null ) {
                 Debug.WriteLine("Update successfully found.");
                 return new Result<UpdateSearchResult>(new UpdateSearchResult(V > Current, Current, V, Latest));
@@ -97,17 +97,30 @@ public static class UpdateChecker {
     /// <summary>
     /// Checks for any available updates, raising <paramref name="OnNewVersionDetected"/> if any are detected.
     /// </summary>
+    /// <param name="EnsureCheckIsValid">If <see langword="true"/>, <see cref="Props.CanCheckForUpdates()"/> is first invoked and checked. This ensures if the user sets a prefered <see cref="UpdateCheckFrequency"/> that it is respected.</param>
     /// <param name="OnNewVersionDetected">The action to raise when a new update is detected, or <see langword="null"/>.</param>
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public static void CheckForUpdates( Action<UpdateSearchResult>? OnNewVersionDetected = null ) {
-        Task.Run(async () => {
-            UpdateSearchResult? Res = await SearchForUpdatesAsync();
-            if ( Res is null ) { return; }
-            HasUpdate = Res.HasUpdate;
-            LatestVersion = Res.Newest;
-            LatestRelease = Res.Release;
-            OnNewVersionDetected?.Invoke(Res);
-        });
+    public static void CheckForUpdates( bool EnsureCheckIsValid = true, Action<UpdateSearchResult>? OnNewVersionDetected = null ) {
+        if ( EnsureCheckIsValid && ! Props.CanCheckForUpdates() ) {
+            Debug.WriteLine("Was about to check for updates but not enough time has passed since the last check.");
+            return;
+        }
+
+        _ = Task.Run(
+            async () => {
+                UpdateSearchResult? Res = await SearchForUpdatesAsync();
+
+                //'LastCheckDate' should not be updated here. It should instead be updated when the user selects an option on the UpdateWindow, otherwise if no option is selected and the user closes the program, an update check won't be performed until the next day/month/etc.
+
+                if ( Res is null ) {
+                    return;
+                }
+                HasUpdate = Res.HasUpdate;
+                LatestVersion = Res.Newest;
+                LatestRelease = Res.Release;
+                OnNewVersionDetected?.Invoke(Res);
+            });
+
     }
 
     #region Properties
@@ -269,7 +282,13 @@ public static class UpdateChecker {
     /// Runs asynchronous initialisation methods.
     /// </summary>
     static async Task InitAsync() {
-        CurrentRelease = await Client.Repository.Release.Get("starflash-studios", "DownTube", $"v{CurrentVersion.ToString(3)}");
+        try {
+            Debug.WriteLine("[[IGNORE START]]");
+            CurrentRelease = await Client.Repository.Release.Get("starflash-studios", "DownTube", $"v{CurrentVersion.ToString(3)}");
+            Debug.WriteLine("[[IGNORE FINISH]]");
+        } catch ( NotFoundException ) { //If the current release is not found, then it is likely an internal debug build.
+            CurrentRelease = null;
+        }
     }
 
 }

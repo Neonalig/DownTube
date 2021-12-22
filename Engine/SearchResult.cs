@@ -146,7 +146,7 @@ public class SearchResult : ReactiveObject {
     /// Downloads and generates the <see cref="Thumbnail"/> from the <see cref="ThumbnailUrl"/>.
     /// </summary>
     public void GenerateThumbnail() {
-        Dispatcher.CurrentDispatcher.Invoke(async () => {
+        _ = Dispatcher.CurrentDispatcher.Invoke(async () => {
             Thumbnail = await this.GetThumbnailAsync();
             if ( State == SearchResultState.Polling ) {
                 State = SearchResultState.Idle;

@@ -94,6 +94,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     async void AutomaticInstall_OnClick( object Sender, RoutedEventArgs E ) {
+        UpdateLastCheckedDate();
         VM.InstallProgress = -1;
         if ( UpdateChecker.LatestRelease is null ) { return; }
 
@@ -116,11 +117,21 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     }
 
     /// <summary>
+    /// Updates <see cref="Props.LastCheckDate"/> to ensure the user's preferences for <see cref="UpdateCheckFrequency"/> are respected.
+    /// </summary>
+    public static void UpdateLastCheckedDate() {
+        Props.LastCheckDate.Value = DateOnly.FromDateTime(DateTime.UtcNow);
+        Props.Save();
+        Debug.WriteLine($"Update 'LastCheckDate' was changed to {Props.LastCheckDate}.");
+    }
+
+    /// <summary>
     /// Occurs when the OnClick <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void ManualInstall_OnClick( object Sender, RoutedEventArgs E ) {
+        UpdateLastCheckedDate();
         if ( UpdateChecker.LatestRelease?.HtmlUrl is { } Url ) {
             _ = Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
             VM.UpdateDialogVisible = false;
@@ -133,6 +144,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void SkipVersionButton_OnClick( object Sender, RoutedEventArgs E ) {
+        UpdateLastCheckedDate();
         if ( UpdateChecker.LatestVersion is { } Ver ) {
             Props.IgnoredVersions.Add(Ver);
             ReturnToMain();

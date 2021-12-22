@@ -16,6 +16,7 @@ using System.Security;
 using DownTube.Engine;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 #endregion
 
@@ -172,7 +173,10 @@ public static class FileSystemInfoExtensions {
     /// The default JsonSerialiser used when one isn't specified.
     /// </summary>
     public static readonly JsonSerializer DefaultJsonSerialiser = new JsonSerializer {
-        Formatting = Formatting.Indented
+        Formatting = Formatting.Indented,
+        Converters = {
+            new StringEnumConverter()
+        }
     };
 
     /// <summary>

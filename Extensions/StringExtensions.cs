@@ -6,6 +6,8 @@
 // More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
 #endregion
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace DownTube.Extensions;
 
 public static class StringExtensions {
@@ -75,4 +77,22 @@ public static class StringExtensions {
             return FormEx;
         }
     }
+
+    /// <summary>
+    /// Determines whether the given value is <see langword="null"/> or <see cref="string.Empty"/>.
+    /// </summary>
+    /// <param name="Value">The value to check.</param>
+    /// <returns>
+    /// <see langword="true" /> if <paramref name="Value"/> is <see langword="null"/> or <see cref="string.Empty"/>; otherwise, <see langword="false" />.
+    /// </returns>
+    public static bool IsNullOrEmpty( [NotNullWhen(false)] this string? Value ) => string.IsNullOrEmpty(Value);
+
+    /// <summary>
+    /// Determines whether the given value is <see langword="null"/>, <see cref="string.Empty"/>, or filled with only whitespace characters.
+    /// </summary>
+    /// <param name="Value">The value to check.</param>
+    /// <returns>
+    /// <see langword="true" /> if <paramref name="Value"/> is <see langword="null"/>, <see cref="string.Empty"/> or whitespace; otherwise, <see langword="false" />.
+    /// </returns>
+    public static bool IsNullOrWhiteSpace( [NotNullWhen(false)] this string? Value ) => string.IsNullOrWhiteSpace(Value);
 }

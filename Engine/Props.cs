@@ -37,14 +37,19 @@ public static class Props {
         OutputFolder = new NamedObservedValue<DirectoryInfo?>(nameof(OutputFolder));
         TimesDownloaded = new NamedObservedValue<int>(nameof(TimesDownloaded));
         IgnoredVersions = new NamedObservedValueCollection<Version>(nameof(IgnoredVersions));
+        LastCheckDate = new NamedObservedValue<DateOnly?>(nameof(LastCheckDate));
+        UpdateFrequency = new NamedObservedValue<UpdateCheckFrequency>(nameof(UpdateFrequency));
 
-        Properties = new ReadOnlyCollection<INamedSave>(new List<INamedSave> {
-            FFmpegPath,
-            YoutubeDLPath,
-            OutputFolder,
-            TimesDownloaded,
-            IgnoredVersions
-        });
+        Properties = new ReadOnlyCollection<INamedSave>(
+            new List<INamedSave> {
+                FFmpegPath,
+                YoutubeDLPath,
+                OutputFolder,
+                TimesDownloaded,
+                IgnoredVersions,
+                LastCheckDate,
+                UpdateFrequency
+            });
 
         Read();
     }
@@ -127,7 +132,9 @@ public static class Props {
         YoutubeDLPath.Saved?.FullName,
         OutputFolder.Saved?.FullName,
         TimesDownloaded.Saved,
-        IgnoredVersions.Saved
+        IgnoredVersions.Saved,
+        LastCheckDate.Saved?.DayNumber,
+        UpdateFrequency.Saved
     );
 
     /// <summary>
@@ -150,6 +157,15 @@ public static class Props {
         //Below is a check to truncate the 'IgnoredVersions' collection by removing all version <= the current, as the user will never be prompted to 'update' to an older or current version (therefore there is no reason for the user to ignore that update anymore.)
         IgnoredVersions.Value = Data.IgnoredVersions?.Where(IN => IN > StaticBindings.AppVersion).ToArray() ?? Array.Empty<Version>();
         IgnoredVersions.Save();
+
+        LastCheckDate.Value = Data.LastCheckDate switch {
+            { } LCD => DateOnly.FromDayNumber(LCD),
+            _       => null
+        };
+        LastCheckDate.Save();
+
+        UpdateFrequency.Value = Data.UpdateFrequency ?? UpdateCheckFrequency.Daily;
+        UpdateFrequency.Save();
     }
 
     /// <summary>
@@ -160,7 +176,7 @@ public static class Props {
     /// <param name="OutputFolder">The path to the output directory.</param>
     /// <param name="TimesDownloaded">The amount of times songs/videos have been downloaded since application epoch.</param>
     /// <param name="IgnoredVersions">The collection of ignored update versions.</param>
-    public record ExportData( string? FFmpegPath, string? YoutubeDLPath, string? OutputFolder, int TimesDownloaded, Version[]? IgnoredVersions );
+    public record ExportData( string? FFmpegPath, string? YoutubeDLPath, string? OutputFolder, int TimesDownloaded, Version[]? IgnoredVersions, int? LastCheckDate, UpdateCheckFrequency? UpdateFrequency );
 
     /// <summary>
     /// A collection of observed properties.
@@ -171,6 +187,7 @@ public static class Props {
     /// The file path to the 'ffmpeg.exe' executable.
     /// </summary>
     public static readonly NamedObservedValue<FileInfo?> FFmpegPath;
+
     /// <summary>
     /// The file path to the 'youtube-dl.exe' executable.
     /// </summary>
@@ -190,4 +207,68 @@ public static class Props {
     /// The collection of ignored update versions.
     /// </summary>
     public static readonly NamedObservedValueCollection<Version> IgnoredVersions;
+
+    /// <summary>
+    /// The last date <see cref="UpdateChecker.CheckForUpdates(bool, Action{UpdateChecker.UpdateSearchResult}?)"/> was ran.
+    /// </summary>
+    public static readonly NamedObservedValue<DateOnly?> LastCheckDate;
+
+    /// <summary>
+    /// The update check frequency.
+    /// </summary>
+    public static readonly NamedObservedValue<UpdateCheckFrequency> UpdateFrequency;
+
+    /// <summary>
+    /// The current date today (in UTC).
+    /// </summary>
+    /// <remarks>Since the program is only a small, simple application, we assume that the day the program starts is consistent throughout the entire runtime (it is unlikely the user will keep the application running non-stop for days on end.)</remarks>
+    internal static readonly DateTime Today = DateTime.UtcNow;
+
+    //internal static TimeSpan TimeSinceLastUpdateCheck => (Today - LastCheckDate.Value.ToDateTime(TimeOnly.MinValue));
+
+    public static bool CanCheckForUpdates() => LastCheckDate.Value switch {
+        { } LCD => UpdateFrequency.Value switch {
+            //Always check for updates
+            UpdateCheckFrequency.Always => true,
+            //Check for updates every day
+            UpdateCheckFrequency.Daily => LCD.Day != Today.Day,
+            //Check for updates every sunday 
+            UpdateCheckFrequency.Weekly => LCD.DayOfWeek      != Today.DayOfWeek
+                                           && Today.DayOfWeek == DayOfWeek.Sunday,
+            //Check for updates on the first of every month
+            UpdateCheckFrequency.Monthly => LCD.Day      != Today.Day
+                                            && Today.Day == 1,
+            //Never check for updates
+            UpdateCheckFrequency.Never => false,
+            //Unexpected UpdateCheckFrequency value
+            _ => throw new EnumValueOutOfRangeException<UpdateCheckFrequency>(UpdateFrequency.Value)
+        },
+        _ => true
+    };
+}
+
+/// <summary>
+/// Possible values for the frequency in which <see cref="UpdateChecker.CheckForUpdates(bool, Action{UpdateChecker.UpdateSearchResult}?)"/> can be ran.
+/// </summary>
+public enum UpdateCheckFrequency {
+    /// <summary>
+    /// Every time the application opens.
+    /// </summary>
+    Always,
+    /// <summary>
+    /// At most once per day.
+    /// </summary>
+    Daily,
+    /// <summary>
+    /// At most once a week.
+    /// </summary>
+    Weekly,
+    /// <summary>
+    /// At most once a month.
+    /// </summary>
+    Monthly,
+    /// <summary>
+    /// The application will never look for updates.
+    /// </summary>
+    Never
 }

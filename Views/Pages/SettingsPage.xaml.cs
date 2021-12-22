@@ -56,7 +56,7 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
 public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
     public SettingsPage_ViewModel() {
         RepoUrl = UpdateChecker.RepoUrl ?? "https://github.com/starflash-studios/DownTube"; //<-- fallback
-        CurrentReleaseUrl = UpdateChecker.CurrentRelease?.HtmlUrl ?? "https://github.com/starflash-studios/DownTube/releases/tag/v0.2.0"; //<-- fallback
+        CurrentReleaseUrl = UpdateChecker.CurrentRelease?.HtmlUrl ?? $"https://github.com/starflash-studios/DownTube/releases/tag/v{StaticBindings.AppVersion.ToString(3)}"; //<-- fallback
         //fallback URLs (above) are dynamically resolved at runtime after checking for updates, and are only used for the interim period before the initial check for updates, or if any error occurs during the update checking.
         UpdateChecker.StaticPropertyChanged += ( _, _, PropertyName ) => {
             Debug.WriteLine($"Prop changed {PropertyName}");

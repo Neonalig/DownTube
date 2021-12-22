@@ -20,7 +20,6 @@ using YoutubeDLSharp.Options;
 
 using YoutubeSnoop;
 using YoutubeSnoop.Api;
-using YoutubeSnoop.Api.Entities;
 using YoutubeSnoop.Enums;
 
 #endregion
@@ -62,31 +61,12 @@ public static class DownloadEngine {
     /// Asynchronously gets the thumbnail.
     /// </summary>
     /// <param name="Result">The result.</param>
-    /// <param name="Size">The size.</param>
-    /// <param name="Token">The token.</param>
-    /// <returns>The thumbnail as a <see cref="BitmapSource"/></returns>
-    /// <exception cref="ArgumentNullException"><paramref name="Size"/> is <see langword="null" />.</exception>
-    /// <exception cref="KeyNotFoundException">The thumbnails are retrieved and <paramref name="Size"/> is not found.</exception>
-    public static async Task<BitmapSource> GetThumbnailAsync( this YoutubeSearchResult Result, ThumbnailSize Size, CancellationToken Token = default ) {
-        Thumbnail Thumb = Result.Thumbnails[Size];
-        string Url = Thumb.Url;
-        //Url to ImageSource
-        Bitmap Bmp = await GetBitmapAsync(Url, Token);
-        BitmapSource Source = Bmp.ConvertToBitmapSource();
-        return Source;
-    }
-
-    /// <summary>
-    /// Asynchronously gets the thumbnail.
-    /// </summary>
-    /// <param name="Result">The result.</param>
     /// <param name="Token">The token.</param>
     /// <returns></returns>
-    public static async Task<BitmapSource> GetThumbnailAsync( this SearchResult Result, CancellationToken Token = default ) {
+    public static async Task<BitmapSource?> GetThumbnailAsync( this SearchResult Result, CancellationToken Token = default ) {
         string Url = Result.ThumbnailUrl;
-        //Url to ImageSource
-        Bitmap Bmp = await GetBitmapAsync(Url, Token);
-        BitmapSource Source = Bmp.ConvertToBitmapSource();
+        Bitmap? Bmp = await GetBitmapAsync(Url, Token);
+        BitmapSource? Source = Bmp?.ConvertToBitmapSource();
         return Source;
     }
 
@@ -101,9 +81,28 @@ public static class DownloadEngine {
     /// <param name="Url">The URL.</param>
     /// <param name="Token">The cancellation token.</param>
     /// <returns>The retrieved <see cref="Bitmap"/>.</returns>
-    public static async Task<Bitmap> GetBitmapAsync( string Url, CancellationToken Token = default ) {
-        Stream ResponseStream = await WebClient.GetStreamAsync(Url, Token);
+    public static async Task<Bitmap?> GetBitmapAsync( string? Url, CancellationToken Token = default ) {
+        if ( Url.IsNullOrEmpty() ) {
+            return null;
+        }
+        Debug.WriteLine($"Getting bitmap from url: '{Url}'");
+        Stream ResponseStream = await WebClient.GetStreamAsync(new Uri(Url), Token);
         return new Bitmap(ResponseStream);
+    }
+
+    /// <summary>
+    /// The URI creation options used by <see cref="ForceCreateUri(string)"/>.
+    /// </summary>
+    internal static readonly UriCreationOptions ForceCreateUriOptions = new UriCreationOptions { DangerousDisablePathAndQueryCanonicalization = true };
+
+    /// <summary>
+    /// Forcefully creates a <see cref="Uri"/> instance without throwing an exception. Useful only when a hostname 'cannot be resolved', but is still valid. (i.e. <see href="https://i.ytimg.com/"/>)
+    /// </summary>
+    /// <param name="Url">The URL.</param>
+    /// <returns>A <see cref="Uri"/> instance.</returns>
+    internal static Uri ForceCreateUri( string Url ) {
+        _ = Uri.TryCreate(Url, ForceCreateUriOptions, out Uri? Ur);
+        return Ur!;
     }
 
     /// <summary>

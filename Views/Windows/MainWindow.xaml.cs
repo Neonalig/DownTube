@@ -76,8 +76,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 
         Instance = this;
 
-        //TODO: Time since last update check. (i.e. check for updates daily, weekly, monthly, etc.)
-        UpdateChecker.CheckForUpdates(Res => {
+        UpdateChecker.CheckForUpdates(true, Res => {
             if ( Res.HasUpdate) {
                 Debug.WriteLine($"Update was found! ({Res.Current} -> {Res.Newest})");
                 if ( Props.IgnoredVersions.Contains(Res.Newest) ) {
@@ -91,6 +90,10 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
                 });
             } else {
                 Debug.WriteLine("Program is up-to-date.");
+
+                if ( Props.LastCheckDate.Value is null ) {
+                    UpdateWindow.UpdateLastCheckedDate();
+                }
             }
         });
     }
