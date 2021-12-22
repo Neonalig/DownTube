@@ -42,10 +42,9 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
-        Properties.Settings.Default.Reset();
-        Properties.Settings.Default.Save();
-        Debug.WriteLine($"Props YTDL: {Props.YoutubeDLPath?.FullName}");
-        Props.Data.Save();
+        //Props.Write();
+        Debug.WriteLine($"FFmpeg path: {Props.FFmpegPath}");
+        Debug.WriteLine($"Times downloaded: {Props.TimesDownloaded}");
         Debugger.Break();
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {

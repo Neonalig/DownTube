@@ -12,7 +12,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Security;
-using System.Text;
 
 using DownTube.Engine;
 
@@ -26,40 +25,6 @@ namespace DownTube.Extensions;
 /// Extension methods and shorthand for <see cref="FileSystemInfo"/>.
 /// </summary>
 public static class FileSystemInfoExtensions {
-
-    /// <summary>
-    /// Attempts to convert the string value into a <see cref="FileInfo"/> instance, returning <see langword="true"/> if successful.
-    /// </summary>
-    /// <param name="Path">The path to convert</param>
-    /// <param name="File">The resultant instance.</param>
-    /// <returns><see langword="true"/> if conversion was successful.</returns>
-    public static bool TryGetFile( this string Path, out FileInfo File ) {
-        try {
-            File = new FileInfo(Path);
-            return true;
-            // ReSharper disable once CatchAllClause
-        } catch {
-            File = null!;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Attempts to convert the string value into a <see cref="DirectoryInfo"/> instance, returning <see langword="true"/> if successful.
-    /// </summary>
-    /// <param name="Path">The path to convert</param>
-    /// <param name="Dir">The resultant instance.</param>
-    /// <returns><see langword="true"/> if conversion was successful.</returns>
-    public static bool TryGetDirectory( this string Path, out DirectoryInfo Dir ) {
-        try {
-            Dir = new DirectoryInfo(Path);
-            return true;
-            // ReSharper disable once CatchAllClause
-        } catch {
-            Dir = null!;
-            return false;
-        }
-    }
 
     /// <summary>
     /// Forces a 'try' method, returning the value if successful, or throwing an <see cref="ArgumentNullException"/> if not.
@@ -86,7 +51,10 @@ public static class FileSystemInfoExtensions {
     /// </summary>
     /// <param name="Path">The path to the file.</param>
     /// <returns>A new <see cref="FileInfo"/> instance.</returns>
-    public static Result<FileInfo> GetFile( this string Path ) {
+    public static Result<FileInfo> GetFile( this string? Path ) {
+        if ( Path is null ) {
+            return KnownError.NullArg.GetResult<FileInfo>();
+        }
         try {
             return new FileInfo(Path);
         } catch ( SecurityException SecEx ) {
@@ -107,7 +75,10 @@ public static class FileSystemInfoExtensions {
     /// </summary>
     /// <param name="Path">The path to the file.</param>
     /// <returns>A new <see cref="DirectoryInfo"/> instance.</returns>
-    public static Result<DirectoryInfo> GetDirectory( this string Path ) {
+    public static Result<DirectoryInfo> GetDirectory( this string? Path ) {
+        if ( Path is null ) {
+            return KnownError.NullArg.GetResult<DirectoryInfo>();
+        }
         try {
             return new DirectoryInfo(Path);
         } catch ( SecurityException SecEx ) {
@@ -129,7 +100,7 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="ArgumentException"><paramref name="SpecialFolder" /> is not a member of <see cref="Environment.SpecialFolder" />.</exception>
     /// <exception cref="PlatformNotSupportedException">The current platform is not supported.</exception>
     /// <exception cref="ArgumentNullException">The try method returned <see langword="null"/>.</exception>
-    public static DirectoryInfo GetDirectory( this Environment.SpecialFolder SpecialFolder ) => TryGetDirectory(Environment.GetFolderPath(SpecialFolder), out DirectoryInfo DI).Force(DI);
+    public static Result<DirectoryInfo> GetDirectory( this Environment.SpecialFolder SpecialFolder ) => GetDirectory(Environment.GetFolderPath(SpecialFolder));
 
     /// <summary>
     /// Creates a <see cref="FileInfo"/> instance pointing to a file in the given <paramref name="Directory"/>, and creates the file if it does not already exist.
@@ -195,7 +166,7 @@ public static class FileSystemInfoExtensions {
     public static readonly DirectoryInfo AppDir = App.Directory!;
 
     /// <summary> The logical desktop directory. </summary>
-    public static readonly DirectoryInfo Desktop = Environment.SpecialFolder.Desktop.GetDirectory();
+    public static readonly DirectoryInfo Desktop = Environment.SpecialFolder.Desktop.GetDirectory().Value!;
 
     /// <summary>
     /// The default JsonSerialiser used when one isn't specified.
@@ -286,6 +257,8 @@ public static class FileSystemInfoExtensions {
             return IOEx;
         } catch ( ArgumentException ArgEx ) {
             return ArgEx;
+        } catch (JsonSerializationException JSerEx ) {
+            return JSerEx;
         }
     }
 

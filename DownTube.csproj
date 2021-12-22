@@ -39,6 +39,7 @@
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
     <None Remove=".gitmodules" />
+    <None Remove="Engine\Props.cs~RF1dd10c8.TMP" />
     <None Remove="Resources\Banner.png" />
     <None Remove="Resources\BannerGreen.png" />
     <None Remove="Resources\BannerMagenta.png" />

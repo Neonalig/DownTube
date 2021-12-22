@@ -16,6 +16,8 @@ using DownTube.Engine;
 
 using MVVMUtils;
 
+using ReactiveUI;
+
 #endregion
 
 namespace DownTube.Views.Pages;
@@ -93,7 +95,7 @@ public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
 /// Represents a named field for the <see cref="SettingsPage"/>.
 /// </summary>
 [ContentProperty(nameof(Content))]
-public class SettingsField : ReactiveUI.ReactiveObject {
+public class SettingsField : ReactiveObject {
     /// <summary>
     /// Initialises a new instance of the <see cref="SettingsField"/> class.
     /// </summary>

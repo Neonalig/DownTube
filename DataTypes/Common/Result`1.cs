@@ -143,6 +143,17 @@ public readonly struct Result<T> : IResult<Result<T>> {
         Value = this.Value!;
         return WasSuccess;
     }
+    /// <summary>
+    /// Outputs the value of the result.
+    /// </summary>
+    /// <param name="Value">The value.</param>
+    /// <param name="Result">The result.</param>
+    /// <returns>Whether the result was a success.</returns>
+    public bool Out( out T Value, out Result<T> Result ) {
+        Result = this;
+        Value = this.Value!;
+        return WasSuccess;
+    }
 
     /// <inheritdoc />
     public static Result<T> Success { get; } = new Result<T>(default, true, 0x0000, "WasSuccess.");

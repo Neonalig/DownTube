@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Custom Event</Title>
+      <Author>Neonalig</Author>
+      <Description>Creates a custom EventArgs and EventHandler type.</Description>
+      <Shortcut>cevnt</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CSharp">
+        <![CDATA[/// <summary>
+/// Represents the method that will handle the $EventName$ <see langword="event"/> on a <see cref="$SenderType$"/> instance, and provide the relevant event arguments.
+/// </summary>
+/// <param name="Sender">The <see langword="event"/> raiser.</param>
+/// <param name="E">The raised <see langword="event"/> arguments.</param>
+/// <seealso cref="$EventName$EventArgs"/>
+public delegate void $EventName$EventHandler( $SenderType$? Sender, $EventName$EventArgs E );
+
+/// <summary>
+/// Provides additional data for the <see cref="$EventName$EventHandler"/>.
+/// </summary>
+/// <seealso cref="$EventName$EventHandler"/>
+public class $EventName$EventArgs : EventArgs {
+    /// <summary>
+    /// Constructs an instance of the <see cref="$EventName$EventArgs"/> <see langword="class"/>.
+    /// </summary>
+    /// <param name="$ArgName$">$ArgDesc$</param>
+    public SavedPropertyChangedEventArgs( $ArgType$ $ArgName$ ) => this.$ArgName$ = $ArgName$;
+
+    /// <summary>
+    /// $ArgDesc$
+    /// </summary>
+    public $ArgType$ $ArgName$ { get; set; }
+}]]>
+      </Code>
+      <Declarations>
+        <Literal>
+          <ID>EventName</ID>
+          <ToolTip>The name of the event.</ToolTip>
+          <Default>SomeEvent</Default>
+        </Literal>
+        <Literal>
+          <ID>SenderType</ID>
+          <ToolTip>The expected event sender type.</ToolTip>
+          <Default>object</Default>
+        </Literal>
+        <Literal>
+          <ID>ArgType</ID>
+          <ToolTip>The first event argument type.</ToolTip>
+          <Default>object</Default>
+        </Literal>
+        <Literal>
+          <ID>ArgName</ID>
+          <ToolTip>The name of the first argument.</ToolTip>
+          <Default>Value</Default>
+        </Literal>
+        <Literal>
+          <ID>ArgDesc</ID>
+          <ToolTip>A simple description of the first argument.</ToolTip>
+          <Default>Some property value.</Default>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>
+<!-- See: https://docs.microsoft.com/en-us/visualstudio/ide/walkthrough-creating-a-code-snippet?view=vs-2022 -->

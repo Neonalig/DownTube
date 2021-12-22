@@ -1,4 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -9,6 +19,8 @@ using DownTube.Engine;
 using MVVMUtils;
 
 using Octokit;
+
+#endregion
 
 namespace DownTube.Views.Windows;
 
@@ -52,16 +64,16 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// <param name="CTS">The cancellation token.</param>
     async Task Download( Release Release, DirectoryInfo Destination, CancellationTokenSource CTS ) {
         await DownloadRequest.DownloadRelease(
-            Release: Release,
-            Destination: Destination,
-            DownloadStarted: _ => {
+            Release,
+            Destination,
+            _ => {
                 Debug.WriteLine("Download started.");
             },
-            ProgressUpdated: ( _, P ) => {
+            ( _, P ) => {
                 Debug.WriteLine($"Download: {P:P2}");
                 VM.InstallProgress = P;
             },
-            DownloadComplete: ( _, Fl ) => {
+            ( _, Fl ) => {
                 Debug.WriteLine($"Download finished. {Fl.FullName}");
                 //Process.Start("explorer.exe", $"/select,\"{Fl.FullName}\"");
                 VM.InstallProgress = -1;
@@ -70,9 +82,9 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
                 //DirectoryInfo Ext = Fl.Extract(true);
                 //Debug.WriteLine($"Extracted to {Ext.FullName}");
             },
-            BufferSize: 16384,
-            CreateSubdirectory: false,
-            Token: CTS);
+            16384,
+            false,
+            CTS);
         VM.InstallProgress = 1;
     }
 

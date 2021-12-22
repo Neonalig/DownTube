@@ -19,7 +19,7 @@
                     <TextBlock Text="Browse"
                                Margin="0,0,10,0" />
                     <controls:Icon x:Name="Ico"
-                                   Glyph="Folder48" Filled="True"/>
+                                   Glyph="Folder48" Filled="True" />
                 </StackPanel>
             </Button.Content>
         </Button>

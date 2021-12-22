@@ -98,7 +98,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
         KeyDown += ( _, E ) => {
             switch ( E.Key ) {
                 case Key.E when E.IsDown:
-                    Props.TimesDownloaded += 1;
+                    Props.TimesDownloaded.Value += 1;
                     break;
             }
         };
@@ -151,7 +151,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
             ShowNewFolderButton = true
         };
         
-        if ( VFBD.ShowDialog() == true && VFBD.SelectedPath.TryGetDirectory(out DirectoryInfo Dir) ) {
+        if ( VFBD.ShowDialog() == true && VFBD.SelectedPath.GetDirectory().Out(out DirectoryInfo Dir) ) {
             VM.SaveFolderLocation = new Uri(Dir.FullName);
         }
     }
@@ -212,8 +212,8 @@ public class SearchPage_ViewModel : ViewModel<SearchPage> {
     /// </summary>
     public SearchPage_ViewModel() {
         TimesDownloaded = Props.TimesDownloaded;
-        Props.Data.SavedPropertyChanged += (P, _, _) => {
-            if ( P.PropertyName == nameof( Props.TimesDownloaded ) ) {
+        Props.SavedPropertyChanged += (_, N) => {
+            if ( N.PropertyName == nameof( Props.TimesDownloaded ) ) {
                 TimesDownloaded = Props.TimesDownloaded;
             }
         };

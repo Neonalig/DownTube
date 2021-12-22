@@ -15,14 +15,14 @@
       Title="Settings"
       d:DataContext="{x:Type pages:SettingsPage_ViewModel}">
     <Page.Resources>
-        <common:StaticBindings x:Key="StatInfo"/>
+        <common:StaticBindings x:Key="StatInfo" />
         <converters:VersionToStringConverter x:Key="VerToStringConv" />
     </Page.Resources>
     <SelectiveScrollingGrid Margin="0,0,0,0" d:Margin="0,0,0,0">
         <SelectiveScrollingGrid.RowDefinitions>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="30" />
             <RowDefinition />
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="60" />
         </SelectiveScrollingGrid.RowDefinitions>
         <TextBlock Grid.Row="0"
                    FontSize="20"
@@ -88,14 +88,15 @@
                         <Hyperlink TextDecorations="None"
                                    Click="CurrentVersion_Click"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
+                            <Run
+                                Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
                         </Hyperlink>
                     </TextBlock>
                     <TextBlock HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}">
                         <Run Text="©" />
                         <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" />
-                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}"/>
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}" />
                     </TextBlock>
                 </StackPanel>
             </SelectiveScrollingGrid>

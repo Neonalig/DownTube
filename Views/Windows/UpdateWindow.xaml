@@ -26,7 +26,8 @@
         d:DataContext="{d:DesignInstance Type=windows:UpdateWindow_ViewModel}">
     <Window.Resources>
         <common:StaticBindings x:Key="StatInfo" />
-        <converters:VersionToStringConverter x:Key="VerToStrConv" Major="Display" Minor="Display" Build="Display" Revision="DisplayIfNonZero" Prefix="v" />
+        <converters:VersionToStringConverter x:Key="VerToStrConv" Major="Display" Minor="Display" Build="Display"
+                                             Revision="DisplayIfNonZero" Prefix="v" />
     </Window.Resources>
     <Border x:Name="MainBorder"
             CornerRadius="8"
@@ -37,14 +38,14 @@
             Effect="{Binding BorderEffect}">
         <SelectiveScrollingGrid>
             <SelectiveScrollingGrid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </SelectiveScrollingGrid.RowDefinitions>
             <SelectiveScrollingGrid Grid.Row="1">
                 <SelectiveScrollingGrid.RowDefinitions>
-                    <RowDefinition Height="1.5*"/>
-                    <RowDefinition Height="3*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1.5*" />
+                    <RowDefinition Height="3*" />
+                    <RowDefinition Height="1*" />
                 </SelectiveScrollingGrid.RowDefinitions>
                 <StackPanel Grid.Row="0"
                             Orientation="Vertical"
@@ -53,7 +54,7 @@
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="30"
-                               Margin="0,0,0,10"/>
+                               Margin="0,0,0,10" />
                     <TextBlock HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="18"
@@ -65,13 +66,13 @@
                 </StackPanel>
                 <Grid Grid.Row="1" Width="400" Height="100">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="2*"/>
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="2*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="3*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="3*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Current Version:"
                                Grid.Row="0"
@@ -80,13 +81,14 @@
                                VerticalAlignment="Center"
                                FontSize="16"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
-                    <TextBlock Text="{Binding Source={StaticResource StatInfo}, Converter={StaticResource VerToStrConv}, Path=AppVersion}"
-                               Grid.Row="1"
-                               Grid.Column="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="32"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+                    <TextBlock
+                        Text="{Binding Source={StaticResource StatInfo}, Converter={StaticResource VerToStrConv}, Path=AppVersion}"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="32"
+                        Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <controls:Icon Glyph="ArrowRight48" Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" FontSize="40" />
                     <TextBlock Text="New Version:"
                                Grid.Row="0"
@@ -104,10 +106,10 @@
                 </Grid>
                 <SelectiveScrollingGrid Grid.Row="2" Height="50" VerticalAlignment="Bottom">
                     <SelectiveScrollingGrid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
                     </SelectiveScrollingGrid.ColumnDefinitions>
                     <Button Grid.Column="0"
                             Margin="5"
@@ -147,22 +149,24 @@
                 <Grid Width="360">
                     <StackPanel>
                         <StackPanel.Resources>
-                            <windows:InstallProgressToIntermediateConverter x:Key="ProgToInterConv"/>
-                            <windows:InstallProgressToVisibilityConverter x:Key="ProgToVisConv"/>
-                            <windows:InstallProgressToStringConverter x:Key="ProgToTxtConv"/>
+                            <windows:InstallProgressToIntermediateConverter x:Key="ProgToInterConv" />
+                            <windows:InstallProgressToVisibilityConverter x:Key="ProgToVisConv" />
+                            <windows:InstallProgressToStringConverter x:Key="ProgToTxtConv" />
                         </StackPanel.Resources>
                         <TextBlock FontWeight="Medium"
                                    Text="INSTALL UPDATE"
-                                   Margin="0,0,0,10"/>
+                                   Margin="0,0,0,10" />
                         <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    TextAlignment="Justify"
                                    TextWrapping="WrapWithOverflow">
-                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"/>
-                            <Run Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update."/>
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
+                            <Run
+                                Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update." />
                         </TextBlock>
-                        <Grid Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
-                              Margin="0,10,0,0"
-                              Height="20">
+                        <Grid
+                            Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
+                            Margin="0,10,0,0"
+                            Height="20">
                             <ProgressBar Minimum="0"
                                          SmallChange="0.01"
                                          Maximum="1"
@@ -181,7 +185,7 @@
             <controls:TitleBar Grid.Row="0"
                                ApplicationNavigation="True"
                                ShowMaximize="False"
-                               ShowMinimize="False"/>
+                               ShowMinimize="False" />
         </SelectiveScrollingGrid>
     </Border>
 </Window>

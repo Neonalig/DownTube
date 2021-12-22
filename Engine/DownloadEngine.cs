@@ -135,17 +135,17 @@ public static class DownloadEngine {
     /// <param name="Prog">The constructed <see cref="Progress{T}"/> instance.</param>
     /// <returns>A <see cref="Result{T}"/> to return and abort early on failure, or <see langword="null"/> if the instance is ready.</returns>
     internal static Result<string>? GetYoutubeDL( Action<DownloadProgress> Progress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog ) {
-        if ( Props.YoutubeDLPath?.FullName is not { } YDlPath ) {
+        if ( Props.YoutubeDLPath.Value?.FullName is not { } YDlPath ) {
             Dl = null!;
             Prog = null!;
             return KnownError.NoYoutubeDL.GetResult<string>();
         }
-        if ( Props.FFmpegPath?.FullName is not { } FFmPath ) {
+        if ( Props.FFmpegPath.Value?.FullName is not { } FFmPath ) {
             Dl = null!;
             Prog = null!;
             return KnownError.NoFFmpeg.GetResult<string>();
         }
-        if ( Props.OutputFolder?.FullName is not { } OutFld ) {
+        if ( Props.OutputFolder.Value?.FullName is not { } OutFld ) {
             Dl = null!;
             Prog = null!;
             return KnownError.NoOutputFolder.GetResult<string>();
