@@ -8,6 +8,8 @@
 
 #region Using Directives
 
+using DownTube.DataTypes.Properties;
+
 using Newtonsoft.Json;
 
 #endregion
@@ -18,7 +20,7 @@ namespace DownTube.DataTypes;
 /// Represents a simple value type which supports saving/loading.
 /// </summary>
 /// <typeparam name="T">The value type.</typeparam>
-public class ObservedValue<T> : ISave {
+public class ObservedValue<T> : SimpleSave<T> {
 
     /// <summary>
     /// Constructs an instance of the <see cref="ObservedValue{T}"/> <see langword="class"/> with an initial value of <c><see langword="default"/>(<typeparamref name="T"/>)</c>.
@@ -46,10 +48,10 @@ public class ObservedValue<T> : ISave {
             _Value = value;
             if (WasDirty) {
                 if ( !IsDirty ) { //Was and now isn't...  ∴ Just became clean
-                    BecameClean?.Invoke(this, new BecameCleanEventArgs());
+                    OnBecameClean();
                 }
             } else if (IsDirty) { //Wasn't and now is...  ∴ Just became dirty
-                BecameDirty?.Invoke(this, new BecameDirtyEventArgs());
+                OnBecameDirty();
             }
         }
     }
@@ -59,28 +61,14 @@ public class ObservedValue<T> : ISave {
     /// </summary>
     public T? Saved { get; private set; }
 
-    /// <summary>
-    /// Determines whether the two values are different.
-    /// </summary>
-    /// <param name="Left">The left operand, or <see langword="null"/>.</param>
-    /// <param name="Right">The right operand, or <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if <paramref name="Left"/> and <paramref name="Right"/> are different values.</returns>
-    public static bool IsDifferent( T? Left, T? Right ) => Left is null ? Right is not null : Right is null || !Left.Equals(Right);
+    /// <inheritdoc />
+    public override bool IsDirty => IsDifferent(Value, Saved);
 
     /// <inheritdoc />
-    public bool IsDirty => IsDifferent(Value, Saved);
+    public override void Save() => Saved = Value;
 
     /// <inheritdoc />
-    public void Save() => Saved = Value;
-
-    /// <inheritdoc />
-    public void Revert() => Value = Saved;
-
-    /// <inheritdoc />
-    public event BecameCleanEventHandler? BecameClean;
-
-    /// <inheritdoc />
-    public event BecameDirtyEventHandler? BecameDirty;
+    public override void Revert() => Value = Saved;
 
     /// <summary>
     /// Performs an <see langword="implicit"/> conversion between <paramref name="Observed"/> and the type <typeparamref name="T"/>.

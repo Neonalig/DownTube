@@ -82,7 +82,7 @@
                                FontSize="16"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock
-                        Text="{Binding Source={StaticResource StatInfo}, Converter={StaticResource VerToStrConv}, Path=AppVersion}"
+                            Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStrConv}}"
                         Grid.Row="1"
                         Grid.Column="0"
                         HorizontalAlignment="Center"
@@ -114,7 +114,7 @@
                     <Button Grid.Column="0"
                             Margin="5"
                             Padding="0"
-                            Click="SkipVersionButton_Click"
+                            Click="SkipVersionButton_OnClick"
                             Background="{DynamicResource AccentFillColorDisabledBrush}"
                             Content="Skip this Version"
                             VerticalAlignment="Stretch" />
@@ -139,7 +139,7 @@
                              Grid.RowSpan="2"
                              DialogHeight="255"
                              Show="{Binding UpdateDialogVisible}"
-                             d:Show="True"
+                             d:Show="False"
                              Click="ManualInstall_OnClick"
                              ButtonLeftAppearance="Secondary"
                              ButtonLeftName="Open GitHub"

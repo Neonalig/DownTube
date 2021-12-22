@@ -14,6 +14,7 @@ using System.IO;
 using System.Windows;
 
 using DownTube.DataTypes;
+using DownTube.DataTypes.Properties;
 
 #endregion
 
@@ -23,6 +24,7 @@ namespace DownTube.Engine;
 /// Manages writing to/reading from properties.
 /// </summary>
 [SuppressMessage("ReSharper", "LoopCanBePartlyConvertedToQuery")]
+[SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
 public static class Props {
     /// <summary>
     /// Initialises the <see cref="Props"/> class.
@@ -34,12 +36,14 @@ public static class Props {
         YoutubeDLPath = new NamedObservedValue<FileInfo?>(nameof(YoutubeDLPath));
         OutputFolder = new NamedObservedValue<DirectoryInfo?>(nameof(OutputFolder));
         TimesDownloaded = new NamedObservedValue<int>(nameof(TimesDownloaded));
+        IgnoredVersions = new NamedObservedValueCollection<Version>(nameof(IgnoredVersions));
 
         Properties = new ReadOnlyCollection<INamedSave>(new List<INamedSave> {
             FFmpegPath,
             YoutubeDLPath,
             OutputFolder,
-            TimesDownloaded
+            TimesDownloaded,
+            IgnoredVersions
         });
 
         Read();
@@ -122,7 +126,8 @@ public static class Props {
         FFmpegPath.Saved?.FullName,
         YoutubeDLPath.Saved?.FullName,
         OutputFolder.Saved?.FullName,
-        TimesDownloaded.Saved
+        TimesDownloaded.Saved,
+        IgnoredVersions.Saved
     );
 
     /// <summary>
@@ -141,6 +146,10 @@ public static class Props {
 
         TimesDownloaded.Value = Data.TimesDownloaded;
         TimesDownloaded.Save();
+
+        //Below is a check to truncate the 'IgnoredVersions' collection by removing all version <= the current, as the user will never be prompted to 'update' to an older or current version (therefore there is no reason for the user to ignore that update anymore.)
+        IgnoredVersions.Value = Data.IgnoredVersions?.Where(IN => IN > StaticBindings.AppVersion).ToArray() ?? Array.Empty<Version>();
+        IgnoredVersions.Save();
     }
 
     /// <summary>
@@ -150,7 +159,8 @@ public static class Props {
     /// <param name="YoutubeDLPath">The file path to the 'youtube-dl.exe' executable.</param>
     /// <param name="OutputFolder">The path to the output directory.</param>
     /// <param name="TimesDownloaded">The amount of times songs/videos have been downloaded since application epoch.</param>
-    public record ExportData( string? FFmpegPath, string? YoutubeDLPath, string? OutputFolder, int TimesDownloaded );
+    /// <param name="IgnoredVersions">The collection of ignored update versions.</param>
+    public record ExportData( string? FFmpegPath, string? YoutubeDLPath, string? OutputFolder, int TimesDownloaded, Version[]? IgnoredVersions );
 
     /// <summary>
     /// A collection of observed properties.
@@ -175,4 +185,9 @@ public static class Props {
     /// The amount of times songs/videos have been downloaded since application epoch.
     /// </summary>
     public static readonly NamedObservedValue<int> TimesDownloaded;
+
+    /// <summary>
+    /// The collection of ignored update versions.
+    /// </summary>
+    public static readonly NamedObservedValueCollection<Version> IgnoredVersions;
 }

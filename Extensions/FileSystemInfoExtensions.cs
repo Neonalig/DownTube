@@ -292,11 +292,19 @@ public static class FileSystemInfoExtensions {
     /// <typeparam name="T">The data type.</typeparam>
     /// <param name="Str">The data to deserialise.</param>
     /// <param name="Serialiser">The serialiser to use. If <see langword="null"/>, <see cref="DefaultJsonSerialiser"/> is used instead.</param>
-    public static T? Deserialise<T>( this string Str, JsonSerializer? Serialiser = null ) {
-        using ( StringReader SR = new StringReader(Str) ) {
-            using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
-                return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
+    public static Result<T> Deserialise<T>( this string Str, JsonSerializer? Serialiser = null ) {
+        try {
+            using ( StringReader SR = new StringReader(Str) ) {
+                using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
+                    T? Return = (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
+                    if ( Return is null ) {
+                        return KnownError.GetNullArgError(nameof(Return)).GetResult<T>();
+                    }
+                    return Return;
+                }
             }
+        } catch (Exception Ex) {
+            return Ex;
         }
     }
 

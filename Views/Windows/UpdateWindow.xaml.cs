@@ -112,6 +112,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
             }) is { } UpdateProcess ) {
             await UpdateProcess.WaitForExitAsync(CTS.Token);
         }
+        //No need to 'ReturnToMain()' etc, as the automatic updater process will kill the running application automatically anyways.
     }
 
     /// <summary>
@@ -121,21 +122,27 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void ManualInstall_OnClick( object Sender, RoutedEventArgs E ) {
         if ( UpdateChecker.LatestRelease?.HtmlUrl is { } Url ) {
-            Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
+            _ = Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
             VM.UpdateDialogVisible = false;
         }
     }
 
-    void SkipVersionButton_Click( object Sender, RoutedEventArgs E ) {
-        //TODO: IgnoredVersions as Props, CustomProp method (type is just (de/)serialised to a json string)
-    }
-
     /// <summary>
-    /// Occurs when the Click <see langword="event"/> is raised.
+    /// Occurs when the OnClick <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void NotifyLaterButton_Click( object Sender, RoutedEventArgs E ) {
+    void SkipVersionButton_OnClick( object Sender, RoutedEventArgs E ) {
+        if ( UpdateChecker.LatestVersion is { } Ver ) {
+            Props.IgnoredVersions.Add(Ver);
+            ReturnToMain();
+        }
+    }
+
+    /// <summary>
+    /// Hides the update window then returns to the main window.
+    /// </summary>
+    void ReturnToMain() {
         MainWindow.Instance.Show();
         Close();
     }
@@ -145,18 +152,34 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void NotifyLaterButton_Click( object Sender, RoutedEventArgs E ) => ReturnToMain();
+
+    /// <summary>
+    /// Occurs when the Click <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void InstallNowButton_Click( object Sender, RoutedEventArgs E ) => VM.UpdateDialogVisible = true;
 }
 
+/// <summary>
+/// Viewmodel for the <see cref="UpdateWindow"/> view.
+/// </summary>
+/// <seealso cref="UpdateWindow"/>
+/// <seealso cref="Window_ViewModel{T}"/>
 public class UpdateWindow_ViewModel : Window_ViewModel<UpdateWindow> {
+    /// <summary>
+    /// Initialises a new instance of the <see cref="UpdateWindow_ViewModel"/> class.
+    /// </summary>
+    public UpdateWindow_ViewModel() => LatestVersion = UpdateChecker.LatestVersion;
+
     /// <summary>
     /// Gets or sets the latest version available.
     /// </summary>
     /// <value>
     /// The latest version available from GitHub.
     /// </value>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public Version LatestVersion { get; set; } = new Version(0, 1, 1, 0);
+    public Version? LatestVersion { get; set; }
 
     /// <inheritdoc />
     public override Border WindowBGBorder => View.MainBorder;

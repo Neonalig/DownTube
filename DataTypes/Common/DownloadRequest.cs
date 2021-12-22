@@ -347,6 +347,9 @@ public class DownloadRequest : ReactiveObject {
 
     public static async Task DownloadRelease( Release Release, DirectoryInfo Destination, DownloadStartedEventArgs DownloadStarted, ProgressUpdatedEventArgs ProgressUpdated, DownloadCompleteEventArgs DownloadComplete, int BufferSize = 16384, bool CreateSubdirectory = false, CancellationTokenSource? Token = null ) {
         Token ??= new CancellationTokenSource();
+        if ( !Destination.Exists ) {
+            Destination.Create();
+        }
 
         //Search through all assets for the '*.zip' file and assume the first is what we want.
         foreach ( ReleaseAsset Asset in Release.Assets ) {

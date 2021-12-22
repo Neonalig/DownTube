@@ -44,8 +44,14 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     public MainWindow() {
         //Props.Write();
         Debug.WriteLine($"FFmpeg path: {Props.FFmpegPath}");
+        Debug.WriteLine($"YoutubeDL path: {Props.YoutubeDLPath}");
+        Debug.WriteLine($"OutputFolder path: {Props.OutputFolder}");
         Debug.WriteLine($"Times downloaded: {Props.TimesDownloaded}");
-        Debugger.Break();
+        Debug.WriteLine($"Ignored versions: {Props.IgnoredVersions.Count}");
+        foreach ( Version V in Props.IgnoredVersions ) {
+            Debug.WriteLine($"\t: {V}");
+        }
+        //Debugger.Break();
 
         AppDomain.CurrentDomain.UnhandledException += ( _, E )=> {
             Debug.WriteLine(E.ExceptionObject, "EXCEPTION");
@@ -70,9 +76,14 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 
         Instance = this;
 
+        //TODO: Time since last update check. (i.e. check for updates daily, weekly, monthly, etc.)
         UpdateChecker.CheckForUpdates(Res => {
-            if ( Res.HasUpdate ) {
-                Debug.Write($"Update was found! ({Res.Current} -> {Res.Newest})");
+            if ( Res.HasUpdate) {
+                Debug.WriteLine($"Update was found! ({Res.Current} -> {Res.Newest})");
+                if ( Props.IgnoredVersions.Contains(Res.Newest) ) {
+                    Debug.WriteLine("Update was ignored by user.");
+                    return;
+                }
                 Dispatcher.Invoke(() => {
                     UpdateWindow UW = new UpdateWindow();
                     UW.Show();
