@@ -8,20 +8,14 @@
 
 #region Using Directives
 
-using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls;
 
 using DownTube.Engine;
-using DownTube.Views.Pages;
 
 using MVVMUtils;
 
 using WPFUI.Background;
-using WPFUI.Common;
 using WPFUI.Controls;
-
-using Icon = WPFUI.Common.Icon;
 
 #endregion
 
@@ -148,43 +142,4 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 
     /// <inheritdoc />
     public MainWindow_ViewModel VM { get; }
-}
-
-/// <summary>
-/// The viewmodel for <see cref="MainWindow"/>.
-/// </summary>
-public class MainWindow_ViewModel : Window_ViewModel<MainWindow> {
-
-    /// <summary>
-    /// Gets the collection of navigation items to display on the sidebar.
-    /// </summary>
-    /// <value>
-    /// The collection of available sidebar navigation items.
-    /// </value>
-    public ObservableCollection<NavItem> NavItems { get; set; } = new ObservableCollection<NavItem> {
-        new NavItem {
-            Name = "Search",
-            Tag = nameof(SearchPage),
-            Type = typeof(SearchPage),
-            Icon = Icon.Search48
-        }
-    };
-
-    /// <summary>
-    /// Gets the collection of navigation items to display on the footer.
-    /// </summary>
-    /// <value>
-    /// The collection of available footer navigation items.
-    /// </value>
-    public ObservableCollection<NavItem> NavFooterItems { get; set; } = new ObservableCollection<NavItem> {
-        new NavItem {
-            Name = "Settings",
-            Tag = nameof(SettingsPage),
-            Type = typeof(SettingsPage),
-            Icon = Icon.Settings48
-        }
-    };
-
-    /// <inheritdoc />
-    public override Border WindowBGBorder => View.MainBorder;
 }

@@ -4,3 +4,6 @@
 [submodule "Updater"]
 	path = Updater
 	url = https://github.com/starflash-studios/DownTube-Updater
+[submodule "MVVMUtils"]
+	path = MVVMUtils
+	url = https://github.com/starflash-studios/MVVMUtils

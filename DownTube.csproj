@@ -24,18 +24,29 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="MVVMUtils\**" />
     <Compile Remove="Updater\**" />
     <Compile Remove="wpfui\**" />
     <Compile Remove="_Git\**" />
+    <EmbeddedResource Remove="MVVMUtils\**" />
     <EmbeddedResource Remove="Updater\**" />
     <EmbeddedResource Remove="wpfui\**" />
     <EmbeddedResource Remove="_Git\**" />
+    <None Remove="MVVMUtils\**" />
     <None Remove="Updater\**" />
     <None Remove="wpfui\**" />
     <None Remove="_Git\**" />
+    <Page Remove="MVVMUtils\**" />
     <Page Remove="Updater\**" />
     <Page Remove="wpfui\**" />
     <Page Remove="_Git\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\Pages\SearchPage.viewmodel.cs" DependentUpon="Views\Pages\SearchPage.xaml" />
+    <Compile Update="Views\Pages\SettingsPage.viewmodel.cs" DependentUpon="Views\Pages\SettingsPage.xaml" />
+    <Compile Update="Views\Windows\MainWindow.viewmodel.cs" DependentUpon="Views\Windows\MainWindow.xaml" />
+    <Compile Update="Views\Windows\UpdateWindow.viewmodel.cs" DependentUpon="Views\Windows\UpdateWindow.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -84,7 +95,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MVVMUtils\MVVMUtils.csproj" />
+    <ProjectReference Include="MVVMUtils\MVVMUtils.csproj" />
     <ProjectReference Include="wpfui\WPFUI\WPFUI.csproj" />
   </ItemGroup>
 

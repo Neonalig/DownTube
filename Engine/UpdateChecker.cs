@@ -275,7 +275,7 @@ public static class UpdateChecker {
     /// Initialises the <see cref="UpdateChecker"/> class.
     /// </summary>
     static UpdateChecker() {
-        Task.Run(async () => await InitAsync());
+        _ = Task.Run(async () => await InitAsync());
     }
 
     /// <summary>
