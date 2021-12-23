@@ -8,7 +8,6 @@
 
 #region Using Directives
 
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;

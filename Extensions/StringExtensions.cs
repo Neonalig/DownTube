@@ -6,7 +6,11 @@
 // More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
 #endregion
 
+#region Using Directives
+
 using System.Diagnostics.CodeAnalysis;
+
+#endregion
 
 namespace DownTube.Extensions;
 

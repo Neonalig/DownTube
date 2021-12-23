@@ -1,8 +1,20 @@
-﻿using System.Collections.ObjectModel;
+﻿#region Copyright (C) 2017-2021  Starflash Studios
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License (Version 3.0)
+// as published by the Free Software Foundation.
+// 
+// More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
+#endregion
+
+#region Using Directives
+
+using System.Collections.ObjectModel;
 
 using DownTube.Engine;
 
 using MVVMUtils;
+
+#endregion
 
 namespace DownTube.Views.Pages;
 
@@ -22,7 +34,7 @@ public class SearchPage_ViewModel : ViewModel<SearchPage> {
     /// </summary>
     public SearchPage_ViewModel() {
         TimesDownloaded = Props.TimesDownloaded;
-        Props.SavedPropertyChanged += (_, N) => {
+        Props.SavedPropertyChanged += ( _, N ) => {
             if ( N.PropertyName == nameof( Props.TimesDownloaded ) ) {
                 TimesDownloaded = Props.TimesDownloaded;
             }

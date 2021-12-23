@@ -14,7 +14,6 @@ using System.IO;
 using System.Windows;
 
 using DownTube.DataTypes;
-using DownTube.DataTypes.Properties;
 
 #endregion
 

@@ -82,7 +82,7 @@
                                FontSize="16"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                     <TextBlock
-                            Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStrConv}}"
+                        Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStrConv}}"
                         Grid.Row="1"
                         Grid.Column="0"
                         HorizontalAlignment="Center"

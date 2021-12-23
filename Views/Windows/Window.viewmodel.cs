@@ -18,7 +18,7 @@ using MVVMUtils;
 
 #endregion
 
-namespace DownTube.Views;
+namespace DownTube.Views.Windows;
 
 /// <summary>
 /// The viewmodel for any <see cref="Window"/>

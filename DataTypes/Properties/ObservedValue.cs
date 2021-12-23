@@ -8,8 +8,6 @@
 
 #region Using Directives
 
-using DownTube.DataTypes.Properties;
-
 using Newtonsoft.Json;
 
 #endregion
