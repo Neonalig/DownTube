@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:views="clr-namespace:DownTube.Views"
         xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        xmlns:windows="clr-namespace:DownTube.Views.Windows"
         mc:Ignorable="d"
         d:Background="#202020"
         AllowsTransparency="True"
@@ -16,7 +16,7 @@
         Title="MainWindow"
         Height="510"
         Width="800"
-        d:DataContext="{d:DesignInstance Type=views:MainWindow_ViewModel}">
+        d:DataContext="{d:DesignInstance Type=windows:MainWindow_ViewModel}">
     <Border x:Name="MainBorder"
             CornerRadius="8"
             Margin="{Binding BorderMargin}"

@@ -15,6 +15,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
+using DownTube.Converters;
 using DownTube.Engine;
 
 using MVVMUtils;
@@ -47,10 +48,6 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
         InitializeAsync();
     }
 
-    // ReSharper disable once NotAccessedPositionalProperty.Local
-    /// <summary> Class made for testing purposes. </summary>
-    record struct TestClass( List<SearchResult> Results );
-
     /// <summary>
     /// Invokes a search with the given <paramref name="Query"/> to the YouTube V3 API, populating <see cref="SearchPage_ViewModel.CachedResults"/> with the returned results.
     /// </summary>
@@ -71,28 +68,6 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     void InitializeAsync() {
         DownloadEngine.Init();
 
-        //VM.CachedResults.Clear();
-        //return;
-        FileInfo TestFile = FileSystemInfoExtensions.Desktop.CreateSubfile("testfile.json");
-
-        const bool Search = false;
-#pragma warning disable CS0162
-        // ReSharper disable HeuristicUnreachableCode
-        // ReSharper disable once RedundantIfElseBlock
-        if ( Search ) {
-            PromptUserSearch("aha take on me");
-
-            new TestClass(VM.CachedResults.ToList()).Serialise(TestFile);
-        } else {
-            TestClass SR = TestFile.Deserialise<TestClass>().CatchNull();
-            foreach ( SearchResult S in SR.Results ) {
-                S.GenerateThumbnail();
-                VM.CachedResults.Add(S);
-            }
-        }
-        // ReSharper restore HeuristicUnreachableCode
-#pragma warning restore CS0162
-
         KeyDown += ( _, E ) => {
             switch ( E.Key ) {
                 case Key.E when E.IsDown:
@@ -103,7 +78,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="System.Windows.Documents.Hyperlink"/> text is clicked on.
+    /// Occurs when the <see cref="Hyperlink"/> text is clicked on.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>

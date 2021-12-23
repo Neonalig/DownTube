@@ -1,4 +1,12 @@
 ﻿[*.cs]
 
-# IDE0079: Remove unnecessary suppression
-dotnet_diagnostic.IDE0079.severity = none
+# WPF0041: Set mutable dependency properties using SetCurrentValue
+# 			Justification: 1. Prevents requirement for value boxing;
+#						   2. Better readability
+#			Remarks: Programmers must now be careful to use SetCurrentValue where appropriate, as the original motiviation is to preserve One-way bindings, were directly setting a value will destroy it.
+dotnet_diagnostic.WPF0041.severity = none
+
+# XLS1106: Setting DataContext will enhance IntelliSense when working with data bindings.
+#			Justification: Analyser has a false positive when d:DataContext is used for IntelliSense instead of DataContext.
+#			Remarks: Programmers will have to ensure themselves that DataContext is specified where appropriate.
+dotnet_diagnostic.XLS1106.severity = none

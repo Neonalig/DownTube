@@ -9,7 +9,6 @@
 #region Using Directives
 
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 
 using Newtonsoft.Json;
 
@@ -24,7 +23,6 @@ namespace DownTube.DataTypes;
 /// <seealso cref="SimpleSave{T}"/>
 /// <seealso cref="ICollection{T}"/>
 [JsonArray]
-[SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
 public class ObservedValueCollection<T> : SimpleSave<T>, ICollection<T> {
     [JsonIgnore] readonly ObservableCollection<T> _Coll;
     /// <summary>
@@ -72,6 +70,7 @@ public class ObservedValueCollection<T> : SimpleSave<T>, ICollection<T> {
                 }
             }
         }
+        get => _Coll.ToArray();
     }
 
     /// <summary>
@@ -89,14 +88,22 @@ public class ObservedValueCollection<T> : SimpleSave<T>, ICollection<T> {
     /// <inheritdoc />
     public override bool IsDirty {
         get {
-            int LA = _Coll.Count, LB = Saved.Length;
-            if ( LA != LB ) { return true; } //If the saved and current collections are a different length, then a value has been changed (added/removed)
-            for ( int I = 0; I < LA; I++ ) {
-                if ( IsDifferent(_Coll[LA], Saved[LA]) ) { //If any value is different between the saved and current collection, then a value has been changed (modified)
-                    return true;
+            lock ( _Coll ) {
+                lock ( Saved ) {
+                    int LA = _Coll.Count, LB = Saved.Length;
+                    if ( LA != LB ) {
+                        return true;
+                    } //If the saved and current collections are a different length, then a value has been changed (added/removed)
+                    for ( int I = 0; I < LA; I++ ) {
+                        T Left = _Coll[I];
+                        T Right = Saved[I];
+                        if ( IsDifferent(Left, Right) ) { //If any value is different between the saved and current collection, then a value has been changed (modified)
+                            return true;
+                        }
+                    } //If the lengths are the same, and the elements are the same, then no value has likely been changed.
+                    return false;
                 }
-            } //If the lengths are the same, and the elements are the same, then no value has likely been changed.
-            return false;
+            }
         }
     }
 

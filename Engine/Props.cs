@@ -116,7 +116,7 @@ public static class Props {
     /// </summary>
     public static void Read() {
         if ( SettingsFile.Deserialise<ExportData>().Out(out ExportData Data, out Result<ExportData> Reason) ) {
-            Import(Data);
+            Import(Data, true);
         } else {
             Reason.LogWithHeader($"Failed reading settings from {SettingsFile.FullName}");
         }
@@ -140,7 +140,8 @@ public static class Props {
     /// Imports the given data then saves the changes.
     /// </summary>
     /// <param name="Data">The data to import.</param>
-    public static void Import( ExportData Data ) {
+    /// <param name="FromFile">Whether the data was imported from the <see cref="SettingsFile"/>.</param>
+    public static void Import( ExportData Data, bool FromFile ) {
         FFmpegPath.Value = Data.FFmpegPath.GetFile().Value;
         FFmpegPath.Save();
 
@@ -154,7 +155,9 @@ public static class Props {
         TimesDownloaded.Save();
 
         //Below is a check to truncate the 'IgnoredVersions' collection by removing all version <= the current, as the user will never be prompted to 'update' to an older or current version (therefore there is no reason for the user to ignore that update anymore.)
+        int IV_LA = Data.IgnoredVersions?.Length ?? 0;
         IgnoredVersions.Value = Data.IgnoredVersions?.Where(IN => IN > StaticBindings.AppVersion).ToArray() ?? Array.Empty<Version>();
+        int IV_LB = IgnoredVersions.Value.Length;
         IgnoredVersions.Save();
 
         LastCheckDate.Value = Data.LastCheckDate switch {
@@ -165,6 +168,10 @@ public static class Props {
 
         UpdateFrequency.Value = Data.UpdateFrequency ?? UpdateCheckFrequency.Daily;
         UpdateFrequency.Save();
+
+        if ( FromFile && IV_LA != IV_LB ) { //If an IgnoredVersions value was removed, and the data was originally retrieved from a settings file, update the settings file with the new collection.
+            Write();
+        }
     }
 
     /// <summary>

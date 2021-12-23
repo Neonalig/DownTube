@@ -3,10 +3,10 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:converters="clr-namespace:DownTube.Converters"
+      xmlns:common="clr-namespace:DownTube.DataTypes.Common"
       xmlns:controls="clr-namespace:DownTube.Views.Controls"
       xmlns:pages="clr-namespace:DownTube.Views.Pages"
-      xmlns:common="clr-namespace:DownTube.DataTypes.Common"
-      xmlns:converters="clr-namespace:DownTube.Converters"
       mc:Ignorable="d"
       FontFamily="AtkinsonHyperlegible"
       d:DesignHeight="388"
@@ -35,7 +35,7 @@
                     <Grid Height="40"
                           Margin="0,0,0,5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="130" />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding FieldName}"
@@ -58,9 +58,18 @@
                                      ToolTip="The path to the youtube-dl.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field.">
                     <controls:FilePicker />
                 </pages:SettingsField>
-                <pages:SettingsField FieldName="Output Folder"
+                <pages:SettingsField FieldName="Output Folder:"
                                      ToolTip="The folder to download videos to.">
                     <controls:FolderPicker />
+                </pages:SettingsField>
+                <pages:SettingsField FieldName="Ignored Updates:"
+                                     ToolTip="The update versions you have ignored.">
+                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                    <!--<TextBlock Text="{Binding DataContext.IgnoredVersions, RelativeSource={RelativeSource AncestorType=Page}, Mode=OneWay}"
+                               d:Text="v1.3.0, v2.6.7, v3.5.4"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>-->
+                    <controls:TagViewer />
                 </pages:SettingsField>
             </ItemsControl.Items>
         </ItemsControl>
@@ -82,21 +91,23 @@
                         <Hyperlink TextDecorations="None"
                                    Click="MainRepo_Click"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
-                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}"
+                                 d:Text="DownTube"/>
                         </Hyperlink>
-                        <Run Text="-" />
+                        <Run Text="-" Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
                         <Hyperlink TextDecorations="None"
                                    Click="CurrentVersion_Click"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}">
                             <Run
-                                Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}" />
+                                Text="{Binding Source={StaticResource StatInfo}, Path=AppVersion, Converter={StaticResource VerToStringConv}, Mode=OneWay}"
+                                d:Text="v0.1.0"/>
                         </Hyperlink>
                     </TextBlock>
                     <TextBlock HorizontalAlignment="Center"
                                Foreground="{DynamicResource TextFillColorTertiaryBrush}">
                         <Run Text="©" />
-                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" />
-                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}" />
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppCompany, Mode=OneWay}" d:Text="Starflash Studios"/>
+                        <Run Text="{Binding Source={StaticResource StatInfo}, Path=CopyrightYearRange, Mode=OneWay}" d:Text="2021" />
                     </TextBlock>
                 </StackPanel>
             </SelectiveScrollingGrid>

@@ -8,10 +8,12 @@
 
 #region Using Directives
 
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
+using DownTube.Converters;
 using DownTube.Engine;
 
 using MVVMUtils;
@@ -24,7 +26,17 @@ namespace DownTube.Views.Pages;
 
 public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
     public SettingsPage_ViewModel() {
-        RepoUrl = UpdateChecker.RepoUrl                           ?? "https://github.com/starflash-studios/DownTube"; //<-- fallback
+        IgnoredVersions = string.Empty;
+        UpdateIgnoredVersions();
+        Props.SavedPropertyChanged += ( _, P ) => {
+            // ReSharper disable once ConvertSwitchStatementToSwitchExpression
+            switch ( P.PropertyName ) {
+                case nameof(Props.IgnoredVersions):
+                    UpdateIgnoredVersions();
+                    break;
+            }
+        };
+        RepoUrl = UpdateChecker.RepoUrl ?? "https://github.com/starflash-studios/DownTube"; //<-- fallback
         CurrentReleaseUrl = UpdateChecker.CurrentRelease?.HtmlUrl ?? $"https://github.com/starflash-studios/DownTube/releases/tag/v{StaticBindings.AppVersion.ToString(3)}"; //<-- fallback
         //fallback URLs (above) are dynamically resolved at runtime after checking for updates, and are only used for the interim period before the initial check for updates, or if any error occurs during the update checking.
         UpdateChecker.StaticPropertyChanged += ( _, _, PropertyName ) => {
@@ -58,6 +70,25 @@ public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
     /// The current version's release URL.
     /// </value>
     public string CurrentReleaseUrl { get; private set; }
+
+    /// <summary>
+    /// Gets the collection of ignored update versions.
+    /// </summary>
+    /// <value>
+    /// The ignored update versions.
+    /// </value>
+    public string IgnoredVersions { get; private set; }
+
+    /// <summary>
+    /// The converter responsible for converting <see cref="Version"/> instances to <see cref="string"/> representations.
+    /// </summary>
+    internal readonly VersionToStringConverter VerToStrConv = new VersionToStringConverter();
+
+    /// <summary>
+    /// Updates the <see cref="IgnoredVersions"/> property.
+    /// </summary>
+    [MemberNotNull(nameof(IgnoredVersions))]
+    internal void UpdateIgnoredVersions() => IgnoredVersions = string.Join(", ", Props.IgnoredVersions.Value.Select(V => VerToStrConv.Forward(V)));
 }
 
 /// <summary>
