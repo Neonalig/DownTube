@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "DownTube": {
+      "commandName": "Project"
+    },
+    "DownTube (No GitHub)": {
+      "commandName": "Project",
+      "commandLineArgs": "--github false"
+    },
+    "DownTube (Offline)": {
+      "commandName": "Project",
+      "commandLineArgs": "--offline true"
+    }
+  }
+}

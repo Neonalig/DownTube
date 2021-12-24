@@ -49,6 +49,7 @@ public static class UpdateChecker {
     /// </value>
     public static GitHubClient Client {
         get {
+            if ( !Args.GitHub ) { return null!; }
             _Client ??= new GitHubClient(
                 new ProductHeaderValue(
                     StaticBindings.AppName,
@@ -70,6 +71,11 @@ public static class UpdateChecker {
     /// </summary>
     /// <returns><see langword="true"/> if the latest release is a greater version than <see cref="StaticBindings.AppVersion"/></returns>
     public static async Task<Result<UpdateSearchResult>> SearchForUpdatesAsync() {
+        if ( !Args.GitHub ) {
+            Debug.WriteLine("Attempted to search for updates, but GitHub API calls were disabled.", "WARNING");
+            return KnownError.Success.GetResult<UpdateSearchResult>();
+        }
+
         Debug.WriteLine("Searching for updates...");
         try {
             Version Current = StaticBindings.AppVersion;
@@ -282,6 +288,10 @@ public static class UpdateChecker {
     /// Runs asynchronous initialisation methods.
     /// </summary>
     static async Task InitAsync() {
+        if ( !Args.GitHub ) {
+            CurrentRelease = null;
+            return;
+        }
         try {
             Debug.WriteLine("[[IGNORE START]]");
             CurrentRelease = await Client.Repository.Release.Get("starflash-studios", "DownTube", $"v{CurrentVersion.ToString(3)}");

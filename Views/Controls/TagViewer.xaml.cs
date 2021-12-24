@@ -1,6 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 using MVVMUtils;
 
@@ -10,7 +11,7 @@ namespace DownTube.Views.Controls;
 /// <see cref="UserControl"/> which allows the user to add/remove tags.
 /// </summary>
 /// <seealso cref="UserControl" />
-/// <seealso cref="System.Windows.Markup.IComponentConnector" />
+/// <seealso cref="IComponentConnector" />
 public partial class TagViewer : IView<TagViewer_ViewModel> {
 
 	/// <summary>
@@ -21,8 +22,8 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 		VM = new TagViewer_ViewModel();
 		DataContext = VM;
 
-		//Below is for testing purposes. To be removed next commit.
-		//KeyDown += ( _, E ) => { 
+		//Below is for testing purposes.
+		//KeyDown += ( _, E ) => {
 		//	if ( !E.IsDown ) {
 		//		return;
 		//	}
@@ -32,6 +33,9 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 		//			break;
 		//		case System.Windows.Input.Key.R:
 		//			CanAdd = !CanAdd;
+		//			break;
+		//		case System.Windows.Input.Key.T:
+		//			CanEdit = !CanEdit;
 		//			break;
 		//	}
 		//};
@@ -98,6 +102,12 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 		set => VM.CanDelete = value;
 	}
 
+	/// <inheritdoc cref="TagViewer_ViewModel.CanEdit"/>
+	public bool CanEdit {
+		get => VM.CanEdit;
+		set => VM.CanEdit = value;
+	}
+
 	/// <inheritdoc cref="TagViewer_ViewModel.DefaultTagText"/>
 	public string DefaultTagText {
 		get => VM.DefaultTagText;
@@ -116,7 +126,7 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 /// <summary>
 /// Represents a simple <see cref="string"/> tag and identifier.
 /// </summary>
-public struct Tag : IEquatable<Tag> {
+public class Tag : IEquatable<Tag> {
 
 	/// <summary>
 	/// Gets the identifier.
@@ -194,7 +204,7 @@ public struct Tag : IEquatable<Tag> {
 	#region IEquatable Implementation
 
 	/// <inheritdoc />
-	public bool Equals( Tag Other ) => ID.Equals(Other.ID);
+	public bool Equals( Tag? Other ) => Other is not null && ID.Equals(Other.ID);
 
 	/// <inheritdoc />
 	public override bool Equals( object? Obj ) => Obj is Tag Other && Equals(Other);
@@ -225,6 +235,11 @@ public struct Tag : IEquatable<Tag> {
 	#endregion
 }
 
+/// <summary>
+/// Viewmodel containing the required data bindings for the relevant view.
+/// </summary>
+/// <seealso cref="ViewModel{TView}"/>
+/// <seealso cref="TagViewer"/>
 public class TagViewer_ViewModel : ViewModel<TagViewer> {
 
 	/// <summary>
@@ -254,6 +269,23 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 	/// <see langword="true" /> if tags are allowed to be deleted by the user; otherwise, <see langword="false" />.
 	/// </value>
 	public bool CanDelete { get; set; } = true;
+
+	/// <summary>
+	/// Gets or sets a value indicating whether tag names can be edited by the user.
+	/// </summary>
+	/// <value>
+	/// <see langword="true" /> if tags can be edited; otherwise, <see langword="false" />.
+	/// </value>
+	public bool CanEdit { get; set; } = true;
+
+	/// <summary>
+	/// Logical inverse of <see cref="CanEdit"/>.
+	/// </summary>
+	/// <value>
+	/// <see langword="true" /> if tags cannot be edited; otherwise, <see langword="false" />.
+	/// </value>
+	[DependsOn(nameof(CanEdit))]
+	public bool CanNotEdit => !CanEdit;
 
 	/// <summary>
 	/// Gets or sets the default text used when a new tag is added.

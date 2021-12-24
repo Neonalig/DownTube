@@ -48,7 +48,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
             }
         }
 
-        if ( await UpdateChecker.Client.Repository.Release.GetLatest("starflash-studios", "DownTube-Updater") is { } UpdaterRelease ) {
+        if ( Args.GitHub && await UpdateChecker.Client.Repository.Release.GetLatest("starflash-studios", "DownTube-Updater") is { } UpdaterRelease ) {
             await Download(UpdaterRelease, UpdaterDest, CTS);
         }
     }

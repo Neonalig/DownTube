@@ -33,7 +33,7 @@
                 <DataTemplate DataType="{x:Type controls:Tag}">
                     <Border Height="32"
                             Margin="0,0,4,0"
-                            Padding="12,0,4,0"
+                            Padding="0,0,4,0"
                             Background="#242424"
                             CornerRadius="4">
                         <DockPanel HorizontalAlignment="Stretch"
@@ -50,9 +50,17 @@
                                 </Button.Content>
                             </Button>
                             <TextBlock Text="{Binding Name, Mode=OneWay}"
+                                       Visibility="{Binding DataContext.CanNotEdit, RelativeSource={RelativeSource AncestorType=controls:TagViewer}, Converter={StaticResource BoolToVisConv}, Mode=OneWay}"
                                        FontWeight="Bold"
-                                       Margin="0,0,10,0"
-                                       VerticalAlignment="Center"/>
+                                       Margin="12,0,10,0"
+                                       VerticalAlignment="Center" />
+                            <TextBox Text="{Binding Name, Mode=TwoWay}"
+                                     Visibility="{Binding DataContext.CanEdit, RelativeSource={RelativeSource AncestorType=controls:TagViewer}, Converter={StaticResource BoolToVisConv}, Mode=OneWay}"
+                                     FontWeight="Bold"
+                                     Background="Transparent"
+                                     BorderBrush="Transparent"
+                                     Margin="0,0,10,0"
+                                     VerticalAlignment="Center" />
                         </DockPanel>
                     </Border>
                 </DataTemplate>

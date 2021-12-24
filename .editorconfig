@@ -10,3 +10,6 @@ dotnet_diagnostic.WPF0041.severity = none
 #			Justification: Analyser has a false positive when d:DataContext is used for IntelliSense instead of DataContext.
 #			Remarks: Programmers will have to ensure themselves that DataContext is specified where appropriate.
 dotnet_diagnostic.XLS1106.severity = none
+
+# IDE0079: Remove unnecessary suppression
+dotnet_diagnostic.IDE0079.severity = none

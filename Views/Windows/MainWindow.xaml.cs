@@ -36,6 +36,8 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
     /// Initialises a new instance of the <see cref="MainWindow"/> class.
     /// </summary>
     public MainWindow() {
+        Args.Init();
+
         //Props.Write();
         Debug.WriteLine($"FFmpeg path: {Props.FFmpegPath}");
         Debug.WriteLine($"YoutubeDL path: {Props.YoutubeDLPath}");

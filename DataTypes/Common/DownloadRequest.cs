@@ -8,10 +8,11 @@
 
 #region Using Directives
 
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
+
+using DownTube.Engine;
 
 using Octokit;
 
@@ -25,8 +26,6 @@ namespace DownTube.DataTypes.Common;
 /// Represents a request to download a file from the internet.
 /// </summary>
 /// <seealso cref="ReactiveObject" />
-[SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-[SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
 public class DownloadRequest : ReactiveObject {
 
     #region Static Properties
@@ -49,6 +48,7 @@ public class DownloadRequest : ReactiveObject {
     /// </value>
     public static HttpClient DownloadClient {
         get {
+            if ( Args.Offline ) { return null!; }
             _DownloadClient ??= new HttpClient();
             return _DownloadClient;
         }
@@ -253,9 +253,9 @@ public class DownloadRequest : ReactiveObject {
     /// <summary>
     /// Asynchronously downloads the file, invoking relevant callbacks throughout.
     /// </summary>
-    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
-    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     internal async Task DownloadFileInternalAsync() {
+        if ( Args.Offline ) { return; }
+
         Ongoing = true;
         byte[] BufferArray = new byte[BufferSize];
         Memory<Byte> Buffer = new Memory<byte>(BufferArray);
@@ -311,6 +311,8 @@ public class DownloadRequest : ReactiveObject {
     /// <param name="Buffer">The memory download buffer.</param>
     /// <param name="Token">The cancellation token.</param>
     public static async Task DownloadFileAsync( string Url, FileInfo Dest, Memory<byte> Buffer, CancellationToken Token = default ) {
+        if ( Args.Offline ) { return; }
+
         HttpResponseMessage Msg = await DownloadClient.GetAsync(Url, Token);
 
         await using ( FileStream FS = Dest.Create() ) {
@@ -346,6 +348,8 @@ public class DownloadRequest : ReactiveObject {
     }
 
     public static async Task DownloadRelease( Release Release, DirectoryInfo Destination, DownloadStartedEventArgs DownloadStarted, ProgressUpdatedEventArgs ProgressUpdated, DownloadCompleteEventArgs DownloadComplete, int BufferSize = 16384, bool CreateSubdirectory = false, CancellationTokenSource? Token = null ) {
+        if ( !Args.GitHub ) { return; }
+
         Token ??= new CancellationTokenSource();
         if ( !Destination.Exists ) {
             Destination.Create();

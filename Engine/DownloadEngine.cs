@@ -50,12 +50,17 @@ public static class DownloadEngine {
     /// <param name="Query">The query to search for.</param>
     /// <param name="ReturnAmount">The amount of results to return.</param>
     /// <returns>A collection of search results.</returns>
-    public static List<YoutubeSearchResult> Search( string Query, int ReturnAmount = 20 ) => new YoutubeSearch(new SearchSettings {
-        Query = Query,
-        PublishedBefore = DateTime.Now,
-        Order = SearchOrder.Relevance,
-        Type = ResourceKind.Video
-    }).Grab(ReturnAmount).AsList();
+    public static List<YoutubeSearchResult> Search( string Query, int ReturnAmount = 20 ) => (
+        Args.Offline
+            ? Enumerable.Empty<YoutubeSearchResult>()
+            : new YoutubeSearch(
+                new SearchSettings {
+                    Query = Query,
+                    PublishedBefore = DateTime.Now,
+                    Order = SearchOrder.Relevance,
+                    Type = ResourceKind.Video
+                }).Grab(ReturnAmount)
+            ).AsList();
 
     /// <summary>
     /// Asynchronously gets the thumbnail.
@@ -73,7 +78,7 @@ public static class DownloadEngine {
     /// <summary>
     /// The web client used for accessing and downloading video thumbnails.
     /// </summary>
-    public static readonly HttpClient WebClient = new HttpClient();
+    public static readonly HttpClient WebClient = (!Args.Offline ? new HttpClient() : null)!;
 
     /// <summary>
     /// Asynchronously gets the bitmap from the given <paramref name="Url"/>.
@@ -82,7 +87,7 @@ public static class DownloadEngine {
     /// <param name="Token">The cancellation token.</param>
     /// <returns>The retrieved <see cref="Bitmap"/>.</returns>
     public static async Task<Bitmap?> GetBitmapAsync( string? Url, CancellationToken Token = default ) {
-        if ( Url.IsNullOrEmpty() ) {
+        if ( Args.Offline || Url.IsNullOrEmpty()) {
             return null;
         }
         Debug.WriteLine($"Getting bitmap from url: '{Url}'");
@@ -171,6 +176,8 @@ public static class DownloadEngine {
     /// <param name="Token">The cancellation token.</param>
     /// <returns>The downloaded file's path.</returns>
     public static async Task<Result<string>> DownloadVideoAsync( SearchResult Result, Action<DownloadProgress> DownloadProgress, CancellationToken Token = default ) {
+        if ( Args.Offline ) { return KnownError.Success.GetResult<string>(); }
+
         if ( GetYoutubeDL(DownloadProgress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog) is { } ErrRes ) {
             return ErrRes;
         }
@@ -188,6 +195,8 @@ public static class DownloadEngine {
     /// <param name="Token">The cancellation token.</param>
     /// <returns>The downloaded file's path.</returns>
     public static async Task<Result<string>> DownloadAudioAsync( SearchResult Result, AudioConversionFormat AudioFormat, Action<DownloadProgress> DownloadProgress, CancellationToken Token = default ) {
+        if ( Args.Offline ) { return KnownError.Success.GetResult<string>(); }
+
         if ( GetYoutubeDL(DownloadProgress, out YoutubeDL Dl, out Progress<DownloadProgress> Prog) is { } ErrRes ) {
             return ErrRes;
         }
