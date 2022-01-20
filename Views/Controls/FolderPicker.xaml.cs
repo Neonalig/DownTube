@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 using JetBrains.Annotations;
@@ -35,6 +36,11 @@ public partial class FolderPicker : INotifyPropertyChanged {
         InitializeComponent();
         Path = DefaultPath;
         TextPath = Path.FullName;
+        Loaded += ( _, _ ) => {
+            TB.CaretIndex = TB.Text.Length;
+            Rect Rect = TB.GetRectFromCharacterIndex(TB.CaretIndex);
+            TB.ScrollToHorizontalOffset(Rect.Right);
+        };
     }
 
     /// <summary>

@@ -1,9 +1,12 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
 
 using MVVMUtils;
+
+using PropertyChanged;
 
 namespace DownTube.Views.Controls;
 
@@ -65,6 +68,9 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 	/// <param name="Name">The name of the tag.</param>
 	public void AddTag( string Name ) => AddTag(Guid.NewGuid(), Name);
 
+	/// <inheritdoc cref="TagViewer_ViewModel.ClearTags()"/>
+	public void ClearTags() => VM.ClearTags();
+
 	/// <summary>
 	/// Occurs when the Click <see langword="event"/> is raised.
 	/// </summary>
@@ -84,7 +90,7 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 	/// <param name="E">The raised <see langword="event"/> arguments.</param>
 	void AddButton_Click( object Sender, RoutedEventArgs E ) {
 		if ( !VM.CanAdd ) { return; }
-		AddTag(); //TODO: Remove add button, or allow tag editing
+		AddTag();
 	}
 
 	/// <inheritdoc />
@@ -126,7 +132,7 @@ public partial class TagViewer : IView<TagViewer_ViewModel> {
 /// <summary>
 /// Represents a simple <see cref="string"/> tag and identifier.
 /// </summary>
-public class Tag : IEquatable<Tag> {
+public class Tag : Reactive, IEquatable<Tag> {
 
 	/// <summary>
 	/// Gets the identifier.
@@ -136,13 +142,17 @@ public class Tag : IEquatable<Tag> {
 	/// </value>
 	public Guid ID { get; }
 
+	string _Name;
 	/// <summary>
 	/// Gets the name.
 	/// </summary>
 	/// <value>
 	/// The name.
 	/// </value>
-	public string Name { get; set; }
+	public string Name {
+		get => _Name;
+		set => this.SetAndRaise( ref _Name, value );
+	}
 
 	/// <summary>
 	/// Initialises a new instance of the <see cref="Tag"/> struct.
@@ -151,14 +161,14 @@ public class Tag : IEquatable<Tag> {
 	/// <param name="Name">The name.</param>
 	public Tag( Guid ID, string Name ) {
 		this.ID = ID;
-		this.Name = Name;
+		_Name = Name;
 	}
 
 	/// <summary>
 	/// Initialises a new instance of the <see cref="Tag"/> struct.
 	/// </summary>
 	/// <param name="Name">The name.</param>
-	public Tag( string Name) : this(Guid.NewGuid(), Name) { }
+	public Tag( string Name ) : this(Guid.NewGuid(), Name) { }
 
 	/// <summary>
 	/// Initialises a default instance of the <see cref="Tag"/> struct.
@@ -233,6 +243,8 @@ public class Tag : IEquatable<Tag> {
 	public static bool operator !=( Tag Left, Tag Right ) => !Left.Equals(Right);
 
 	#endregion
+
+	public override string ToString() => $"{ID}#{Name}";
 }
 
 /// <summary>
@@ -248,11 +260,7 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 	/// <value>
 	/// The tags.
 	/// </value>
-	public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag> {
-		"TestTag",
-		"Tag2",
-		"Lol"
-	};
+	public ObservableCollection<Tag> Tags { get; } = new ObservableCollection<Tag>();
 
 	/// <summary>
 	/// Gets or sets a value indicating whether new tags can be added to the control.
@@ -284,7 +292,7 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 	/// <value>
 	/// <see langword="true" /> if tags cannot be edited; otherwise, <see langword="false" />.
 	/// </value>
-	[DependsOn(nameof(CanEdit))]
+	[System.Windows.Markup.DependsOn(nameof(CanEdit))]
 	public bool CanNotEdit => !CanEdit;
 
 	/// <summary>
@@ -295,6 +303,81 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 	/// The default text for new tags.
 	/// </value>
 	public string DefaultTagText { get; set; } = "New Tag";
+
+	#region Events
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is changed.
+	/// </summary>
+	/// <param name="Sender">The sender.</param>
+	/// <param name="Changed">The changed tag.</param>
+	public delegate void TagChangedEventArgs( TagViewer Sender, Tag Changed );
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is added.
+	/// </summary>
+	/// <param name="Sender">The sender.</param>
+	/// <param name="New">The new tag.</param>
+	public delegate void TagAddedEventArgs( TagViewer Sender, Tag New );
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is removed.
+	/// </summary>
+	/// <param name="Sender">The sender.</param>
+	/// <param name="Removed">The removed tag.</param>
+	public delegate void TagRemovedEventArgs( TagViewer Sender, Tag Removed );
+
+	/// <summary>
+	/// Raised when all <see cref="Tag"/> instances are removed.
+	/// </summary>
+	/// <param name="Sender">The sender.</param>
+	public delegate void TagsClearedEventArgs( TagViewer Sender );
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is changed.
+	/// </summary>
+	public event TagChangedEventArgs? TagChanged;
+
+	/// <summary>
+	/// Invokes the <see cref="TagChanged"/> <see langword="event"/>.
+	/// </summary>
+	/// <param name="Changed">The changed tag.</param>
+	[SuppressPropertyChangedWarnings]
+	public void OnTagChanged( Tag Changed ) => TagChanged?.Invoke(View, Changed);
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is added.
+	/// </summary>
+	public event TagAddedEventArgs? TagAdded;
+
+	/// <summary>
+	/// Invokes the <see cref="TagAdded"/> <see langword="event"/>.
+	/// </summary>
+	/// <param name="New">The new tag.</param>
+	public void OnTagAdded( Tag New ) => TagAdded?.Invoke(View, New);
+
+	/// <summary>
+	/// Raised when a <see cref="Tag"/> is removed.
+	/// </summary>
+	public event TagRemovedEventArgs? TagRemoved;
+
+	/// <summary>
+	/// Invokes the <see cref="TagRemoved"/> <see langword="event"/>.
+	/// </summary>
+	/// <param name="Removed">The removed tag.</param>
+	public void OnTagRemoved( Tag Removed ) => TagRemoved?.Invoke(View, Removed);
+
+	/// <summary>
+	/// Raised when all <see cref="Tag"/> instances are removed.
+	/// </summary>
+	public event TagsClearedEventArgs? TagsCleared;
+
+	/// <summary>
+	/// Invokes the <see cref="TagsCleared"/> <see langword="event"/>.
+	/// </summary>
+	public void OnTagsCleared() => TagsCleared?.Invoke(View);
+
+	#endregion
 
 	/// <summary>
 	/// Adds a new tag with the <see cref="DefaultTagText"/>.
@@ -313,8 +396,14 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 				throw new NotSupportedException("Multiple tags with the same identifier may not exist in the same collection.");
 			}
 		}
+		Tag.PropertyChanged += OnTagChanged;
 		Tags.Add(Tag);
+
+		OnTagAdded(Tag);
 	}
+
+	[SuppressPropertyChangedWarnings]
+	void OnTagChanged( object? Sender, PropertyChangedEventArgs E ) => OnTagChanged((Sender as Tag).CatchNull());
 
 	/// <summary>
 	/// Removes the given tag.
@@ -338,7 +427,10 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 			}
 		}
 		if ( Found ) {
+			Tag ToRemove = Tags[I];
+			ToRemove.PropertyChanged -= OnTagChanged;
 			Tags.RemoveAt(I);
+			OnTagRemoved(ToRemove);
 			return true;
 		}
 		return false;
@@ -359,9 +451,24 @@ public class TagViewer_ViewModel : ViewModel<TagViewer> {
 			}
 		}
 		if ( Found ) {
+			Tag ToRemove = Tags[I];
+			ToRemove.PropertyChanged -= OnTagChanged;
 			Tags.RemoveAt(I);
+			OnTagRemoved(ToRemove);
 			return true;
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// Clears the tags collection.
+	/// </summary>
+	public void ClearTags() {
+		foreach( Tag Tag in Tags ) {
+			Tag.PropertyChanged -= OnTagChanged;
+			OnTagRemoved(Tag);
+		}
+		Tags.Clear();
+		OnTagsCleared();
 	}
 }

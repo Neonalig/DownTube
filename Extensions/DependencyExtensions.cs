@@ -132,11 +132,34 @@ public static class DependencyExtensions {
     /// <param name="NewValue">The new value to set.</param>
     /// <param name="PropertyName">The name of the changed property.</param>
     public static void SetAndRaise<T>( this ReactiveObject ReacObj, ref T Value, T NewValue, [CallerMemberName] string? PropertyName = null ) {
-        PropertyName.CatchNull();
+        PropertyName.ThrowIfNull();
         if ( Value is null ? NewValue is not null : NewValue is null | !Value.Equals(NewValue) ) {
             ReacObj.RaisePropertyChanging(PropertyName);
             Value = NewValue;
             ReacObj.RaisePropertyChanged(PropertyName);
+        }
+    }
+
+    /// <summary>
+    /// Raises the specified event.
+    /// </summary>
+    /// <param name="MD">The event to raise.</param>
+    /// <param name="Source">The source.</param>
+    /// <param name="EventArgs">The event arguments.</param>
+    /// <returns>The invocation result.</returns>
+    public static Result Raise( this MulticastDelegate MD, object Source, object EventArgs ) {
+        try {
+            Delegate[] Handlers = MD.GetInvocationList();
+
+            object[] Args = { Source, EventArgs };
+
+            foreach ( Delegate Handler in Handlers ) {
+                _ = Handler.Method.Invoke(Handler.Target, Args);
+            }
+
+            return Result.Success;
+        } catch ( Exception Ex ) {
+            return Ex;
         }
     }
 
@@ -152,21 +175,7 @@ public static class DependencyExtensions {
     public static Result Raise<TEventArgs>( this object Source, string EventName, TEventArgs EventArgs ) where TEventArgs : notnull {
         try {
             if ( Source.GetType().GetField(EventName, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(Source) is MulticastDelegate MD ) {
-                try {
-                    Delegate[] Handlers = MD.GetInvocationList();
-
-                    object[] Args = { Source, EventArgs };
-
-                    foreach ( Delegate Handler in Handlers ) {
-                        Handler.Method.Invoke(Handler.Target, Args);
-                    }
-
-                    return Result.Success;
-                } catch ( MemberAccessException MembAccEx) {
-                    return MembAccEx;
-                } catch ( Exception Ex ) {
-                    return Ex;
-                }
+                return Raise(MD, Source, EventArgs);
             }
             return KnownError.GetNullArgError($"{Source}.{EventName}").GetResult();
         } catch ( TargetException TargEx ) {
@@ -185,4 +194,41 @@ public static class DependencyExtensions {
     /// <param name="EventName">Name of the event.</param>
     /// <param name="EventArgs">The <see cref="TEventArgs"/> instance containing the event data.</param>
     public static Result Raise<TSender, TEventArgs>( this TSender Sender, string EventName, TEventArgs EventArgs ) where TSender : notnull where TEventArgs : notnull => Raise(Source: Sender, EventName, EventArgs);
+
+
+    /// <summary>
+    /// Adds the delegate to the specified event.
+    /// </summary>
+    /// <param name="Source">The source.</param>
+    /// <param name="Event">The event to add the handler to.</param>
+    /// <param name="Callback">The handler to add.</param>
+    /// <returns>The subscription result.</returns>
+    public static Result AddHandler( this object Source, EventInfo Event, Delegate Callback ) {
+        try {
+            MethodInfo? Method = Event.GetAddMethod();
+            if (Method is not null ) {
+                _ = Method.Invoke(Source, new object[] { Callback });
+                return Result.Success;
+            }
+            return KnownError.GetNullArgError(nameof(Method)).GetResult();
+        } catch ( Exception Ex ) {
+            return Ex;
+        }
+    }
+
+    /// <summary>
+    /// Adds the delegate to the specified event.
+    /// </summary>
+    /// <typeparam name="TSource">The type of the source.</typeparam>
+    /// <typeparam name="TEventArgs">The event argument type.</typeparam>
+    /// <param name="Source">The source.</param>
+    /// <param name="EventName">The name of the event to add the handler to.</param>
+    /// <param name="Callback">The handler to add.</param>
+    /// <returns>The subscription result.</returns>
+    public static Result AddHandler<TSource, TEventArgs>( this TSource Source, string EventName, Action<TSource, TEventArgs> Callback ) where TSource : notnull {
+        EventInfo? Event = typeof(TSource).GetEvent(EventName, BindingFlags.NonPublic | BindingFlags.Instance);
+        return Event is null
+            ? KnownError.GetNullArgError(nameof(Event)).GetResult()
+            : AddHandler(Source, Event, Callback);
+    }
 }

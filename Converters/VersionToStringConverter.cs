@@ -12,8 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-
-using MVVMUtils;
+using System.Windows.Data;
 
 #endregion
 
@@ -22,7 +21,8 @@ namespace DownTube.Converters;
 /// <summary>
 /// Provides value conversions between <see cref="Version"/> and <see cref="string"/>.
 /// </summary>
-public class VersionToStringConverter : ValueConverter<Version, string> {
+[ValueConversion(typeof(Version), typeof(string))]
+public class VersionToStringConverter : ValueConverter<VersionToStringConverter, Version, string> {
     /// <summary>
     /// Gets or sets the prefix.
     /// </summary>
@@ -112,28 +112,55 @@ public class VersionToStringConverter : ValueConverter<Version, string> {
     /// <summary>
     /// The regex responsible for determining <see cref="Version"/> data from a <see cref="string"/>.
     /// </summary>
-    public static readonly Regex VersionRegex = new Regex("(?<Prefix>.+?)?(?:(?<Major>[0-9]+)\\.)?(?:(?<Minor>[0-9]+)\\.)?(?:(?<Build>[0-9]+)\\.)?(?:(?<Revision>[0-9]+))?(?<Suffix>.+)?");
+    public static readonly Regex VersionRegex = new Regex(".+(?<Useful>(?:[0-9].?)+)");
+    //(?<Prefix>.+?)?(?:(?<Major>[0-9]+)\\.)?(?:(?<Minor>[0-9]+)\\.)?(?:(?<Build>[0-9]+)\\.)?(?:(?<Revision>[0-9]+))?(?<Suffix>.+)?
 
     /// <inheritdoc />
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public override Version? Reverse( string To, object? Parameter = null, CultureInfo? Culture = null ) {
         try {
-            Match M = VersionRegex.Match(To);
-            if ( M.Success ) {
-                Group
-                    MajorGroup = M.Groups["Major"],
-                    MinorGroup = M.Groups["Minor"],
-                    BuildGroup = M.Groups["Build"],
-                    RevisionGroup = M.Groups["Revision"];
-                if ( MajorGroup.Success || MinorGroup.Success || BuildGroup.Success || RevisionGroup.Success ) {
-                    int
-                        Mj = MajorGroup.Success    && int.TryParse(MajorGroup.Value,    out int MjO) ? MjO : 0,
-                        Mi = MinorGroup.Success    && int.TryParse(MinorGroup.Value,    out int MiO) ? MiO : 0,
-                        Bu = BuildGroup.Success    && int.TryParse(BuildGroup.Value,    out int BuO) ? BuO : 0,
-                        Re = RevisionGroup.Success && int.TryParse(RevisionGroup.Value, out int ReO) ? ReO : 0;
-                    return new Version(Mj, Mi, Bu, Re);
+            if ( VersionRegex.Match(To) is { Success: true } Mt ) {
+                string[] Sectors = Mt.Value.Split('.');
+                int Mj = - 2, Mi = - 2, Bu = - 2, Re = - 2;
+                foreach ( string Sector in Sectors ) {
+                    if ( int.TryParse(Sector, out int Sint) ) {
+                        if ( Mj == - 2 ) {
+                            Mj = Sint;
+                            continue;
+                        }
+                        if ( Mi == - 2 ) {
+                            Mi = Sint;
+                            continue;
+                        }
+                        if ( Bu == - 2 ) {
+                            Bu = Sint;
+                            continue;
+                        }
+                        if ( Re == - 2 ) {
+                            Re = Sint;
+                            continue;
+                        }
+                        break;
+                    }
                 }
+
+                static int Fix( int Val ) => Val < 0 ? 0 : Val;
+
+                return Mj switch {
+                    - 2 => null,
+                    _ => Mi switch {
+                        - 2 => new Version(Fix(Mj), 0, 0, 0),
+                        _ => Bu switch {
+                            - 2 => new Version(Fix(Mj), Fix(Mi), 0, 0),
+                            _ => Re switch {
+                                - 2 => new Version(Fix(Mj), Fix(Mi), Fix(Bu), 0),
+                                _   => new Version(Fix(Mj), Fix(Mi), Fix(Bu), Fix(Re))
+                            }
+                        }
+                    }
+                };
             }
+            return null;
         } catch ( RegexMatchTimeoutException ) { }
         return null;
     }

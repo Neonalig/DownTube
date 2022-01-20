@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 
 using JetBrains.Annotations;
@@ -36,6 +37,11 @@ public partial class FilePicker : INotifyPropertyChanged {
         Path = DefaultPath;
         TextPath = Path.FullName;
         SetGlyph(Glyph, GlyphFilled);
+        Loaded += ( _, _ ) => {
+            TB.CaretIndex = TB.Text.Length;
+            Rect Rect = TB.GetRectFromCharacterIndex(TB.CaretIndex);
+            TB.ScrollToHorizontalOffset(Rect.Right);
+        };
         PropertyChanged += ( S, E ) => {
             if ( S is not FilePicker FP ) { return; }
             switch ( E.PropertyName ) {

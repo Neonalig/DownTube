@@ -26,6 +26,6 @@
         <TextBox x:Name="TB"
                  LostKeyboardFocus="TextBox_LostKeyboardFocus"
                  PreviewKeyDown="TextBox_PreviewKeyDown"
-                 VerticalContentAlignment="Center" />
+                 VerticalContentAlignment="Center"/>
     </DockPanel>
 </UserControl>

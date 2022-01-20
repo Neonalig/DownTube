@@ -13,10 +13,18 @@
       d:DesignWidth="635"
       Style="{StaticResource UiPageScrollable}"
       Title="Settings"
-      d:DataContext="{x:Type pages:SettingsPage_ViewModel}">
+      d:DataContext="{d:DesignInstance pages:SettingsPage_ViewModel}">
     <Page.Resources>
         <common:StaticBindings x:Key="StatInfo" />
         <converters:VersionToStringConverter x:Key="VerToStringConv" />
+        <converters:BoolToSolidColorBrushConverter x:Key="BoolToSCBConv">
+            <converters:BoolToSolidColorBrushConverter.False>
+                <SolidColorBrush Color="Red"/>
+            </converters:BoolToSolidColorBrushConverter.False>
+            <converters:BoolToSolidColorBrushConverter.True>
+                <SolidColorBrush Color="Transparent" />
+            </converters:BoolToSolidColorBrushConverter.True>
+        </converters:BoolToSolidColorBrushConverter>
     </Page.Resources>
     <SelectiveScrollingGrid Margin="0,0,0,0" d:Margin="0,0,0,0">
         <SelectiveScrollingGrid.RowDefinitions>
@@ -32,26 +40,36 @@
                       Padding="5">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="{x:Type pages:SettingsField}">
-                    <Grid Height="40"
-                          Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="130" />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding FieldName}"
-                                   ToolTip="{Binding ToolTip}"
-                                   Grid.Column="0"
-                                   HorizontalAlignment="Left"
-                                   VerticalAlignment="Center"
-                                   FontSize="16" />
-                        <ContentPresenter Content="{Binding Content}"
-                                          Grid.Column="1" />
-                    </Grid>
+                    <Border HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            BorderBrush="{Binding IsValid, Converter={StaticResource BoolToSCBConv}, Mode=OneWay}"
+                            BorderThickness="2"
+                            CornerRadius="4"
+                            Height="{Binding Height, Mode=OneWay}"
+                            d:Height="40"
+                            Margin="0,0,0,5"
+                            Padding="0">
+                        <Grid Margin="4,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding FieldName}"
+                                       ToolTip="{Binding ToolTip}"
+                                       Grid.Column="0"
+                                       HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       FontSize="16" />
+                            <ContentPresenter Content="{Binding Content}"
+                                              Grid.Column="1" />
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
             <ItemsControl.Items>
                 <pages:SettingsField FieldName="FFmpeg Path: "
-                                     ToolTip="The path to the ffmpeg.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field.">
+                                     ToolTip="The path to the ffmpeg.exe executable. If you have not downloaded it already, click on the 'Download Now' link underneath the setting field."
+                                     Verify="SettingsField_Verify">
                     <controls:FilePicker />
                 </pages:SettingsField>
                 <pages:SettingsField FieldName="YoutubeDL Path: "
@@ -62,14 +80,11 @@
                                      ToolTip="The folder to download videos to.">
                     <controls:FolderPicker />
                 </pages:SettingsField>
-                <pages:SettingsField FieldName="Ignored Updates:"
-                                     ToolTip="The update versions you have ignored.">
-                    <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-                    <!--<TextBlock Text="{Binding DataContext.IgnoredVersions, RelativeSource={RelativeSource AncestorType=Page}, Mode=OneWay}"
-                               d:Text="v1.3.0, v2.6.7, v3.5.4"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>-->
-                    <controls:TagViewer />
+                <pages:SettingsField x:Name="TVField"
+                                     FieldName="Ignored Updates:"
+                                     ToolTip="The update versions you have ignored."
+                                     Height="45">
+                    <controls:TagViewer x:Name="TV" VerticalAlignment="Stretch" DefaultTagText="v0.0.0"/>
                 </pages:SettingsField>
             </ItemsControl.Items>
         </ItemsControl>
