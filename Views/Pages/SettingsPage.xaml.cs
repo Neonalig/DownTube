@@ -104,7 +104,7 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void CurrentVersion_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.CurrentReleaseUrl) { UseShellExecute = true });
 
-    void SettingsField_Verify( SettingsField Sender, SettingsField.VerifyEventArgs E ) {
-        Debug.WriteLine($"Verifying on {Sender} w/ new value {E.Value}.");
+    void FFmpegDownloadLink_Click( object Sender, RoutedEventArgs E ) {
+
     }
 }

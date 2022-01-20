@@ -1,0 +1,155 @@
+﻿<Window x:Class="DownTube.Views.Windows.UtilityDownloaderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:common="clr-namespace:DownTube.DataTypes.Common"
+        xmlns:windows="clr-namespace:DownTube.Views.Windows"
+        xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:controls1="clr-namespace:DownTube.Views.Controls"
+        mc:Ignorable="d"
+        d:Background="#202020"
+        AllowsTransparency="True"
+        WindowState="Normal"
+        d:WindowState="Normal"
+        WindowStyle="None"
+        Style="{StaticResource UiWindow}"
+        WindowStartupLocation="CenterScreen"
+        Title="Updates are available"
+        Height="450"
+        d:MinHeight="450"
+        d:MaxHeight="450"
+        Width="810"
+        d:MinWidth="810"
+        d:MaxWidth="810"
+        ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance Type=windows:UtilityDownloaderWindow_ViewModel}">
+    <Window.Resources>
+        <common:StaticBindings x:Key="StatInfo" />
+        <windows:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
+                                                      FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,AppName=DownTube}"
+                                                      YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,AppName=DownTube}"/>
+    </Window.Resources>
+    <Border x:Name="MainBorder"
+            CornerRadius="8"
+            Margin="{Binding BorderMargin}"
+            d:Margin="0,0,7,7"
+            BorderThickness="{Binding BorderThickness}"
+            d:BorderThickness="1"
+            Effect="{Binding BorderEffect}">
+        <SelectiveScrollingGrid>
+            <SelectiveScrollingGrid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </SelectiveScrollingGrid.RowDefinitions>
+            <SelectiveScrollingGrid Grid.Row="1">
+                <SelectiveScrollingGrid.RowDefinitions>
+                    <RowDefinition Height="4*" />
+                    <RowDefinition Height="50" />
+                </SelectiveScrollingGrid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Image Grid.Column="1" Grid.Row="1"
+                           d:Source="{Binding Converter={svgc:SvgImageConverter AppName=DownTube}, ConverterParameter=/Resources/FFmpegLogo.svg}"
+                           Source="{Binding Utility, Converter={StaticResource DUTToImgSrc}, Mode=OneWay}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="2"
+                               TextWrapping="WrapWithOverflow"
+                               FontSize="20"
+                               TextAlignment="Center"
+                               Text="A complete, cross-platform solution to record, convert and stream audio and video."/>
+                </Grid>
+                <SelectiveScrollingGrid Grid.Row="1"
+                                        VerticalAlignment="Stretch">
+                    <SelectiveScrollingGrid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="1*" />
+                    </SelectiveScrollingGrid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Margin="5"
+                            Padding="0"
+                            Click="CancelButton_Click"
+                            Background="{DynamicResource AccentFillColorDisabledBrush}"
+                            Content="Cancel Download"
+                            VerticalAlignment="Stretch" />
+                    <controls1:UtilityDownloaderWindow_FFmpegLegal Grid.Column="1" HorizontalAlignment="Stretch" />
+                    <Button Grid.Column="2"
+                            Margin="5"
+                            Padding="0"
+                            Click="InstallButton_Click"
+                            VerticalAlignment="Stretch">
+                        <Button.Content>
+                            <TextBlock>
+                                <Run Text="Install"/>
+                                <Run Text=""/>
+                            </TextBlock>
+                        </Button.Content>
+                    </Button>
+                </SelectiveScrollingGrid>
+            </SelectiveScrollingGrid>
+
+            <controls:Dialog x:Name="UpdateDialog"
+                             Grid.Row="0"
+                             Grid.RowSpan="2"
+                             DialogHeight="255"
+                             Show="{Binding UpdateDialogVisible}"
+                             d:Show="False"
+                             Click="ManualInstall_OnClick"
+                             ButtonLeftAppearance="Secondary"
+                             ButtonLeftName="Open GitHub"
+                             ButtonRightClick="AutomaticInstall_OnClick"
+                             ButtonRightAppearance="Primary"
+                             ButtonRightName="Automatic Install">
+                <Grid Width="360">
+                    <StackPanel>
+                        <StackPanel.Resources>
+                            <windows:InstallProgressToIntermediateConverter x:Key="ProgToInterConv" />
+                            <windows:InstallProgressToVisibilityConverter x:Key="ProgToVisConv" />
+                            <windows:InstallProgressToStringConverter x:Key="ProgToTxtConv" />
+                        </StackPanel.Resources>
+                        <TextBlock FontWeight="Medium"
+                                   Text="INSTALL UPDATE"
+                                   Margin="0,0,0,10" />
+                        <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                                   TextAlignment="Justify"
+                                   TextWrapping="WrapWithOverflow">
+                            <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
+                            <Run
+                                    Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update." />
+                        </TextBlock>
+                        <Grid
+                                Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
+                              Margin="0,10,0,0"
+                              Height="20">
+                            <ProgressBar Minimum="0"
+                                         SmallChange="0.01"
+                                         Maximum="1"
+                                         Height="20"
+                                         Value="{Binding InstallProgress, Mode=OneWay}"
+                                         IsIndeterminate="{Binding InstallProgress, Converter={StaticResource ProgToInterConv}, Mode=OneWay}" />
+                            <Label Padding="0"
+                                   Content="{Binding InstallProgress, Converter={StaticResource ProgToTxtConv}, Mode=OneWay}"
+                                   d:Content="32.46%"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </controls:Dialog>
+            <controls:TitleBar Grid.Row="0"
+                               ApplicationNavigation="True"
+                               ShowMaximize="False"
+                               ShowMinimize="False" />
+        </SelectiveScrollingGrid>
+    </Border>
+</Window>

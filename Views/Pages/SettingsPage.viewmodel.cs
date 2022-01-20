@@ -8,8 +8,7 @@
 
 #region Using Directives
 
-using System.ComponentModel;
-using System.Reflection;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
@@ -109,6 +108,17 @@ public class SettingsPage_ViewModel : ViewModel<SettingsPage> {
         }
     }
 
+    FileInfo? Int_FFmpegPath { get; set; } = null;
+
+    public FileInfo? FFmpegPath {
+        get => Int_FFmpegPath;
+        set =>
+            Int_FFmpegPath = value switch {
+                { } Pth when Pth.FullName.ToLowerInvariant().EndsWith(".exe") => value,
+                _                                                             => null
+            };
+    }
+
     public override void OnSetup() => UpdateIgnoredVersions();
 }
 
@@ -133,29 +143,6 @@ public class SettingsField : ReactiveObject {
         this.ToolTip = ToolTip;
         _Content = Content;
 
-        switch ( Content ) {
-            case TextBlock TB:
-                EventHandler Listener = ( _, _ ) => {
-                    Debug.WriteLine("Heard back from InheritanceContextChanged");
-                };
-                TB.GetType().GetEvent("InheritanceContextChanged", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).AddMethod.Invoke(Content, new object[] { Listener });
-                //TB.PropertyChange += 
-                //TypedDependencyProperty<string> Prop = Content.GetDependencyProperty(TB.Text).CatchNull();
-                //Debug.WriteLine($"Found {Prop} :: {Prop.Get(Content)}");
-                break;
-        }
-        //Content.InvokeOnPropertyChanged
-        //Content.AddHandler("NotifyPropertyChange", )
-        ////TB.Raise(TB.DataContextChanged, new DependencyPropertyChangedEventArgs());
-        ////TB.GetValue
-        //Debug.WriteLine($"New SettingsField constructed with type {Content.GetType()}");
-        //((DependencyObject)Content).InvokeOnPropertyChanged += ( _, E ) => {
-        //    Debug.WriteLine($"Verifying new data from property {E.PropertyName}");
-        //    //E.NewValue
-        //    VerifyEventArgs Args = new VerifyEventArgs("egg", true);
-        //    OnVerify(Args);
-        //    IsValid = Args.Valid;
-        //};
         Height = 40;
     }
 
@@ -199,52 +186,4 @@ public class SettingsField : ReactiveObject {
         get => _Content;
         set => this.SetAndRaise(ref _Content, value);
     }
-
-    /// <summary>
-        /// Represents the method that will handle the Verify <see langword="event"/> on a <see cref="SettingsField"/> instance, and provide the relevant event arguments.
-        /// </summary>
-        /// <param name="Sender">The <see langword="event"/> raiser.</param>
-        /// <param name="E">The raised <see langword="event"/> arguments.</param>
-        /// <seealso cref="VerifyEventArgs"/>
-    public delegate void VerifyEventHandler( SettingsField? Sender, VerifyEventArgs E );
-
-    /// <summary>
-    /// Provides additional data for the <see cref="VerifyEventHandler"/>.
-    /// </summary>
-    /// <seealso cref="VerifyEventHandler"/>
-    public class VerifyEventArgs : EventArgs {
-        /// <summary>
-        /// Constructs an instance of the <see cref="VerifyEventArgs"/> <see langword="class"/>.
-        /// </summary>
-        /// <param name="Value">The property value to validate.</param>
-        /// <param name="Valid">A value indicating whether the new value is valid.</param>
-        public VerifyEventArgs( object Value, bool Valid ) {
-            this.Value = Value;
-            this.Valid = Valid;
-        }
-
-        /// <summary>
-        /// The property value to validate.
-        /// </summary>
-        public object Value { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the new value is valid.
-        /// </summary>
-        /// <value>
-        /// <see langword="true" /> if the new value is valid; otherwise, <see langword="false" />.
-        /// </value>
-        public bool Valid { get; set; }
-    }
-
-    /// <summary>
-    /// <see langword="event"/> raised when a property value is changed and must be verified again.
-    /// </summary>
-    public event VerifyEventHandler? Verify;
-
-    /// <summary>
-    /// Raises the <see cref="Verify" /> event.
-    /// </summary>
-    /// <param name="E">The <see cref="VerifyEventArgs"/> instance containing the event data.</param>
-    protected virtual void OnVerify( VerifyEventArgs E ) => Verify?.Invoke(this, E);
 }

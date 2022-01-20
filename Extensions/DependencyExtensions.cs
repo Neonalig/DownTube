@@ -61,7 +61,7 @@ public static class DependencyExtensions {
     /// <param name="NotifyAndRaise">The object to raise the <see langword="event"/> on.</param>
     /// <param name="PropertyName">The name of the property.</param>
     public static Result InvokeOnPropertyChanged( this INotifyAndRaisePropertyChanged NotifyAndRaise, [CallerMemberName] string? PropertyName = null ) {
-        PropertyName.CatchNull();
+        PropertyName.ThrowIfNull();
         NotifyAndRaise.OnPropertyChanged(PropertyName);
         return Result.Success;
     }
@@ -72,7 +72,7 @@ public static class DependencyExtensions {
     /// <param name="Notify">The object to raise the <see langword="event"/> on.</param>
     /// <param name="PropertyName">The name of the property.</param>
     public static Result InvokeOnPropertyChanged( this INotifyPropertyChanged Notify, [CallerMemberName] string? PropertyName = null ) {
-        PropertyName.CatchNull();
+        PropertyName.ThrowIfNull();
         return Notify.Raise(nameof(INotifyPropertyChanged.PropertyChanged), new PropertyChangedEventArgs(PropertyName));
     }
 

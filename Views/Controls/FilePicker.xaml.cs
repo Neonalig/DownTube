@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+#region Copyright (C) 2017-2021  Starflash Studios
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
@@ -85,8 +86,8 @@ public partial class FilePicker : INotifyPropertyChanged {
         set {
             if ( value != _MustExist ) {
                 _MustExist = value;
-                this.InvokeOnPropertyChanged();
-                if ( !Path.Exists ) {
+                _ = this.InvokeOnPropertyChanged();
+                if ( Path is null || !Path.Exists ) {
                     Path = DefaultPath;
                 }
             }
@@ -108,12 +109,18 @@ public partial class FilePicker : INotifyPropertyChanged {
     public bool GlyphFilled { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the selected path.
+    /// Gets or sets the path.
     /// </summary>
     /// <value>
-    /// The selected path.
+    /// The path.
     /// </value>
-    public FileInfo Path { get; set; }
+    public FileInfo? Path {
+        get => (FileInfo?)GetValue(PathProperty);
+        set => SetValue(PathProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="Path"/> dependency property.</summary>
+    public static readonly DependencyProperty PathProperty = DependencyProperty.Register(nameof(Path), typeof(FileInfo), typeof(FilePicker), new PropertyMetadata(null));
 
     /// <summary>
     /// Gets or sets the text path.
@@ -143,7 +150,7 @@ public partial class FilePicker : INotifyPropertyChanged {
     void TextBox_PreviewKeyDown( object Sender, KeyEventArgs E ) {
         switch ( E.Key ) {
             case Key.Return:
-                if ( TextPath != Path.FullName ) {
+                if ( Path is null || TextPath != Path.FullName ) {
                     Validate();
                     E.Handled = true;
                 }
@@ -151,18 +158,53 @@ public partial class FilePicker : INotifyPropertyChanged {
         }
     }
 
+    string? _VerifyPattern = null;
+
+    /// <summary>
+    /// Gets or sets the verification regex.
+    /// </summary>
+    /// <remarks>If <see langword="null"/> or empty, this is ignored; otherwise, if <see cref="Match.Success"/> is <see langword="false"/>, the text is considered invalid.</remarks>
+    /// <value>
+    /// The verification regex.
+    /// </value>
+    /// <seealso cref="VerifyRegex"/>
+    public string? VerifyPattern {
+        get => _VerifyPattern;
+        set {
+            if ( _VerifyPattern != value ) {
+                _VerifyPattern = value;
+                VerifyRegex = value is not null ? new Regex(value) : null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the verification regex.
+    /// </summary>
+    /// <value>
+    /// The verification regex.
+    /// </value>
+    /// <seealso cref="VerifyPattern"/>
+    public Regex? VerifyRegex { get; private set; }
+
     /// <summary>
     /// Validates the user input, changing <see cref="Path"/> is correct, or resetting <see cref="TextPath"/> if not.
     /// </summary>
     void Validate() {
         Debug.WriteLine($"Validating {TextPath}...");
-        if ( TextPath.GetFile().Out(out FileInfo Fl) && (!MustExist || Fl.Exists) ) {
+        if ( string.IsNullOrWhiteSpace(TextPath) ) {
+            TextPath = string.Empty;
+            Path = null;
+            Debug.WriteLine("\tEmpty!");
+            return;
+        }
+        if ( TextPath.GetFile().Out(out FileInfo Fl) && (!MustExist || Fl.Exists) && (VerifyRegex is null || VerifyRegex.IsMatch(Fl.FullName)) ) {
             Debug.WriteLine($"\tValid! ({Fl.FullName})");
             Path = Fl.Resolve();
         } else {
-            Debug.WriteLine($"\tInvalid! (Resetting to {Path.FullName})");
+            Debug.WriteLine($"\tInvalid! (Resetting to {Path?.FullName ?? string.Empty})");
         }
-        TextPath = Path.FullName;
+        TextPath = Path?.FullName ?? string.Empty;
     }
 
     /// <summary>

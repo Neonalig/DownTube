@@ -92,6 +92,15 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
                 }
             }
         });
+
+        //TODO: Remove below
+        UtilityDownloaderWindow Win = new UtilityDownloaderWindow {
+            VM = {
+                Utility = DownloadUtilityType.FFmpeg
+            }
+        };
+        Win.Show();
+        Close();
     }
 
     /// <summary> Initialises frame navigation in the window. </summary>
