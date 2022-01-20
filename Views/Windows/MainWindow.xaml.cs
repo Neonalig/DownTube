@@ -94,12 +94,36 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         });
 
         //TODO: Remove below
+        KnownUtilityRelease KUR = new KnownUtilityRelease("youtube-dl 2021.12.17", null!, null);
+        static bool Valid( string S ) => /*S.EndsWith(".zip") || S.EndsWith(".7z") || */S.EndsWith(".exe");
+        KUR.Downloads.AddRange(
+            new[] {
+                new KnownUtilityDownload("MD5SUMS", KUR, null!),
+                new KnownUtilityDownload("SHA1SUMS", KUR, null!),
+                new KnownUtilityDownload("SHA2-256SUMS", KUR, null!),
+                new KnownUtilityDownload("SHA2-512SUMS", KUR, null!),
+                new KnownUtilityDownload("youtube-dl", KUR, null!),
+                new KnownUtilityDownload("youtube-dl-2021.12.17.tar.gz", KUR, null!),
+                new KnownUtilityDownload("youtube-dl-2021.12.17.tar.gz.sig", KUR, null!),
+                new KnownUtilityDownload("youtube-dl.exe", KUR, null!),
+                new KnownUtilityDownload("youtube-dl.exe.sig", KUR, null!),
+                new KnownUtilityDownload("youtube-dl.sig", KUR, null!),
+                new KnownUtilityDownload("Source Code.zip", KUR, null!),
+                new KnownUtilityDownload("Source Code.tar.gz", KUR, null!)
+            }//.Where(KUD => Valid(KUD.FileName.ToLowerInvariant()))
+            );
+
+        foreach (KnownUtilityDownload Down in KUR ) {
+            Debug.WriteLine($"KUR has {Down.FileName} as an option.");
+        }
         UtilityDownloaderWindow Win = new UtilityDownloaderWindow {
             VM = {
-                Utility = DownloadUtilityType.YoutubeDL
+                Utility = DownloadUtilityType.YoutubeDL/*,
+                AwaitingRelease = KUR*/
             }
         };
         Win.Show();
+        Win.VM.AwaitingRelease = KUR;
         Close();
     }
 

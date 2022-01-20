@@ -8,6 +8,7 @@
         xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:udcControls="clr-namespace:DownTube.Views.Controls"
+        xmlns:converters="clr-namespace:DownTube.Converters"
         mc:Ignorable="d"
         d:Background="#202020"
         AllowsTransparency="True"
@@ -30,6 +31,16 @@
         <windows:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
                                                       FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,AppName=DownTube}"
                                                       YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,AppName=DownTube}"/>
+
+        <!--<converters:NullabilityToVisibilityConverter x:Key="NullToVisConv" ReturnWhenNull="Collapsed" DefaultReturn="Visible"/>-->
+        <converters:NullabilityToBoolConverter x:Key="NullToBoolConv" Null="False" Default="True"/>
+            <AlternationConverter x:Key="AlternationBackgroundConverter">
+            <SolidColorBrush Color="Transparent" />
+            <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
+        </AlternationConverter>
+        <Style x:Key="ListAlternationBG" TargetType="{x:Type ListViewItem}">
+            <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AlternationBackgroundConverter}}"/>
+        </Style>
     </Window.Resources>
     <Border x:Name="MainBorder"
             CornerRadius="8"
@@ -56,8 +67,9 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"/>
-                        <RowDefinition Height="1*"/>
-                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="2*" />
+                        <RowDefinition Height="1*" />
+                        <RowDefinition Height="1*" />
                     </Grid.RowDefinitions>
                     <Image Grid.Column="1" Grid.Row="1"
                            d:Source="{Binding Converter={svgc:SvgImageConverter AppName=DownTube}, ConverterParameter=/Resources/FFmpegLogo.svg}"
@@ -66,6 +78,7 @@
                                TextWrapping="WrapWithOverflow"
                                FontSize="20"
                                TextAlignment="Center"
+                               VerticalAlignment="Stretch"
                                Text="{Binding UtilitySummary, Mode=OneWay}"
                                d:Text="A complete, cross-platform solution to record, convert and stream audio and video."/>
                 </Grid>
@@ -152,6 +165,45 @@
                         </Grid>
                     </StackPanel>
                 </Grid>
+            </controls:Dialog>
+            <controls:Dialog Name="DownloadPickerDialog"
+                             Grid.Row="0"
+                             Grid.RowSpan="2"
+                             DialogHeight="320"
+                             Show="{Binding AwaitingRelease, Converter={StaticResource NullToBoolConv}, Mode=OneWay}"
+                             d:Show="True"
+                             Click="ManualInstall_OnClick"
+                             ButtonLeftAppearance="Secondary"
+                             ButtonLeftName="Cancel"
+                             ButtonRightClick="AutomaticInstall_OnClick"
+                             ButtonRightAppearance="{Binding AwaitingReleaseContinuationButtonAppearance}"
+                             d:ButtonRightAppearance="Primary"
+                             ButtonRightName="Start">
+                <ListView Background="Transparent"
+                          AlternationCount="2"
+                          ItemContainerStyle="{StaticResource ListAlternationBG}"
+                          ItemsSource="{Binding AwaitingRelease,Mode=OneWay}"
+                          PreviewMouseWheel="ListView_PreviewMouseWheel">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <ToggleButton Grid.Column="0"
+                                              IsChecked="{Binding Chosen, Mode=TwoWay}" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding FileName, Mode=OneWay}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <d:ListView.Items>
+                        <windows:KnownUtilityDownload FileName="youtube-dl" />
+                        <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" />
+                        <windows:KnownUtilityDownload FileName="youtube-dl.exe" />
+                    </d:ListView.Items>
+                </ListView>
             </controls:Dialog>
             <controls:TitleBar Grid.Row="0"
                                ApplicationNavigation="True"

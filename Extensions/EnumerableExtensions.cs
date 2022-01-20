@@ -208,4 +208,52 @@ public static class EnumerableExtensions {
 
     /// <inheritdoc cref="Iterate(IEnumerable?)"/>
     public static void FireAndForget( this IEnumerable? Enum ) => Iterate(Enum);
+
+    /// <summary>
+    /// Gets the enumerator.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The collection to iterate.</param>
+    /// <returns>The collection enumerator.</returns>
+    public static IEnumerator<T> GetEnumerator<T>( this IEnumerable<T> Enum ) {
+        foreach ( T Item in Enum ) {
+            yield return Item;
+        }
+    }
+
+    /// <summary>
+    /// Gets the enumerator.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The collection to iterate.</param>
+    /// <returns>The collection enumerator.</returns>
+    public static IEnumerator<T> GetEnumerator<T>(this IEnumerator<T> Enum ) {
+        foreach ( T Item in Enum ) {
+            yield return Item;
+        }
+    }
+
+    /// <summary>
+    /// Performs a specific operation on every single item in the collection.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The collection to iterate.</param>
+    /// <param name="Act">The operation to perform.</param>
+    public static void Foreach<T>(this IEnumerable<T> Enum, Action<T> Act) {
+        foreach ( T Item in Enum ) {
+            Act(Item);
+        }
+    }
+
+    /// <summary>
+    /// Appends the range of items to the end of the collection.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The enum to append the items to.</param>
+    /// <param name="Items">The items to append.</param>
+    public static void AddRange<T>(this ICollection<T> Enum, IEnumerable<T> Items ) {
+        foreach ( T Item in Items ) {
+            Enum.Add(Item);
+        }
+    }
 }

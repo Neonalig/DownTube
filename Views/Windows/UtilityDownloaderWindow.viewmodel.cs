@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -6,17 +9,26 @@ using System.Windows.Media;
 
 using DownTube.Views.Controls;
 
+using JetBrains.Annotations;
+
+using Octokit;
+
 using PropertyChanged;
 
 using SharpVectors.Converters;
 
+using WPFUI.Common;
+
 namespace DownTube.Views.Windows;
 
 public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloaderWindow> {
+
     /// <inheritdoc />
     public override Border WindowBGBorder => View.MainBorder;
 
     public bool UpdateDialogVisible { get; set; } = false;
+
+    public bool PickerDialogVisible { get; set; } = false;
 
     public double InstallProgress { get; set; } = -1;
 
@@ -53,6 +65,263 @@ public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloa
     /// The utility which will be downloaded.
     /// </value>
     public DownloadUtilityType Utility { get; set; } = DownloadUtilityType.FFmpeg;
+
+    KnownUtilityRelease? Int_AwaitingRelease { get; set; }
+
+    /// <summary>
+    /// Gets or sets the awaiting release.
+    /// </summary>
+    /// <value>
+    /// The awaiting release.
+    /// </value>
+    public KnownUtilityRelease? AwaitingRelease {
+        get => Int_AwaitingRelease;
+        set {
+            if ( Int_AwaitingRelease == value ) { return; }
+            Int_AwaitingRelease = value;
+
+            if ( value is not null ) {
+                value.AssetChosen += (_, _) => UpdateContinuationButton();
+            }
+        }
+    }
+
+    void UpdateContinuationButton() => AwaitingReleaseContinuationButtonAppearance =
+        Int_AwaitingRelease is not null && Int_AwaitingRelease.IsAssetChosen
+            ? Appearance.Primary
+            : Appearance.Secondary;
+
+    /// <summary>
+    /// Gets or sets the <see cref="AwaitingRelease"/> continuation button appearance.
+    /// </summary>
+    /// <value>
+    /// The <see cref="AwaitingRelease"/> continuation button appearance.
+    /// </value>
+    public Appearance AwaitingReleaseContinuationButtonAppearance { get; set; } = Appearance.Secondary;
+}
+
+/// <summary>
+/// A known <see cref="Release"/>.
+/// </summary>
+/// <seealso cref="IReadOnlyList{T}" />
+/// <seealso cref="KnownUtilityDownload"/>
+public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityDownload> {
+
+    /// <summary>
+    /// Gets or sets the name.
+    /// </summary>
+    /// <value>
+    /// The name.
+    /// </value>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the release.
+    /// </summary>
+    /// <value>
+    /// The release.
+    /// </value>
+    public Release Release { get; set; }
+
+    /// <summary>
+    /// The found download assets.
+    /// </summary>
+    internal readonly ObservableCollection<KnownUtilityDownload> Downloads;
+
+    /// <summary>
+    /// Prevents a default instance of the <see cref="KnownUtilityRelease"/> class from being created.
+    /// </summary>
+    public KnownUtilityRelease() : this("", null!, _ => true) {
+        if ( !DesignerProperties.GetIsInDesignMode(this) ) {
+            throw new NotSupportedException();
+        }
+
+        Downloads = new ObservableCollection<KnownUtilityDownload> {
+            new KnownUtilityDownload("fake1", this, null!),
+            new KnownUtilityDownload("fake2", this, null!),
+            new KnownUtilityDownload("fake3", this, null!)
+        };
+
+        AssetChosen += ( _, _ ) => {
+            IsAssetChosen = Downloads.Any(KUD => KUD.Chosen);
+            Debug.WriteLine($"Some asset was (un/)chosen. Any picked? {IsAssetChosen}");
+        };
+    }
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="KnownUtilityRelease"/> class.
+    /// </summary>
+    /// <param name="Release">The release.</param>
+    /// <param name="AssetValidator">The asset validator.</param>
+    public KnownUtilityRelease( Release Release, Func<string, bool> AssetValidator ) : this(Release.Name, Release, AssetValidator) { }
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="KnownUtilityRelease"/> class.
+    /// </summary>
+    /// <param name="Name">The name.</param>
+    /// <param name="Release">The release.</param>
+    /// <param name="AssetValidator">The asset validator.</param>
+    public KnownUtilityRelease( string Name, Release Release, Func<string, bool>? AssetValidator ) {
+        this.Name = Name;
+        this.Release = Release;
+
+        Downloads = Release is null
+            ? new ObservableCollection<KnownUtilityDownload>()
+            : new ObservableCollection<KnownUtilityDownload>(
+                (AssetValidator is null
+                    ? Release.Assets
+                    : Release.Assets.Where(A => AssetValidator(A.Name.ToLowerInvariant()))
+                ).Select(A => new KnownUtilityDownload(this, A)));
+
+        AssetChosen += ( _, _ ) => {
+            IsAssetChosen = Downloads.Any(KUD => KUD.Chosen);
+            Debug.WriteLine($"Some asset was (un/)chosen. Any picked? {IsAssetChosen}");
+        };
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether any asset has been chosen.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if any asset is chosen; otherwise, <see langword="false" />.
+    /// </value>
+    public bool IsAssetChosen { get; set; }
+
+    /// <inheritdoc />
+    public IEnumerator<KnownUtilityDownload> GetEnumerator() => Downloads.GetEnumerator<KnownUtilityDownload>();
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    public int Count => Downloads.Count;
+
+    /// <inheritdoc />
+    public KnownUtilityDownload this[ int Index ] => Downloads[Index];
+
+    #region AssetChosen Event
+
+    /// <summary>
+    /// Event arguments for the <see cref="AssetChosen"/> event (<inheritdoc cref="AssetChosen"/>).
+    /// </summary>
+    /// <param name="Sender">The event raiser.</param>
+    /// <param name="E">The raised event arguments.</param>
+    public delegate void AssetChosenEventArgs( KnownUtilityRelease Sender, KnownUtilityDownload E );
+
+    /// <summary>
+    /// Invoked when an asset is chosen for download.
+    /// </summary>
+    public event AssetChosenEventArgs AssetChosen;
+
+    bool _IgnoringAC = false;
+    /// <summary>
+    /// Raises the <see cref="AssetChosen"/> event (<inheritdoc cref="AssetChosen"/>)
+    /// </summary>
+    /// <param name="E">The raised event arguments.</param>
+    public void OnAssetChosen( KnownUtilityDownload E ) {
+        if ( _IgnoringAC ) { return; }
+        _IgnoringAC = true;
+
+        Debug.WriteLine($"Selecting {E.FileName}");
+        // ReSharper disable once LoopCanBePartlyConvertedToQuery
+        foreach (KnownUtilityDownload KUD in Downloads ) {
+            if ( KUD.Chosen && KUD.FileName != E.FileName ) {
+                Debug.WriteLine($"Deselecting {KUD.FileName}");
+                KUD.Chosen = false;
+            }
+        }
+        AssetChosen(this, E);
+        _IgnoringAC = false;
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// A known <see cref="ReleaseAsset"/>.
+/// </summary>
+/// <seealso cref="KnownUtilityRelease"/>
+public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
+
+    /// <summary>
+    /// Gets or sets the name of the file.
+    /// </summary>
+    /// <value>
+    /// The name of the file.
+    /// </value>
+    public string FileName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the release.
+    /// </summary>
+    /// <value>
+    /// The release.
+    /// </value>
+    public KnownUtilityRelease Release { get; set; }
+
+    /// <summary>
+    /// Gets or sets the asset.
+    /// </summary>
+    /// <value>
+    /// The asset.
+    /// </value>
+    public ReleaseAsset Asset { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this <see cref="KnownUtilityDownload"/> is chosen.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if chosen; otherwise, <see langword="false" />.
+    /// </value>
+    public bool Chosen { get; set; }
+
+    /// <summary>
+    /// Prevents a default instance of the <see cref="KnownUtilityDownload"/> class from being created.
+    /// </summary>
+    public KnownUtilityDownload() : this("", null!, null!) {
+        if ( !DesignerProperties.GetIsInDesignMode(this) ) {
+            throw new NotSupportedException();
+        }
+    }
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="KnownUtilityDownload"/> class.
+    /// </summary>
+    /// <param name="Release">The release.</param>
+    /// <param name="Asset">The asset.</param>
+    public KnownUtilityDownload( KnownUtilityRelease Release, ReleaseAsset Asset ) : this(Asset.Name, Release, Asset) { }
+
+    /// <summary>
+    /// Initialises a new instance of the <see cref="KnownUtilityDownload"/> class.
+    /// </summary>
+    /// <param name="FileName">The name of the file.</param>
+    /// <param name="Release">The release.</param>
+    /// <param name="Asset">The asset.</param>
+    public KnownUtilityDownload( string FileName, KnownUtilityRelease Release, ReleaseAsset Asset ) {
+        this.FileName = FileName;
+        this.Release = Release;
+        this.Asset = Asset;
+
+        PropertyChanged += ( _, E ) => {
+            switch ( E.PropertyName ) {
+                case nameof(Chosen):
+                    Release.OnAssetChosen(this);
+                    break;
+            }
+        };
+    }
+
+    /// <summary>
+    /// Occurs when a property value changes.
+    /// </summary>
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
+    /// Called when a property is changed.
+    /// </summary>
+    /// <param name="PropertyName">The name of the property.</param>
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged( [CallerMemberName] string? PropertyName = null ) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
 }
 
 [ValueConversion(typeof(DownloadUtilityType), typeof(DrawingImage))]
