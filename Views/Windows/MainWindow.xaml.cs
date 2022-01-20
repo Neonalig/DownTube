@@ -110,7 +110,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
                 new KnownUtilityDownload("youtube-dl.sig", KUR, null!),
                 new KnownUtilityDownload("Source Code.zip", KUR, null!),
                 new KnownUtilityDownload("Source Code.tar.gz", KUR, null!)
-            }//.Where(KUD => Valid(KUD.FileName.ToLowerInvariant()))
+            }.Where(KUD => Valid(KUD.FileName.ToLowerInvariant()))
             );
 
         foreach (KnownUtilityDownload Down in KUR ) {

@@ -182,8 +182,7 @@
                 <ListView Background="Transparent"
                           AlternationCount="2"
                           ItemContainerStyle="{StaticResource ListAlternationBG}"
-                          ItemsSource="{Binding AwaitingRelease,Mode=OneWay}"
-                          PreviewMouseWheel="ListView_PreviewMouseWheel">
+                          ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
                             <Grid HorizontalAlignment="Stretch">
