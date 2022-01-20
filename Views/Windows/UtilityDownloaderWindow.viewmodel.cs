@@ -4,6 +4,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
+using DownTube.Views.Controls;
+
+using PropertyChanged;
+
 using SharpVectors.Converters;
 
 namespace DownTube.Views.Windows;
@@ -17,6 +21,32 @@ public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloa
     public double InstallProgress { get; set; } = -1;
 
     /// <summary>
+    /// Gets the legal blurb for the current <see cref="DownloadUtilityType"/>.
+    /// </summary>
+    /// <value>
+    /// The legal blurb.
+    /// </value>
+    [DependsOn(nameof(Utility))]
+    public UserControl LegalBlurb => Utility switch {
+        DownloadUtilityType.FFmpeg    => new UtilityDownloaderWindow_FFmpegLegal(),
+        DownloadUtilityType.YoutubeDL => new UtilityDownloaderWindow_YoutubeDLLegal(),
+        _                             => throw new EnumValueOutOfRangeException<DownloadUtilityType>(Utility)
+    };
+
+    /// <summary>
+    /// Gets the legal blurb for the current <see cref="DownloadUtilityType"/>.
+    /// </summary>
+    /// <value>
+    /// The legal blurb.
+    /// </value>
+    [DependsOn(nameof(Utility))]
+    public string UtilitySummary => Utility switch {
+        DownloadUtilityType.FFmpeg    => "A complete, cross-platform solution to record, convert and stream audio and video.",
+        DownloadUtilityType.YoutubeDL => "Download videos from youtube.com or other video platforms.",
+        _                             => throw new EnumValueOutOfRangeException<DownloadUtilityType>(Utility)
+    };
+
+    /// <summary>
     /// Gets or sets the utility which will be downloaded.
     /// </summary>
     /// <value>
@@ -24,16 +54,6 @@ public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloa
     /// </value>
     public DownloadUtilityType Utility { get; set; } = DownloadUtilityType.FFmpeg;
 }
-
-//[ValueConversion(typeof(DownloadUtilityType), typeof(ImageSource))]
-//public class DownloadUtilityTypeToImageSourceConverter : DownloadUtilityTypeToTypeConverter<ImageSource> {
-
-//}
-
-//[ValueConversion(typeof(DownloadUtilityType), typeof(string))]
-//public class DownloadUtilityTypeToStringConverter : DownloadUtilityTypeToTypeConverter<string> {
-
-//}
 
 [ValueConversion(typeof(DownloadUtilityType), typeof(DrawingImage))]
 public class DownloadUtilityTypeToDrawingImageConverter : DownloadUtilityTypeToTypeConverter<DrawingImage> {

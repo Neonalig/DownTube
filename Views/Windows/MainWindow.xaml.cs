@@ -96,7 +96,7 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
         //TODO: Remove below
         UtilityDownloaderWindow Win = new UtilityDownloaderWindow {
             VM = {
-                Utility = DownloadUtilityType.FFmpeg
+                Utility = DownloadUtilityType.YoutubeDL
             }
         };
         Win.Show();

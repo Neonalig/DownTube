@@ -7,7 +7,7 @@
         xmlns:windows="clr-namespace:DownTube.Views.Windows"
         xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
-        xmlns:controls1="clr-namespace:DownTube.Views.Controls"
+        xmlns:udcControls="clr-namespace:DownTube.Views.Controls"
         mc:Ignorable="d"
         d:Background="#202020"
         AllowsTransparency="True"
@@ -66,7 +66,8 @@
                                TextWrapping="WrapWithOverflow"
                                FontSize="20"
                                TextAlignment="Center"
-                               Text="A complete, cross-platform solution to record, convert and stream audio and video."/>
+                               Text="{Binding UtilitySummary, Mode=OneWay}"
+                               d:Text="A complete, cross-platform solution to record, convert and stream audio and video."/>
                 </Grid>
                 <SelectiveScrollingGrid Grid.Row="1"
                                         VerticalAlignment="Stretch">
@@ -82,7 +83,13 @@
                             Background="{DynamicResource AccentFillColorDisabledBrush}"
                             Content="Cancel Download"
                             VerticalAlignment="Stretch" />
-                    <controls1:UtilityDownloaderWindow_FFmpegLegal Grid.Column="1" HorizontalAlignment="Stretch" />
+                    <ContentPresenter Grid.Column="1"
+                                      HorizontalAlignment="Stretch"
+                                      Content="{Binding LegalBlurb,Mode=OneWay}">
+                        <d:ContentPresenter.Content>
+                            <udcControls:UtilityDownloaderWindow_FFmpegLegal/>
+                        </d:ContentPresenter.Content>
+                    </ContentPresenter>
                     <Button Grid.Column="2"
                             Margin="5"
                             Padding="0"

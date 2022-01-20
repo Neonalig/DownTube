@@ -48,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\Controls\UtilityDownloaderWindow_YoutubeDLLegal.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Pages\SearchPage.viewmodel.cs" DependentUpon="Views\Pages\SearchPage.xaml" />
     <Compile Update="Views\Pages\SettingsPage.viewmodel.cs" DependentUpon="Views\Pages\SettingsPage.xaml" />
     <Compile Update="Views\Windows\MainWindow.viewmodel.cs" DependentUpon="Views\Windows\MainWindow.xaml" />
@@ -115,6 +118,13 @@
   <ItemGroup>
     <ProjectReference Include="MVVMUtils\MVVMUtils.csproj" />
     <ProjectReference Include="wpfui\WPFUI\WPFUI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\Controls\UtilityDownloaderWindow_YoutubeDLLegal.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
