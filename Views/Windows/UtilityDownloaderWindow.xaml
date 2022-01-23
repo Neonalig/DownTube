@@ -9,6 +9,7 @@
         xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         xmlns:udcControls="clr-namespace:DownTube.Views.Controls"
         xmlns:converters="clr-namespace:DownTube.Converters"
+        xmlns:mvvmUtils="clr-namespace:MVVMUtils;assembly=MVVMUtils"
         mc:Ignorable="d"
         d:Background="#202020"
         AllowsTransparency="True"
@@ -123,13 +124,13 @@
                              Grid.RowSpan="2"
                              DialogHeight="255"
                              Show="{Binding UpdateDialogVisible}"
-                             d:Show="False"
-                             Click="ManualInstall_OnClick"
+                             d:Show="True"
+                             Click="CancelInstall_OnClick"
                              ButtonLeftAppearance="Secondary"
-                             ButtonLeftName="Open GitHub"
+                             ButtonLeftName="Open in GitHub"
                              ButtonRightClick="AutomaticInstall_OnClick"
                              ButtonRightAppearance="Primary"
-                             ButtonRightName="Automatic Install">
+                             ButtonRightName="Install Automatically">
                 <Grid Width="360">
                     <StackPanel>
                         <StackPanel.Resources>
@@ -142,10 +143,12 @@
                                    Margin="0,0,0,10" />
                         <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    TextAlignment="Justify"
-                                   TextWrapping="WrapWithOverflow">
+                                   TextWrapping="WrapWithOverflow"
+                                   mvvmUtils:TextBlockHelper.TrimRuns="True">
                             <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
-                            <Run
-                                    Text="provides an automatic method of installing updates, though it may be slower than manually downloading and replacing the program by yourself. Choose either option below to install the update." />
+                            <Run Text="  provides an automatic method of installing  " />
+                            <Run Text="{Binding UtilityName, Mode=OneWay, FallbackValue=utilities}"/>
+                            <Run Text=", though it may be slower than manually downloading and installing the program by yourself. Choose either option below to install the program." />
                         </TextBlock>
                         <Grid
                                 Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
@@ -172,37 +175,54 @@
                              DialogHeight="320"
                              Show="{Binding AwaitingRelease, Converter={StaticResource NullToBoolConv}, Mode=OneWay}"
                              d:Show="True"
-                             Click="ManualInstall_OnClick"
+                             Click="CancelInstall_OnClick"
                              ButtonLeftAppearance="Secondary"
-                             ButtonLeftName="Cancel"
-                             ButtonRightClick="AutomaticInstall_OnClick"
+                             ButtonLeftName="Back"
+                             ButtonRightClick="StartInstall_OnClick"
                              ButtonRightAppearance="{Binding AwaitingReleaseContinuationButtonAppearance}"
                              d:ButtonRightAppearance="Primary"
                              ButtonRightName="Start">
-                <ListView Background="Transparent"
-                          AlternationCount="2"
-                          ItemContainerStyle="{StaticResource ListAlternationBG}"
-                          ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
-                    <ListView.ItemTemplate>
-                        <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
-                            <Grid HorizontalAlignment="Stretch">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition />
-                                </Grid.ColumnDefinitions>
-                                <ToggleButton Grid.Column="0"
-                                              IsChecked="{Binding Chosen, Mode=TwoWay}" />
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding FileName, Mode=OneWay}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                    <d:ListView.Items>
-                        <windows:KnownUtilityDownload FileName="youtube-dl" />
-                        <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" />
-                        <windows:KnownUtilityDownload FileName="youtube-dl.exe" />
-                    </d:ListView.Items>
-                </ListView>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="15"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Vertical"
+                                Grid.Column="1">
+                        <TextBlock FontWeight="Medium"
+                                   Text="PICK A DOWNLOAD"
+                                   Margin="0,0,0,10" />
+                        <TextBlock Text="The correct download could not be found. Please pick the version of the utility that you would like to download below."
+                                   TextWrapping="WrapWithOverflow"
+                                   Margin="0,0,0,10" />
+                        <ListView Background="Transparent"
+                                  AlternationCount="2"
+                                  HorizontalAlignment="Stretch"
+                                  ItemContainerStyle="{StaticResource ListAlternationBG}"
+                                  ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
+                                    <Grid HorizontalAlignment="Stretch">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition />
+                                        </Grid.ColumnDefinitions>
+                                        <ToggleButton Grid.Column="0"
+                                                      IsChecked="{Binding Chosen, Mode=TwoWay}" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding FileName, Mode=OneWay}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                            <d:ListView.Items>
+                                <windows:KnownUtilityDownload FileName="youtube-dl" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl.exe" />
+                            </d:ListView.Items>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
             </controls:Dialog>
             <controls:TitleBar Grid.Row="0"
                                ApplicationNavigation="True"

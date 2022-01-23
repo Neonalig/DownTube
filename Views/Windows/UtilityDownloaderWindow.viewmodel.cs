@@ -59,6 +59,19 @@ public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloa
     };
 
     /// <summary>
+    /// Gets the name of the current <see cref="DownloadUtilityType"/>.
+    /// </summary>
+    /// <value>
+    /// The name of the utility.
+    /// </value>
+    [DependsOn(nameof(Utility))]
+    public string UtilityName => Utility switch {
+        DownloadUtilityType.FFmpeg    => "FFmpeg",
+        DownloadUtilityType.YoutubeDL => "youtube-dl",
+        _                             => throw new EnumValueOutOfRangeException<DownloadUtilityType>(Utility)
+    };
+
+    /// <summary>
     /// Gets or sets the utility which will be downloaded.
     /// </summary>
     /// <value>
@@ -187,6 +200,14 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
     /// </value>
     public bool IsAssetChosen { get; set; }
 
+    /// <summary>
+    /// Gets the chosen asset.
+    /// </summary>
+    /// <value>
+    /// The chosen asset.
+    /// </value>
+    public KnownUtilityDownload? ChosenAsset => Downloads.FirstOrDefault(KUD => KUD.Chosen);
+
     /// <inheritdoc />
     public IEnumerator<KnownUtilityDownload> GetEnumerator() => Downloads.GetEnumerator<KnownUtilityDownload>();
 
@@ -235,6 +256,9 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
     }
 
     #endregion
+
+    /// <inheritdoc />
+    public override string ToString() => $"{Name} ({Downloads.Count} items)";
 }
 
 /// <summary>
@@ -322,6 +346,9 @@ public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
     /// <param name="PropertyName">The name of the property.</param>
     [NotifyPropertyChangedInvocator]
     protected virtual void OnPropertyChanged( [CallerMemberName] string? PropertyName = null ) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+
+    /// <inheritdoc />
+    public override string ToString() => FileName;
 }
 
 [ValueConversion(typeof(DownloadUtilityType), typeof(DrawingImage))]
