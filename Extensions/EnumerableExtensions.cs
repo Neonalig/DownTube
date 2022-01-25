@@ -251,9 +251,38 @@ public static class EnumerableExtensions {
     /// <typeparam name="T">The collection containing type.</typeparam>
     /// <param name="Enum">The enum to append the items to.</param>
     /// <param name="Items">The items to append.</param>
-    public static void AddRange<T>(this ICollection<T> Enum, IEnumerable<T> Items ) {
+    public static void AddRange<T>( this ICollection<T> Enum, IEnumerable<T> Items ) {
         foreach ( T Item in Items ) {
             Enum.Add(Item);
         }
+    }
+
+    /// <summary>
+    /// Applies the specified action to all items in the collection, then returns the same collection.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The collection to iterate.</param>
+    /// <param name="Action">The action to perform.</param>
+    /// <returns>The same collection.</returns>
+    public static ICollection<T> Passthrough<T>( this ICollection<T> Enum, Action<T> Action ) {
+        foreach ( T Item in Enum ) {
+            Action(Item);
+        }
+        return Enum;
+    }
+
+    /// <summary>
+    /// Applies the specified action to all items in the collection, then returns the same collection.
+    /// </summary>
+    /// <typeparam name="T">The collection containing type.</typeparam>
+    /// <param name="Enum">The collection to iterate.</param>
+    /// <param name="Action">The action to perform.</param>
+    /// <returns>The same collection.</returns>
+    public static IEnumerable<T> Passthrough<T>( this IEnumerable<T> Enum, Action<T> Action ) {
+        Enum = Enum.AsList();
+        foreach ( T Item in Enum ) {
+            Action(Item);
+        }
+        return Enum;
     }
 }

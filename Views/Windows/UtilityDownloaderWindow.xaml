@@ -39,7 +39,12 @@
             <SolidColorBrush Color="Transparent" />
             <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
         </AlternationConverter>
-        <windows:BoolToKnownUtilityDownloadMatchTypeConverter x:Key="BoolToKUDMTConv"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConv"/>
+        <windows:KnownUtilityDownloadMatchTypeToStringConverter x:Key="KUDMTTooltipConv"
+                                                                Supported="This is a supported download. Selecting this file ensures automatic installation knows how to continue based on previous tested versions."
+                                                                Recommended="This is a recommended download. Whilst the filename is unexpected, the format is known so the installer can still attempt to install regardless."
+                                                                Unknown="This is an unknown download. Automatic installation does not know how to handle this file, and will only download it then open the directory for you to manage."/>
+        <converters:BoolToDoubleConverter x:Key="KUDMTKnownOpacityConv" True="1.0" False="0.25"/>
         <Style x:Key="ListAlternationBG" TargetType="{x:Type ListViewItem}">
             <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AlternationBackgroundConverter}}"/>
         </Style>
@@ -203,7 +208,8 @@
                                   ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
                             <ListView.ItemTemplate>
                                 <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
-                                    <SelectiveScrollingGrid>
+                                    <SelectiveScrollingGrid
+                                        ToolTip="{Binding Match, Converter={StaticResource KUDMTTooltipConv}, Mode=OneWay}">
                                         <SelectiveScrollingGrid.ColumnDefinitions>
                                             <ColumnDefinition Width="50" />
                                             <ColumnDefinition />
@@ -214,9 +220,12 @@
                                         <TextBlock Grid.Column="1"
                                                    HorizontalAlignment="Stretch"
                                                    Text="{Binding FileName, Mode=OneWay}"
-                                                   IsEnabled="{Binding IsKnown, Mode=OneWay}" />
+                                                   IsEnabled="{Binding IsKnown, Mode=OneWay}"
+                                                   Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}"/>
                                         <controls:Icon Grid.Column="2"
-                                                       Glyph="Star48" />
+                                                       Glyph="Star48"
+                                                       Filled="{Binding IsSupported, Mode=OneWay}"
+                                                       Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}"/>
                                     </SelectiveScrollingGrid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
@@ -227,9 +236,9 @@
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <d:ListView.Items>
-                                <windows:KnownUtilityDownload FileName="youtube-dl" />
-                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" />
-                                <windows:KnownUtilityDownload FileName="youtube-dl.exe" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl" Match="Unknown"/>
+                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" Match="Recommended" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl.exe" Match="Supported" />
                             </d:ListView.Items>
                         </ListView>
                     </StackPanel>

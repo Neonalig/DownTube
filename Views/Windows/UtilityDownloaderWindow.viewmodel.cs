@@ -357,7 +357,7 @@ public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
     /// <value>
     /// The match support.
     /// </value>
-    public KnownUtilityDownloadMatchType Match { get; set; }
+    public KnownUtilityDownloadMatchType Match { get; set; } = KnownUtilityDownloadMatchType.Unknown;
 
     /// <summary>
     /// Gets a value indicating whether <see cref="Match"/> is <see cref="KnownUtilityDownloadMatchType.Supported"/>.
@@ -454,11 +454,113 @@ public abstract class DownloadUtilityTypeToTypeConverter<T> : DependencyObject, 
 }
 
 /// <summary>
-/// Provides value conversions from <see cref="bool"/> to <see cref="KnownUtilityDownloadMatchType"/>.
+/// Provides value conversions from <see cref="KnownUtilityDownloadMatchType"/> to <see cref="bool"/>.
+/// </summary>
+/// <seealso cref="EnumToBoolConverter{TEnum}"/>
+[ValueConversion(typeof(KnownUtilityDownloadMatchType), typeof(bool))]
+public sealed class KnownUtilityDownloadMatchTypeToBoolConverter : EnumToBoolConverter<KnownUtilityDownloadMatchType> {
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Supported"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public bool Supported { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Recommended"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public bool Recommended { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Unknown"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public bool Unknown { get; set; }
+
+    /// <inheritdoc />
+    public override bool Forward( KnownUtilityDownloadMatchType From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+        KnownUtilityDownloadMatchType.Supported   => Supported,
+        KnownUtilityDownloadMatchType.Recommended => Recommended,
+        KnownUtilityDownloadMatchType.Unknown     => Unknown,
+        _                                         => throw new EnumValueOutOfRangeException<KnownUtilityDownloadMatchType>(From)
+    };
+}
+
+/// <summary>
+/// Provides value conversions from <typeparamref name="TEnum"/> to <see cref="bool"/>.
+/// </summary>
+/// <typeparam name="TEnum">The type of the enum.</typeparam>
+/// <seealso cref="ValueConverter{TFrom, TTo}"/>
+//[ValueConversion(typeof(TEnum), typeof(bool))]
+public abstract class EnumToBoolConverter<TEnum> : ValueConverter<TEnum, bool> where TEnum : struct, Enum {
+
+    /// <summary>
+    /// Gets or sets the default return value.
+    /// </summary>
+    /// <value>
+    /// The default value returned when the supplied <typeparamref name="TEnum"/> is unexpected.
+    /// </value>
+    public bool Default { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value returned when the reverse conversion is supplied a <see langword="true"/> reference.
+    /// </summary>
+    /// <value>
+    /// The <see langword="true"/> return value.
+    /// </value>
+    public TEnum True { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value returned when the reverse conversion is supplied a <see langword="false"/> reference.
+    /// </summary>
+    /// <value>
+    /// The <see langword="false"/> return value.
+    /// </value>
+    public TEnum False { get; set; }
+
+    /// <summary>
+    /// Gets or sets the value returned when the reverse conversion is supplied a <see langword="null"/> reference.
+    /// </summary>
+    /// <value>
+    /// The <see langword="null"/> return value.
+    /// </value>
+    public TEnum Null { get; set; }
+
+    /// <inheritdoc />
+    public override bool CanForward => true;
+
+    /// <inheritdoc />
+    public override bool CanForwardWhenNull => true;
+
+    /// <inheritdoc />
+    public override bool CanReverse => true;
+
+    /// <inheritdoc />
+    public override bool CanReverseWhenNull => true;
+
+    /// <inheritdoc />
+    public override bool ForwardWhenNull( object? Parameter = null, CultureInfo? Culture = null ) => Default;
+
+    /// <inheritdoc />
+    public override TEnum Reverse( bool To, object? Parameter = null, CultureInfo? Culture = null ) => To ? True : False;
+
+    /// <inheritdoc />
+    public override TEnum ReverseWhenNull( object? Parameter = null, CultureInfo? Culture = null ) => Null;
+}
+
+/// <summary>
+/// Provides value conversions from <see cref="bool"/> to <see cref="Icon"/>.
 /// </summary>
 /// <seealso cref="ValueConverter{TFrom, TTo}"/>
-[ValueConversion(typeof(bool), typeof(KnownUtilityDownloadMatchType))]
-public sealed class BoolToKnownUtilityDownloadMatchTypeConverter : BoolToEnumConverter<KnownUtilityDownloadMatchType> { }
+[ValueConversion(typeof(bool), typeof(Icon))]
+public sealed class BoolToIconConverter : BoolToEnumConverter<Icon> { }
 
 /// <summary>
 /// Provides value conversions from <see cref="bool"/> to <typeparamref name="TEnum"/>.
@@ -505,6 +607,52 @@ public abstract class BoolToEnumConverter<TEnum> : ValueConverter<bool, TEnum> w
 
     /// <inheritdoc />
     public override bool Reverse( TEnum To, object? Parameter = null, CultureInfo? Culture = null ) => false;
+}
+
+/// <summary>
+/// Provides value conversions from <see cref="KnownUtilityDownloadMatchType"/> to <see cref="string"/>.
+/// </summary>
+/// <seealso cref="ValueConverter{TFrom, TTo}"/>
+[ValueConversion(typeof(KnownUtilityDownloadMatchType), typeof(string))]
+public sealed class KnownUtilityDownloadMatchTypeToStringConverter : ValueConverter<KnownUtilityDownloadMatchType, string> {
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Supported"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public string Supported { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Supported"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public string Recommended { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value returned when <see cref="KnownUtilityDownloadMatchType.Supported"/> is supplied.
+    /// </summary>
+    /// <value>
+    /// The specific return value.
+    /// </value>
+    public string Unknown { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    public override bool CanReverse => false;
+
+    /// <inheritdoc />
+    public override string? Forward( KnownUtilityDownloadMatchType From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+        KnownUtilityDownloadMatchType.Supported   => Supported,
+        KnownUtilityDownloadMatchType.Recommended => Recommended,
+        KnownUtilityDownloadMatchType.Unknown     => Unknown,
+        _                                         => throw new EnumValueOutOfRangeException<KnownUtilityDownloadMatchType>(From)
+    };
+
+    /// <inheritdoc />
+    public override KnownUtilityDownloadMatchType Reverse( string To, object? Parameter = null, CultureInfo? Culture = null ) => KnownUtilityDownloadMatchType.Unknown;
 }
 
 /// <summary>
@@ -557,13 +705,13 @@ public enum KnownUtilityDownloadMatchType {
     /// <summary>
     /// The download is a known form that can be handled immediately.
     /// </summary>
-    Supported,
+    Supported = 2,
     /// <summary>
     /// The download is a known file type that can feasibly be <b>attempted</b> to be handled automatically.
     /// </summary>
-    Recommended,
+    Recommended = 1,
     /// <summary>
     /// The download is an unknown type, and must be handled by the user.
     /// </summary>
-    Unknown
+    Unknown = 0
 }

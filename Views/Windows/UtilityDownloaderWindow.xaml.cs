@@ -39,7 +39,19 @@ public partial class UtilityDownloaderWindow : IView<UtilityDownloaderWindow_Vie
 
         //TODO: Remove below
         KnownUtilityRelease KUR = new KnownUtilityRelease("youtube-dl 2021.12.17", null!, null);
-        static bool Valid( string S ) => /*S.EndsWith(".zip") || S.EndsWith(".7z") || */S.EndsWith(".exe");
+
+        static KnownUtilityDownloadMatchType GetMatch( string S ) =>
+            S == "youtube-dl.exe"
+                ? KnownUtilityDownloadMatchType.Supported
+                : S.EndsWith(".exe")
+                  || S.EndsWith(".zip")
+                  || S.EndsWith(".7z")
+                  || S.EndsWith(".tar")
+                  || S.EndsWith(".gz")
+                  //|| S.EndsWith(".tar.gz")
+                  || S.EndsWith(".rar")
+                    ? KnownUtilityDownloadMatchType.Recommended
+                    : KnownUtilityDownloadMatchType.Unknown;
         KUR.Downloads.AddRange(
             new[] {
                 new KnownUtilityDownload("MD5SUMS", KUR, null!),
@@ -54,7 +66,7 @@ public partial class UtilityDownloaderWindow : IView<UtilityDownloaderWindow_Vie
                 new KnownUtilityDownload("youtube-dl.sig", KUR, null!),
                 new KnownUtilityDownload("Source Code.zip", KUR, null!),
                 new KnownUtilityDownload("Source Code.tar.gz", KUR, null!)
-            }.Where(KUD => Valid(KUD.FileName.ToLowerInvariant()))
+            }.Passthrough(KUD => KUD.Match = GetMatch(KUD.FileName.ToLowerInvariant()))
         );
 
         foreach ( KnownUtilityDownload Down in KUR ) {
