@@ -35,10 +35,11 @@
 
         <!--<converters:NullabilityToVisibilityConverter x:Key="NullToVisConv" ReturnWhenNull="Collapsed" DefaultReturn="Visible"/>-->
         <converters:NullabilityToBoolConverter x:Key="NullToBoolConv" Null="False" Default="True"/>
-            <AlternationConverter x:Key="AlternationBackgroundConverter">
+        <AlternationConverter x:Key="AlternationBackgroundConverter">
             <SolidColorBrush Color="Transparent" />
             <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
         </AlternationConverter>
+        <windows:BoolToKnownUtilityDownloadMatchTypeConverter x:Key="BoolToKUDMTConv"/>
         <Style x:Key="ListAlternationBG" TargetType="{x:Type ListViewItem}">
             <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AlternationBackgroundConverter}}"/>
         </Style>
@@ -199,22 +200,32 @@
                         <ListView Background="Transparent"
                                   AlternationCount="2"
                                   HorizontalAlignment="Stretch"
-                                  ItemContainerStyle="{StaticResource ListAlternationBG}"
                                   ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
                             <ListView.ItemTemplate>
                                 <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
-                                    <Grid HorizontalAlignment="Stretch">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
+                                    <SelectiveScrollingGrid>
+                                        <SelectiveScrollingGrid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50" />
                                             <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="20"/>
+                                        </SelectiveScrollingGrid.ColumnDefinitions>
                                         <ToggleButton Grid.Column="0"
                                                       IsChecked="{Binding Chosen, Mode=TwoWay}" />
                                         <TextBlock Grid.Column="1"
-                                                   Text="{Binding FileName, Mode=OneWay}" />
-                                    </Grid>
+                                                   HorizontalAlignment="Stretch"
+                                                   Text="{Binding FileName, Mode=OneWay}"
+                                                   IsEnabled="{Binding IsKnown, Mode=OneWay}" />
+                                        <controls:Icon Grid.Column="2"
+                                                       Glyph="Star48" />
+                                    </SelectiveScrollingGrid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem" BasedOn="{StaticResource ListAlternationBG}">
+                                    <Setter Property="HorizontalContentAlignment"
+                                            Value="Stretch" />
+                                </Style>
+                            </ListView.ItemContainerStyle>
                             <d:ListView.Items>
                                 <windows:KnownUtilityDownload FileName="youtube-dl" />
                                 <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" />

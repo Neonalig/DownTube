@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 
+using DownTube.Converters;
 using DownTube.Views.Controls;
 
 using JetBrains.Annotations;
@@ -349,6 +350,52 @@ public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
 
     /// <inheritdoc />
     public override string ToString() => FileName;
+
+    /// <summary>
+    /// Gets or sets the match support.
+    /// </summary>
+    /// <value>
+    /// The match support.
+    /// </value>
+    public KnownUtilityDownloadMatchType Match { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Match"/> is <see cref="KnownUtilityDownloadMatchType.Supported"/>.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if <see cref="Match"/> <c>==</c> <see cref="KnownUtilityDownloadMatchType.Supported"/>; otherwise, <see langword="false" />.
+    /// </value>
+    [DependsOn(nameof(Match))]
+    public bool IsSupported => Match == KnownUtilityDownloadMatchType.Supported;
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Match"/> is <see cref="KnownUtilityDownloadMatchType.Recommended"/>.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if <see cref="Match"/> <c>==</c> <see cref="KnownUtilityDownloadMatchType.Recommended"/>; otherwise, <see langword="false" />.
+    /// </value>
+    [DependsOn(nameof(Match))]
+    public bool IsRecommended => Match == KnownUtilityDownloadMatchType.Recommended;
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Match"/> is <see cref="KnownUtilityDownloadMatchType.Unknown"/>.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if <see cref="Match"/> <c>==</c> <see cref="KnownUtilityDownloadMatchType.Unknown"/>; otherwise, <see langword="false" />.
+    /// </value>
+    /// <seealso cref="IsKnown"/>
+    [DependsOn(nameof(Match))]
+    public bool IsUnknown => Match == KnownUtilityDownloadMatchType.Unknown;
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Match"/> is <b>NOT</b> <see cref="KnownUtilityDownloadMatchType.Unknown"/>.
+    /// </summary>
+    /// <value>
+    /// <see langword="true" /> if <see cref="Match"/> <c>!=</c> <see cref="KnownUtilityDownloadMatchType.Unknown"/>; otherwise, <see langword="false" />.
+    /// </value>
+    /// <seealso cref="IsUnknown"/>
+    [DependsOn(nameof(Match))]
+    public bool IsKnown => Match != KnownUtilityDownloadMatchType.Unknown;
 }
 
 [ValueConversion(typeof(DownloadUtilityType), typeof(DrawingImage))]
@@ -407,6 +454,60 @@ public abstract class DownloadUtilityTypeToTypeConverter<T> : DependencyObject, 
 }
 
 /// <summary>
+/// Provides value conversions from <see cref="bool"/> to <see cref="KnownUtilityDownloadMatchType"/>.
+/// </summary>
+/// <seealso cref="ValueConverter{TFrom, TTo}"/>
+[ValueConversion(typeof(bool), typeof(KnownUtilityDownloadMatchType))]
+public sealed class BoolToKnownUtilityDownloadMatchTypeConverter : BoolToEnumConverter<KnownUtilityDownloadMatchType> { }
+
+/// <summary>
+/// Provides value conversions from <see cref="bool"/> to <typeparamref name="TEnum"/>.
+/// </summary>
+/// <typeparam name="TEnum">The type of the enum.</typeparam>
+/// <seealso cref="ValueConverter{TFrom, TTo}"/>
+//[ValueConversion(typeof(bool), typeof(TEnum))]
+public abstract class BoolToEnumConverter<TEnum> : ValueConverter<bool, TEnum> where TEnum : struct, Enum {
+
+    /// <summary>
+    /// Gets or sets the enum value returned when <see langword="true"/>.
+    /// </summary>
+    /// <value>
+    /// The value returned when <see langword="true"/>.
+    /// </value>
+    public TEnum True { get; set; }
+
+    /// <summary>
+    /// Gets or sets the enum value returned when <see langword="false"/>.
+    /// </summary>
+    /// <value>
+    /// The value returned when <see langword="false"/>.
+    /// </value>
+    public TEnum False { get; set; }
+
+    /// <summary>
+    /// Gets or sets the enum value returned when <see langword="null"/>.
+    /// </summary>
+    /// <value>
+    /// The value returned when <see langword="null"/>.
+    /// </value>
+    public TEnum Null { get; set; }
+
+    /// <inheritdoc />
+    public override bool CanReverse => false;
+
+    public override bool CanForwardWhenNull => true;
+
+    /// <inheritdoc />
+    public override TEnum Forward( bool From, object? Parameter = null, CultureInfo? Culture = null ) => From ? True : False;
+
+    /// <inheritdoc />
+    public override TEnum ForwardWhenNull( object? Parameter = null, CultureInfo? Culture = null ) => Null;
+
+    /// <inheritdoc />
+    public override bool Reverse( TEnum To, object? Parameter = null, CultureInfo? Culture = null ) => false;
+}
+
+/// <summary>
 /// An implementation of <see cref="Image"/> which supports SVG images.
 /// </summary>
 /// <seealso cref="Image"/>
@@ -450,4 +551,19 @@ public class SvgImage : Image {
 public enum DownloadUtilityType {
     FFmpeg = 1,
     YoutubeDL = 2
+}
+
+public enum KnownUtilityDownloadMatchType {
+    /// <summary>
+    /// The download is a known form that can be handled immediately.
+    /// </summary>
+    Supported,
+    /// <summary>
+    /// The download is a known file type that can feasibly be <b>attempted</b> to be handled automatically.
+    /// </summary>
+    Recommended,
+    /// <summary>
+    /// The download is an unknown type, and must be handled by the user.
+    /// </summary>
+    Unknown
 }
