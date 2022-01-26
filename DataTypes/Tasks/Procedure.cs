@@ -1,6 +1,6 @@
-﻿using static DownTube.DataTypes.Tasks.IProcedure;
+﻿using static DownTube.DataTypes.IProcedure;
 
-namespace DownTube.DataTypes.Tasks;
+namespace DownTube.DataTypes;
 
 public class Procedure : IProcedure, IProcedureStatusMessageHandler, IProcedureExceptionHandler {
 

@@ -29,7 +29,7 @@
         d:DataContext="{d:DesignInstance Type=windows:UtilityDownloaderWindow_ViewModel}">
     <Window.Resources>
         <common:StaticBindings x:Key="StatInfo" />
-        <windows:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
+        <converters:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
                                                       FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,AppName=DownTube}"
                                                       YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,AppName=DownTube}"/>
         <!--<converters:NullabilityToVisibilityConverter x:Key="NullToVisConv" ReturnWhenNull="Collapsed" DefaultReturn="Visible"/>-->
@@ -39,7 +39,7 @@
             <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
         </AlternationConverter>
         <!--<BooleanToVisibilityConverter x:Key="BoolToVisConv"/>-->
-        <windows:KnownUtilityDownloadMatchTypeToStringConverter x:Key="KUDMTTooltipConv"
+        <converters:KnownUtilityDownloadMatchTypeToStringConverter x:Key="KUDMTTooltipConv"
                                                                 Supported="This is a supported download. Selecting this file ensures automatic installation knows how to continue based on previous tested versions."
                                                                 Recommended="This is a recommended download. Whilst the filename is unexpected, the format is known so the installer can still attempt to install regardless."
                                                                 Unknown="This is an unknown download. Automatic installation does not know how to handle this file, and will only download it then open the directory for you to manage."/>
