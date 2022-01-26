@@ -9,6 +9,8 @@
 #region Using Directives
 
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
 
 using DownTube.Converters;
 using DownTube.Engine;
@@ -106,5 +108,24 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
 
     void FFmpegDownloadLink_Click( object Sender, RoutedEventArgs E ) {
 
+    }
+
+    /// <summary>
+    /// Mocks the <see cref="Button.Click"/> <see langword="event"/> on the parent.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void HyperlinkButtonMock_Click( object Sender, RoutedEventArgs E ) {
+        Hyperlink Hl = (Hyperlink)Sender;
+        Hl.TryGetParent(out Button Btn).ThrowIfNull(Btn);
+        _ = Btn.Raise(nameof(Button.Click), E);
+    }
+
+    void YoutubeDLButton_Click( object Sender, RoutedEventArgs E ) {
+        Debug.WriteLine("youtube-dl button was clicked.");
+    }
+
+    void FFmpegButton_Click( object Sender, RoutedEventArgs E ) {
+        Debug.WriteLine("ffmpeg button was clicked.");
     }
 }
