@@ -9,13 +9,7 @@ public partial class UtilityDownloaderWindow_FFmpegLegal {
         InitializeComponent();
     }
 
-    /// <summary>
-    /// Navigates to the website using the user's default browser.
-    /// </summary>
-    /// <param name="URL">The URL.</param>
-    public static void NavigateToWebsite( string URL ) => _ = Process.Start(new ProcessStartInfo(URL) { UseShellExecute = true });
+    void FFmpegLicenseHyperlink_Click( object Sender, RoutedEventArgs E ) => "https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html".NavigateToWebsite();
 
-    void FFmpegLicenseHyperlink_Click( object Sender, RoutedEventArgs E ) => NavigateToWebsite("https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html");
-
-    void FFmpegLegalHyperlink_Click( object Sender, RoutedEventArgs E ) => NavigateToWebsite("https://www.ffmpeg.org/legal.html");
+    void FFmpegLegalHyperlink_Click( object Sender, RoutedEventArgs E ) => "https://www.ffmpeg.org/legal.html".NavigateToWebsite();
 }

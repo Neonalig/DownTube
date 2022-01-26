@@ -95,14 +95,14 @@ public partial class MainWindow : IView<MainWindow_ViewModel> {
 
         //TODO: Remove below
         
-        UtilityDownloaderWindow Win = new UtilityDownloaderWindow {
-            VM = {
-                Utility = DownloadUtilityType.YoutubeDL/*,
-                AwaitingRelease = KUR*/
-            }
-        };
-        Win.Show();
-        Close();
+        //UtilityDownloaderWindow Win = new UtilityDownloaderWindow {
+        //    VM = {
+        //        Utility = DownloadUtilityType.YoutubeDL/*,
+        //        AwaitingRelease = KUR*/
+        //    }
+        //};
+        //Win.Show();
+        //Close();
     }
 
     /// <summary> Initialises frame navigation in the window. </summary>

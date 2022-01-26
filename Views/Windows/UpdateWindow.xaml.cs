@@ -130,7 +130,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
     void ManualInstall_OnClick( object Sender, RoutedEventArgs E ) {
         UpdateLastCheckedDate();
         if ( UpdateChecker.LatestRelease?.HtmlUrl is { } Url ) {
-            _ = Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
+            Url.NavigateToWebsite();
             VM.UpdateDialogVisible = false;
         }
     }

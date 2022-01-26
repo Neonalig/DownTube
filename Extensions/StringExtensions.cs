@@ -15,6 +15,28 @@ using System.Diagnostics.CodeAnalysis;
 namespace DownTube.Extensions;
 
 public static class StringExtensions {
+
+    /// <summary>
+    /// Navigates to the website using the user's default browser.
+    /// </summary>
+    /// <param name="URL">The URL.</param>
+    /// <seealso cref="NavigateToWebsite(Uri)"/>
+    public static void NavigateToWebsite( this string URL ) => _ = Process.Start(new ProcessStartInfo(URL) { UseShellExecute = true });
+
+    /// <summary>
+    /// Navigates to the website using the user's default browser.
+    /// </summary>
+    /// <param name="URL">The URL.</param>
+    /// <seealso cref="NavigateToWebsite(string)"/>
+    public static void NavigateToWebsite( this Uri URL ) => NavigateToWebsite(Uri.UnescapeDataString(URL.AbsoluteUri));
+
+    /// <summary>
+    /// Truncates the specified text to the maximum length, adding ellipsis if exceeded.
+    /// </summary>
+    /// <param name="Value">The text to truncate.</param>
+    /// <param name="MaxLength">The maximum possible length (including the <paramref name="Ellipsis"/>).</param>
+    /// <param name="Ellipsis">The ellipsis text.</param>
+    /// <returns>The (possibly) truncated text.</returns>
     public static string Truncate( this string Value, int MaxLength, string Ellipsis = "..." ) {
         int Length = Value.Length,
             EllLen = Ellipsis.Length;

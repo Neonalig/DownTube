@@ -97,18 +97,14 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void MainRepo_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.RepoUrl) { UseShellExecute = true });
+    void MainRepo_Click( object Sender, RoutedEventArgs E ) => VM.RepoUrl.NavigateToWebsite();
 
     /// <summary>
     /// Occurs when the Click <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void CurrentVersion_Click( object Sender, RoutedEventArgs E ) => Process.Start(new ProcessStartInfo(VM.CurrentReleaseUrl) { UseShellExecute = true });
-
-    void FFmpegDownloadLink_Click( object Sender, RoutedEventArgs E ) {
-
-    }
+    void CurrentVersion_Click( object Sender, RoutedEventArgs E ) => VM.CurrentReleaseUrl.NavigateToWebsite();
 
     /// <summary>
     /// Mocks the <see cref="Button.Click"/> <see langword="event"/> on the parent.
@@ -121,11 +117,17 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
         _ = Btn.Raise(nameof(Button.Click), E);
     }
 
-    void YoutubeDLButton_Click( object Sender, RoutedEventArgs E ) {
-        Debug.WriteLine("youtube-dl button was clicked.");
-    }
+    /// <summary>
+    /// Occurs when the <see cref="Button.Click"/> <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void YoutubeDLButton_Click( object Sender, RoutedEventArgs E ) => ((string)((Button)Sender).ToolTip).NavigateToWebsite(); //TODO: Replace with UtilityDownloaderWindow
 
-    void FFmpegButton_Click( object Sender, RoutedEventArgs E ) {
-        Debug.WriteLine("ffmpeg button was clicked.");
-    }
+    /// <summary>
+    /// Occurs when the <see cref="Button.Click"/> <see langword="event"/> is raised.
+    /// </summary>
+    /// <param name="Sender">The source of the <see langword="event"/>.</param>
+    /// <param name="E">The raised <see langword="event"/> arguments.</param>
+    void FFmpegButton_Click( object Sender, RoutedEventArgs E ) => ((string)((Button)Sender).ToolTip).NavigateToWebsite(); //TODO: Replace with UtilityDownloaderWindow
 }

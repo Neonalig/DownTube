@@ -147,7 +147,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
     void WebHyperlink_RequestNavigate( object Sender, RequestNavigateEventArgs E ) {
         if (Sender is Hyperlink Hl ) {
-            Process.Start(new ProcessStartInfo(Hl.NavigateUri.ToString()) { UseShellExecute = true });
+            Hl.NavigateUri.NavigateToWebsite();
             E.Handled = true;
         }
     }
