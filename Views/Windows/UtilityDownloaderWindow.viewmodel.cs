@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -140,7 +141,7 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
     /// <summary>
     /// The found download assets.
     /// </summary>
-    internal readonly ObservableCollection<KnownUtilityDownload> Downloads;
+    internal readonly SortedObservableList<KnownUtilityDownload> Downloads;
 
     /// <summary>
     /// Prevents a default instance of the <see cref="KnownUtilityRelease"/> class from being created.
@@ -150,7 +151,7 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
             throw new NotSupportedException();
         }
 
-        Downloads = new ObservableCollection<KnownUtilityDownload> {
+        Downloads = new SortedObservableList<KnownUtilityDownload> {
             new KnownUtilityDownload("fake1", this, null!),
             new KnownUtilityDownload("fake2", this, null!),
             new KnownUtilityDownload("fake3", this, null!)
@@ -180,8 +181,8 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
         this.Release = Release;
 
         Downloads = Release is null
-            ? new ObservableCollection<KnownUtilityDownload>()
-            : new ObservableCollection<KnownUtilityDownload>(
+            ? new SortedObservableList<KnownUtilityDownload>()
+            : new SortedObservableList<KnownUtilityDownload>(
                 (AssetValidator is null
                     ? Release.Assets
                     : Release.Assets.Where(A => AssetValidator(A.Name.ToLowerInvariant()))
@@ -266,7 +267,7 @@ public class KnownUtilityRelease : DependencyObject, IReadOnlyList<KnownUtilityD
 /// A known <see cref="ReleaseAsset"/>.
 /// </summary>
 /// <seealso cref="KnownUtilityRelease"/>
-public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
+public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged, IComparable<KnownUtilityDownload>, IComparable {
 
     /// <summary>
     /// Gets or sets the name of the file.
@@ -396,12 +397,72 @@ public class KnownUtilityDownload : DependencyObject, INotifyPropertyChanged {
     /// <seealso cref="IsUnknown"/>
     [DependsOn(nameof(Match))]
     public bool IsKnown => Match != KnownUtilityDownloadMatchType.Unknown;
+
+    /// <inheritdoc />
+    public int CompareTo( KnownUtilityDownload? Other ) {
+        if ( ReferenceEquals(this, Other) ) {
+            return 0;
+        }
+        if ( Other is null ) {
+            return 1;
+        }
+        int MatchComparison = Other.Match.CompareTo(Match); //Reversed comparison to ensure higher enum value comes first.
+        return MatchComparison != 0
+            ? MatchComparison
+            : string.Compare(FileName, Other.FileName, StringComparison.Ordinal);
+    }
+
+    /// <inheritdoc />
+    public int CompareTo( object? Obj ) {
+        if ( Obj is null ) {
+            return 1;
+        }
+        if ( ReferenceEquals(this, Obj) ) {
+            return 0;
+        }
+        return Obj is KnownUtilityDownload Other
+            ? CompareTo(Other)
+            : throw new ArgumentException($"Object must be of type {nameof(KnownUtilityDownload)}");
+    }
+
+    /// <summary>
+    /// Performs a comparison between the <paramref name="Left"/> and <paramref name="Right"/> operands.
+    /// </summary>
+    /// <param name="Left">The left operand.</param>
+    /// <param name="Right">The right operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="Left"/> is lesser than <paramref name="Right"/>; otherwise <see langword="false"/>.</returns>
+    public static bool operator <( KnownUtilityDownload? Left, KnownUtilityDownload? Right ) => Comparer<KnownUtilityDownload>.Default.Compare(Left, Right) < 0;
+
+    /// <summary>
+    /// Performs a comparison between the <paramref name="Left"/> and <paramref name="Right"/> operands.
+    /// </summary>
+    /// <param name="Left">The left operand.</param>
+    /// <param name="Right">The right operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="Left"/> is greater than <paramref name="Right"/>; otherwise <see langword="false"/>.</returns>
+    public static bool operator >( KnownUtilityDownload? Left, KnownUtilityDownload? Right ) => Comparer<KnownUtilityDownload>.Default.Compare(Left, Right) > 0;
+
+    /// <summary>
+    /// Performs a comparison between the <paramref name="Left"/> and <paramref name="Right"/> operands.
+    /// </summary>
+    /// <param name="Left">The left operand.</param>
+    /// <param name="Right">The right operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="Left"/> is lesser than or equal to <paramref name="Right"/>; otherwise <see langword="false"/>.</returns>
+    public static bool operator <=( KnownUtilityDownload? Left, KnownUtilityDownload? Right ) => Comparer<KnownUtilityDownload>.Default.Compare(Left, Right) <= 0;
+
+    /// <summary>
+    /// Performs a comparison between the <paramref name="Left"/> and <paramref name="Right"/> operands.
+    /// </summary>
+    /// <param name="Left">The left operand.</param>
+    /// <param name="Right">The right operand.</param>
+    /// <returns><see langword="true"/> if <paramref name="Left"/> is lesser than or equal to <paramref name="Right"/>; otherwise <see langword="false"/>.</returns>
+    public static bool operator >=( KnownUtilityDownload? Left, KnownUtilityDownload? Right ) => Comparer<KnownUtilityDownload>.Default.Compare(Left, Right) >= 0;
 }
 
+/// <summary>
+/// Converts <see cref="DownloadUtilityType"/> enum values into a representative <see cref="DrawingImage"/>.
+/// </summary>
 [ValueConversion(typeof(DownloadUtilityType), typeof(DrawingImage))]
-public class DownloadUtilityTypeToDrawingImageConverter : DownloadUtilityTypeToTypeConverter<DrawingImage> {
-
-}
+public class DownloadUtilityTypeToDrawingImageConverter : DownloadUtilityTypeToTypeConverter<DrawingImage> { }
 
 /// <summary>
 /// Provides value conversions from <see cref="DownloadUtilityType"/> to <typeparamref name="T"/>.
@@ -644,7 +705,7 @@ public sealed class KnownUtilityDownloadMatchTypeToStringConverter : ValueConver
     public override bool CanReverse => false;
 
     /// <inheritdoc />
-    public override string? Forward( KnownUtilityDownloadMatchType From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
+    public override string Forward( KnownUtilityDownloadMatchType From, object? Parameter = null, CultureInfo? Culture = null ) => From switch {
         KnownUtilityDownloadMatchType.Supported   => Supported,
         KnownUtilityDownloadMatchType.Recommended => Recommended,
         KnownUtilityDownloadMatchType.Unknown     => Unknown,
@@ -714,4 +775,120 @@ public enum KnownUtilityDownloadMatchType {
     /// The download is an unknown type, and must be handled by the user.
     /// </summary>
     Unknown = 0
+}
+
+/// <summary>
+/// <inheritdoc cref="ObservableCollection{T}"/> Supports light sorting.
+/// </summary>
+/// <typeparam name="T"><inheritdoc cref="ObservableCollection{T}"/></typeparam>
+/// <seealso cref="ObservableCollection{T}"/>
+public class SortedObservableList<T> : IList<T>, INotifyCollectionChanged, INotifyPropertyChanged where T : IComparable<T> {
+
+    /// <summary>
+    /// The internal collection.
+    /// </summary>
+    readonly ObservableCollection<T> _Coll = new ObservableCollection<T>();
+
+    /// <inheritdoc cref="ObservableCollection{T}(IEnumerable{T})"/>
+    /// <param name="Collection">The collection from which the elements are copied.</param>
+    public SortedObservableList( IEnumerable<T> Collection ) : this() {
+        foreach ( T Item in Collection ) {
+            Add(Item);
+        }
+    }
+
+    /// <inheritdoc cref="ObservableCollection{T}()"/>
+    public SortedObservableList() {
+        _Coll.CollectionChanged += (_, E) => OnCollectionChanged(E);
+        _ = _Coll.AddHandler(nameof(PropertyChanged), ( ObservableCollection<T> _, PropertyChangedEventArgs E ) => OnPropertyChanged(E));
+    }
+
+    /// <inheritdoc />
+    public void Add( T Item ) {
+        //Debug.WriteLine($"Adding {Item}");
+        int I = 0;
+        foreach ( T Itm in this ) {
+            if ( Item.CompareTo(Itm) <= 0 ) {
+                //Debug.WriteLine($"\tInserted @ {I}");
+                _Coll.Insert(I, Item);
+                return;
+            }
+            I++;
+        }
+        //Debug.WriteLine($"\tAdded @ {Count}");
+        _Coll.Add(Item);
+    }
+
+    /// <inheritdoc />
+    public void Clear() => _Coll.Clear();
+
+    /// <inheritdoc />
+    public bool Contains( T Item ) => _Coll.Contains(Item);
+
+    /// <inheritdoc />
+    public void CopyTo( T[] Array, int ArrayIndex ) => _Coll.CopyTo(Array, ArrayIndex);
+
+    /// <inheritdoc />
+    public bool Remove( T Item ) => _Coll.Remove(Item);
+
+    /// <inheritdoc />
+    public int Count => _Coll.Count;
+
+    /// <inheritdoc />
+    public bool IsReadOnly => false;
+
+    /// <inheritdoc />
+    public int IndexOf( T Item ) => _Coll.IndexOf(Item);
+
+    /// <inheritdoc />
+    /// <remarks>Equivalent to <see cref="Add(T)"/> due to sorting behaviour of the collection.</remarks>
+    public void Insert( int _, T Item ) => Add(Item);
+
+    /// <inheritdoc />
+    public void RemoveAt( int Index ) => _Coll.RemoveAt(Index);
+
+    /// <inheritdoc cref="ObservableCollection{T}.this[int]"/>
+    /// <summary>
+    /// Gets the <see cref="T"/> at the specified index.
+    /// </summary>
+    /// <remarks>The setter is not recommended, as it ignores sorting of the collection.</remarks>
+    /// <param name="Index">The index.</param>
+    /// <returns>The found <see cref="T"/> at the given index.</returns>
+    [SuppressPropertyChangedWarnings]
+    public T this[int Index] {
+        get => _Coll[Index];
+        set => _Coll[Index] = value;
+    }
+
+    /// <inheritdoc />
+    public IEnumerator<T> GetEnumerator() => _Coll.GetEnumerator();
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+
+    /// <inheritdoc />
+    public event PropertyChangedEventHandler? PropertyChanged;
+    
+    /// <summary>
+    /// Raised when a property is changed.
+    /// </summary>
+    /// <param name="PropertyName">The name of the property.</param>
+    [NotifyPropertyChangedInvocator]
+    protected virtual void OnPropertyChanged( [CallerMemberName] string? PropertyName = null ) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
+
+    /// <summary>
+    /// Raised when the collection is changed.
+    /// </summary>
+    /// <param name="E">The raised event arguments.</param>
+    protected virtual void OnPropertyChanged( PropertyChangedEventArgs E ) => PropertyChanged?.Invoke(this, E);
+
+    /// <summary>
+    /// Raised when the collection is changed.
+    /// </summary>
+    /// <param name="E">The raised event arguments.</param>
+    [SuppressPropertyChangedWarnings]
+    protected virtual void OnCollectionChanged( NotifyCollectionChangedEventArgs E ) => CollectionChanged?.Invoke(this, E);
 }

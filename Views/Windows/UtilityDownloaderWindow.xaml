@@ -32,14 +32,13 @@
         <windows:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
                                                       FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,AppName=DownTube}"
                                                       YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,AppName=DownTube}"/>
-
         <!--<converters:NullabilityToVisibilityConverter x:Key="NullToVisConv" ReturnWhenNull="Collapsed" DefaultReturn="Visible"/>-->
         <converters:NullabilityToBoolConverter x:Key="NullToBoolConv" Null="False" Default="True"/>
         <AlternationConverter x:Key="AlternationBackgroundConverter">
             <SolidColorBrush Color="Transparent" />
             <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
         </AlternationConverter>
-        <BooleanToVisibilityConverter x:Key="BoolToVisConv"/>
+        <!--<BooleanToVisibilityConverter x:Key="BoolToVisConv"/>-->
         <windows:KnownUtilityDownloadMatchTypeToStringConverter x:Key="KUDMTTooltipConv"
                                                                 Supported="This is a supported download. Selecting this file ensures automatic installation knows how to continue based on previous tested versions."
                                                                 Recommended="This is a recommended download. Whilst the filename is unexpected, the format is known so the installer can still attempt to install regardless."
@@ -124,7 +123,6 @@
                     </Button>
                 </SelectiveScrollingGrid>
             </SelectiveScrollingGrid>
-
             <controls:Dialog x:Name="UpdateDialog"
                              Grid.Row="0"
                              Grid.RowSpan="2"
@@ -236,9 +234,12 @@
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <d:ListView.Items>
-                                <windows:KnownUtilityDownload FileName="youtube-dl" Match="Unknown"/>
-                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" Match="Recommended" />
-                                <windows:KnownUtilityDownload FileName="youtube-dl.exe" Match="Supported" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl.exe"
+                                                              Match="Supported" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz"
+                                                              Match="Recommended" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl"
+                                                              Match="Unknown"/>
                             </d:ListView.Items>
                         </ListView>
                     </StackPanel>
