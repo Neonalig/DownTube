@@ -121,4 +121,28 @@ public static class StringExtensions {
     /// <see langword="true" /> if <paramref name="Value"/> is <see langword="null"/>, <see cref="string.Empty"/> or whitespace; otherwise, <see langword="false" />.
     /// </returns>
     public static bool IsNullOrWhiteSpace( [NotNullWhen(false)] this string? Value ) => string.IsNullOrWhiteSpace(Value);
+
+    /// <summary>
+    /// Determines whether the string is equivalent to any of the provided parameters.
+    /// </summary>
+    /// <param name="String">The string to check.</param>
+    /// <param name="Comparison">The comparison method.</param>
+    /// <param name="Others">The other strings to iterate through.</param>
+    /// <returns><see langword="true"/> if <paramref name="String"/> equals any of the <paramref name="Others"/>; otherwise <see langword="false"/>.</returns>
+    public static bool EqualsAny( this string String, StringComparison Comparison = StringComparison.Ordinal, params string[] Others ) {
+        foreach (string Other in Others ) {
+            if (String.Equals(Other, Comparison) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Determines whether the string is equivalent to any of the provided parameters.
+    /// </summary>
+    /// <param name="String">The string to check.</param>
+    /// <param name="Others">The other strings to iterate through.</param>
+    /// <returns><see langword="true"/> if <paramref name="String"/> equals any of the <paramref name="Others"/>; otherwise <see langword="false"/>.</returns>
+    public static bool EqualsAny( this string String, params string[] Others ) => EqualsAny(String, StringComparison.Ordinal, Others);
 }

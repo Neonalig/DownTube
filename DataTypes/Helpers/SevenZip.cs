@@ -17,6 +17,29 @@ using System.IO.Compression;
 namespace DownTube.DataTypes;
 
 public static class SZip {
+
+    /// <summary>
+    /// Extracts the specified archive file to the given destination.
+    /// </summary>
+    /// <param name="File">The archive to extract.</param>
+    /// <param name="Destination">The destination path.</param>
+    [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
+    [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
+    public static void Extract( this FileInfo File, DirectoryInfo Destination ) {
+        Debug.WriteLine($"Extracting {File.FullName}...");
+        if ( !Destination.Exists ) { Destination.Create(); }
+        Debug.WriteLine($"Will extract to {Destination.FullName}...");
+        try {
+            using ( ZipArchive Archive = ZipFile.OpenRead(File.FullName) ) {
+                Debug.WriteLine($"Extracting from {Archive}");
+                Archive.ExtractToDirectory(Destination.FullName, true);
+                Debug.WriteLine("Extracted.");
+            }
+        } catch ( Exception Ex ) {
+            Debug.WriteLine($"Exception caught: {Ex} :: {Ex.GetType().GetTypeName()} :: {Ex.Message}");
+        }
+    }
+
     /// <summary>
     /// Extracts the specified archive file to the given destination.
     /// </summary>
@@ -26,28 +49,18 @@ public static class SZip {
     /// <returns>The folder the archive was extracted into.</returns>
     [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public static DirectoryInfo Extract( this FileInfo File, DirectoryInfo Destination, bool CreateSubdirectory = true ) {
-        Debug.WriteLine($"Extracting {File.FullName}...");
+    public static DirectoryInfo Extract( this FileInfo File, DirectoryInfo Destination, bool CreateSubdirectory ) {
+        if ( !Destination.Exists ) { Destination.Create(); }
         if ( CreateSubdirectory ) {
-            if ( !Destination.Exists ) { Destination.Create(); }
             Destination = Destination.CreateSubdirectory(Path.GetFileNameWithoutExtension(File.Name));
             if ( !Destination.Exists ) { Destination.Create(); }
         }
-        Debug.WriteLine($"Will extract to {Destination.FullName}...");
-        try {
-            using ( ZipArchive Archive = ZipFile.OpenRead(File.FullName) ) {
-                Debug.WriteLine($"Extracting from {Archive}");
-                Archive.ExtractToDirectory(Destination.FullName, true);
-                Debug.WriteLine("Extracted.");
-            }
-        } catch (Exception Ex) {
-            Debug.WriteLine($"Exception caught: {Ex} :: {Ex.GetType().GetTypeName()} :: {Ex.Message}");
-        }
+        Extract(File, Destination);
         return Destination;
     }
 
     /// <inheritdoc cref="Extract(FileInfo, DirectoryInfo, bool)"/>
     [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
-    public static DirectoryInfo Extract( this FileInfo File, bool CreateSubdirectory = true ) => Extract(File, File.Directory!, CreateSubdirectory);
+    public static DirectoryInfo Extract( this FileInfo File, bool CreateSubdirectory ) => Extract(File, File.Directory!, CreateSubdirectory);
 }

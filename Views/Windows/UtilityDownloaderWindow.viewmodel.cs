@@ -37,7 +37,7 @@ public class UtilityDownloaderWindow_ViewModel : Window_ViewModel<UtilityDownloa
 
     public bool PickerDialogVisible { get; set; } = false;
 
-    public double InstallProgress { get; set; } = -1;
+    public double InstallProgress { get; set; } = 0;
 
     /// <summary>
     /// Gets the legal blurb for the current <see cref="DownloadUtilityType"/>.

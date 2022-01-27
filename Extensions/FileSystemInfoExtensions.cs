@@ -13,10 +13,12 @@ using System.IO;
 using System.Reflection;
 using System.Security;
 
-using DownTube.Engine;
+using DownTube.DataTypes;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
+using PInvoke = DownTube.Engine.PInvoke;
 
 #endregion
 
@@ -169,6 +171,9 @@ public static class FileSystemInfoExtensions {
     /// <summary> The logical desktop directory. </summary>
     public static readonly DirectoryInfo Desktop = Environment.SpecialFolder.Desktop.GetDirectory().Value!;
 
+    /// <summary> The logical downloads directory. </summary>
+    public static readonly DirectoryInfo Downloads = KnownFolder.Downloads.Path.GetDirectory().Value!;
+
     /// <summary>
     /// The default JsonSerialiser used when one isn't specified.
     /// </summary>
@@ -189,10 +194,10 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="DirectoryNotFoundException">The path specified when creating an instance of the <see cref="FileInfo" /> object is invalid, such as being on an unmapped drive.</exception>
     /// <exception cref="ArgumentException">The <paramref name="Destination"/> <see cref="FileStream"/> is not writable.</exception>
     /// <exception cref="ArgumentNullException">The <paramref name="Destination"/> <see cref="FileStream"/> is <see langword="null" />.</exception>
-    public static void Serialise( this object Obj, FileInfo Destination, JsonSerializer? Serialiser = null) {
-        using (FileStream FS = Destination.OpenWrite() ) {
-            using (StreamWriter SW = new StreamWriter(FS) ) {
-                using (JsonTextWriter JTW = new JsonTextWriter(SW) ) {
+    public static void Serialise( this object Obj, FileInfo Destination, JsonSerializer? Serialiser = null ) {
+        using ( FileStream FS = Destination.OpenWrite() ) {
+            using ( StreamWriter SW = new StreamWriter(FS) ) {
+                using ( JsonTextWriter JTW = new JsonTextWriter(SW) ) {
                     (Serialiser ?? DefaultJsonSerialiser).Serialize(JTW, Obj);
                 }
             }
@@ -261,7 +266,7 @@ public static class FileSystemInfoExtensions {
             return IOEx;
         } catch ( ArgumentException ArgEx ) {
             return ArgEx;
-        } catch (JsonSerializationException JSerEx ) {
+        } catch ( JsonSerializationException JSerEx ) {
             return JSerEx;
         }
     }
@@ -283,7 +288,7 @@ public static class FileSystemInfoExtensions {
     /// <exception cref="FileNotFoundException">The file cannot be found.</exception>
     public static async Task<T?> DeserialiseAsync<T>( this FileInfo Location, JsonSerializer? Serialiser = null, CancellationToken Token = default ) {
         string Text = await File.ReadAllTextAsync(Location.FullName, Token);
-        using (StreamReader SR = new StreamReader(Text) ) {
+        using ( StreamReader SR = new StreamReader(Text) ) {
             using ( JsonTextReader JTR = new JsonTextReader(SR) ) {
                 return (Serialiser ?? DefaultJsonSerialiser).Deserialize<T>(JTR);
             }
@@ -307,7 +312,7 @@ public static class FileSystemInfoExtensions {
                     return Return;
                 }
             }
-        } catch (Exception Ex) {
+        } catch ( Exception Ex ) {
             return Ex;
         }
     }
@@ -370,4 +375,204 @@ public static class FileSystemInfoExtensions {
     [SuppressMessage("ReSharper", "ExceptionNotDocumented")]
     [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional")]
     public static FileInfo Resolve( this FileInfo FI ) => new FileInfo(PInvoke.GetFinalPathName(FI.FullName));
+
+    /// <summary>
+    /// Moves the given file to a new location, overwriting any files if one already exists.
+    /// </summary>
+    /// <remarks>If the destination directory does not exist, it will be created.</remarks>
+    /// <param name="File">The file to move.</param>
+    /// <param name="Dest">The destination. If the destination already exists, it will be overwritten.</param>
+    /// <exception cref="IOException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentNullException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="SecurityException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="UnauthorizedAccessException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="FileNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="DirectoryNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="PathTooLongException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    public static void MoveTo( this FileInfo File, FileInfo Dest ) {
+        if ( Dest.Directory is { Exists: false } Dir ) {
+            Dir.Create();
+        }
+        if ( Dest.Exists ) {
+            File.MoveTo(Dest.FullName, true);
+        } else {
+            File.MoveTo(Dest.FullName);
+        }
+    }
+
+    /// <summary>
+    /// Moves the given file to a new location, overwriting any files if one already exists.
+    /// </summary>
+    /// <remarks>If the destination directory does not exist, it will be created.</remarks>
+    /// <param name="File">The file to move.</param>
+    /// <param name="Dir">The destination directory. If the directory does not exist, it will be created.</param>
+    /// <returns>The new location of the moved file.</returns>
+    /// <exception cref="IOException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentNullException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="SecurityException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="UnauthorizedAccessException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="FileNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="DirectoryNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="PathTooLongException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    public static FileInfo MoveTo( this FileInfo File, DirectoryInfo Dir ) {
+        if ( !Dir.Exists ) {
+            Dir.Create();
+        }
+        FileInfo Dest = new FileInfo(Path.Combine(Dir.FullName, File.Name));
+        MoveTo(File, Dest);
+        return Dest;
+    }
+
+    /// <summary>
+    /// Moves the given directory to a new location. If the destination already exists, it will become a subdirectory.
+    /// </summary>
+    /// <remarks>The destination folder name cannot be identical to the original folder name.</remarks>
+    /// <param name="Location">The location.</param>
+    /// <param name="Destination">The destination.</param>
+    /// <exception cref="ArgumentNullException"><inheritdoc cref="DirectoryInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentException"><inheritdoc cref="DirectoryInfo.MoveTo(string)"/></exception>
+    /// <exception cref="IOException"><inheritdoc cref="DirectoryInfo.MoveTo(string)"/></exception>
+    /// <exception cref="SecurityException"><inheritdoc cref="DirectoryInfo.MoveTo(string)"/></exception>
+    /// <exception cref="DirectoryNotFoundException"><inheritdoc cref="DirectoryInfo.MoveTo(string)"/></exception>
+    public static void MoveTo( this DirectoryInfo Location, DirectoryInfo Destination ) => Location.MoveTo(Destination.FullName);
+
+    /// <summary>
+    /// Renames the specified file.
+    /// </summary>
+    /// <param name="File">The file to rename.</param>
+    /// <param name="NewName">The new name.</param>
+    /// <param name="ChangeExtension">If <see langword="true" />, the extension will be overwritten; otherwise the extension will remain the same.</param>
+    /// <exception cref="IOException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentNullException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="ArgumentException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="SecurityException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="UnauthorizedAccessException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="FileNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="DirectoryNotFoundException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="PathTooLongException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    /// <exception cref="NotSupportedException"><inheritdoc cref="FileInfo.MoveTo(string)"/></exception>
+    public static void Rename( this FileInfo File, string NewName, bool ChangeExtension ) {
+        FileInfo Dest = new FileInfo(
+            ChangeExtension switch {
+                true => Path.Combine(File.DirectoryName ?? string.Empty, NewName),
+                _    => Path.Combine(File.DirectoryName ?? string.Empty, Path.GetFileNameWithoutExtension(NewName)) + File.Extension
+            });
+        MoveTo(File, Dest);
+    }
+
+    /// <summary>
+    /// Renames the specified directory.
+    /// </summary>
+    /// <param name="Dir">The directory to rename.</param>
+    /// <param name="NewName">The new name.</param>
+    /// <exception cref="IOException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    /// <exception cref="UnauthorizedAccessException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    /// <exception cref="ArgumentException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    /// <exception cref="ArgumentNullException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    /// <exception cref="PathTooLongException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    /// <exception cref="DirectoryNotFoundException"><inheritdoc cref="Directory.Move(string, string)"/></exception>
+    public static void Rename( this DirectoryInfo Dir, string NewName ) => Directory.Move(Dir.FullName, Path.Combine(Dir.Parent?.Name ?? Dir.Root.Name, NewName));
+
+    /// <summary>
+    /// Gets the children directories.
+    /// </summary>
+    /// <param name="Dir">The parent directory.</param>
+    /// <param name="WildCard">The search pattern. Leave '<c>*</c>' for all.</param>
+    /// <param name="Recurse">If <see langword="true" />, grandchildren are checked as well; otherwise only the immediate children are checked.</param>
+    /// <returns>The found files with the common ancestor <paramref name="Dir"/>.</returns>
+    public static DirectoryInfo[] GetChildrenDirectories( this DirectoryInfo Dir, string WildCard = "*", bool Recurse = true ) => Dir.GetDirectories(WildCard, Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+    /// <summary>
+    /// Gets the children files.
+    /// </summary>
+    /// <param name="Dir">The parent directory.</param>
+    /// <param name="WildCard">The search pattern. Leave '<c>*</c>' for all.</param>
+    /// <param name="Recurse">If <see langword="true" />, grandchildren are checked as well; otherwise only the immediate children are checked.</param>
+    /// <returns>The found files with the common ancestor <paramref name="Dir"/>.</returns>
+    public static FileInfo[] GetChildrenFiles( this DirectoryInfo Dir, string WildCard = "*", bool Recurse = true ) => Dir.GetFiles(WildCard, Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+    /// <summary>
+    /// Gets the children files/folders.
+    /// </summary>
+    /// <param name="Dir">The parent directory.</param>
+    /// <param name="WildCard">The search pattern. Leave '<c>*</c>' for all.</param>
+    /// <param name="Recurse">If <see langword="true" />, grandchildren are checked as well; otherwise only the immediate children are checked.</param>
+    /// <returns>The found files/folders with the common ancestor <paramref name="Dir"/>.</returns>
+    public static IEnumerable<FileSystemInfo> GetChildren( this DirectoryInfo Dir, string WildCard = "*", bool Recurse = true ) {
+        foreach ( DirectoryInfo ChildDir in GetChildrenDirectories(Dir, WildCard, Recurse) ) {
+            yield return ChildDir;
+            if ( Recurse ) {
+                foreach (FileInfo ChildOfChildFile in ChildDir.GetFiles(WildCard) ) {
+                    yield return ChildOfChildFile;
+                }
+            }
+        }
+        foreach ( FileInfo ChildFile in Dir.GetFiles(WildCard) ) {
+            yield return ChildFile;
+        }
+    }
+
+    /// <summary>
+    /// Selects the path in file explorer.
+    /// </summary>
+    /// <param name="Path">The path to select.</param>
+    /// <param name="P">The created process.</param>
+    /// <returns><see langword="true"/> if the process was successfully started; otherwise <see langword="false"/>.</returns>
+    public static bool SelectInExplorer( this FileSystemInfo Path, out Process P ) {
+        P = ProcessExtensions.GetExplorerProcess();
+        P.StartInfo.Arguments = $"/select,\"{Path.FullName}\"";
+        return P.Start();
+    }
+
+    /// <summary>
+    /// Selects the path in file explorer.
+    /// </summary>
+    /// <param name="Path">The path to select.</param>
+    /// <param name="P">The created process.</param>
+    /// <param name="Highlight">If <see langword="true"/>, the parent folder opened, and the <paramref name="Path"/> is highlighted as a selection; otherwise the <paramref name="Path"/> is opened as the root itself.</param>
+    /// <returns><see langword="true"/> if the process was successfully started; otherwise <see langword="false"/>.</returns>
+    public static bool SelectInExplorer( this DirectoryInfo Path, out Process P, bool Highlight = true ) {
+        P = ProcessExtensions.GetExplorerProcess();
+        P.StartInfo.Arguments = Highlight ? $"/select,\"{Path.FullName}\"" : $"\"{Path.FullName}\"";
+        return P.Start();
+    }
+
+
+    /// <summary>
+    /// Smartly moves the directory to the given destination, moving just the relative files/folders if the destination already exists.
+    /// </summary>
+    /// <param name="Dir">The directory.</param>
+    /// <param name="Destination">The destination.</param>
+    public static void SmartMoveTo( this DirectoryInfo Dir, string Destination ) => SmartMoveTo(Dir, new DirectoryInfo(Destination));
+
+    /// <summary>
+    /// Smartly moves the directory to the given destination, moving just the relative files/folders if the destination already exists.
+    /// </summary>
+    /// <param name="Dir">The directory.</param>
+    /// <param name="Destination">The destination.</param>
+    public static void SmartMoveTo( this DirectoryInfo Dir, DirectoryInfo Destination ) {
+        if ( Destination.Exists ) {
+            string DirNm = Dir.FullName, DestNm = Destination.FullName;
+            foreach ( FileSystemInfo Child in Dir.GetChildren() ) {
+                switch ( Child ) {
+                    case FileInfo FI:
+                        FI.MoveTo(Path.Combine(DestNm, Path.GetRelativePath(DirNm, FI.FullName)), true);
+                        break;
+                    case DirectoryInfo DI:
+                        string NewDI = Path.Combine(DestNm, Path.GetRelativePath(DirNm, DI.FullName));
+                        if ( Directory.Exists(NewDI) ) {
+                            Directory.Delete(NewDI, true);
+                        }
+                        DI.MoveTo(NewDI);
+                        break;
+                }
+            }
+        } else {
+            Dir.MoveTo(Destination);
+        }
+    }
 }

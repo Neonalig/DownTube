@@ -8,6 +8,7 @@
 
 #region Using Directives
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Windows;
 
@@ -25,6 +26,7 @@ namespace DownTube.Views.Windows;
 /// Interaction logic for UpdateWindow.xaml
 /// </summary>
 public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
+
     public UpdateWindow() {
         InitializeComponent();
 
@@ -81,6 +83,7 @@ public partial class UpdateWindow : IView<UpdateWindow_ViewModel> {
             },
             16384,
             false,
+            true,
             CTS);
         VM.InstallProgress = 1;
     }

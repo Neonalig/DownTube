@@ -15,6 +15,7 @@ using System.Windows.Documents;
 using DownTube.Converters;
 using DownTube.Engine;
 using DownTube.Views.Controls;
+using DownTube.Views.Windows;
 
 using MVVMUtils;
 
@@ -122,12 +123,22 @@ public partial class SettingsPage : IView<SettingsPage_ViewModel>{
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void YoutubeDLButton_Click( object Sender, RoutedEventArgs E ) => ((string)((Button)Sender).ToolTip).NavigateToWebsite(); //TODO: Replace with UtilityDownloaderWindow
+    void FFmpegButton_Click( object Sender, RoutedEventArgs E ) {
+        if ( UtilityDownloaderWindow.TryOpen(DownloadUtilityType.FFmpeg, out UtilityDownloaderWindow? UDW) ) {
+            UDW.Show();
+            MainWindow.Instance.Close();
+        }
+    }
 
     /// <summary>
     /// Occurs when the <see cref="Button.Click"/> <see langword="event"/> is raised.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>
-    void FFmpegButton_Click( object Sender, RoutedEventArgs E ) => ((string)((Button)Sender).ToolTip).NavigateToWebsite(); //TODO: Replace with UtilityDownloaderWindow
+    void YoutubeDLButton_Click( object Sender, RoutedEventArgs E ) {
+        if (UtilityDownloaderWindow.TryOpen(DownloadUtilityType.YoutubeDL, out UtilityDownloaderWindow? UDW) ) {
+            UDW.Show();
+            MainWindow.Instance.Close();
+        }
+    }
 }
