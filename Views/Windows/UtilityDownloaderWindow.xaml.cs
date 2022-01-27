@@ -205,53 +205,13 @@ public partial class UtilityDownloaderWindow : IView<UtilityDownloaderWindow_Vie
         if ( KUD.Match == KnownUtilityDownloadMatchType.Supported
             || File.Extension.EqualsAny(StringComparison.InvariantCultureIgnoreCase, ".zip", ".7z", ".rar", ".tar", ".gz", ".tar.gz")
             ) {
-            Debug.WriteLine("Installing FFmpeg via supported/recommended method.");
-
-            //1. Extract to relative folder.
-            DirectoryInfo FileExFolder = File.Extract(true);
-            Debug.WriteLine($"1. Extracted {File} to {FileExFolder}");
-            VM.InstallProgress = 0.2;
-
-            //2. Find 'bin' folder within the extracted path.
-            DirectoryInfo BinFolder = FileExFolder.GetDirectories("bin", SearchOption.AllDirectories).First();
-            Debug.WriteLine($"2. Retrieved {BinFolder} from {FileExFolder}");
-            VM.InstallProgress = 0.4;
-
-            //3. Move 'bin' folder to new 'Utilities' folder in AppDir.
-            BinFolder.SmartMoveTo(Path.Combine(FileSystemInfoExtensions.AppDir.FullName, "Utilities"));
-            Debug.WriteLine($"3. Moved bin folder to {BinFolder}");
-            VM.InstallProgress = 0.6;
-
-            //4. Delete archive & archive extraction folder.
-            File.Delete();
-            FileExFolder.Delete(true);
-            Debug.WriteLine("4. Deleted archive & relative extraction folder.");
-            VM.InstallProgress = 0.8;
-
-            //5. Assign the extracted 'ffmpeg.exe' path to the settings.
-            Props.FFmpegPath.Value = BinFolder.CreateSubfile("ffmpeg.exe", false);
-            Props.Save();
-            Props.Write();
-            Debug.WriteLine($"5. Changed related property & saved changes ( --> {Props.FFmpegPath} )");
-            VM.InstallProgress = 1.0;
+            InstallViaBinFolder(File);
         } else if (File.Extension.Equals(".exe", StringComparison.InvariantCultureIgnoreCase)) {
-            Debug.WriteLine("Installing FFmpeg via direct method. This may not work as other dependencies (DLLs, ffprobe, etc.) aren't found.");
-            //1. Move file to AppDir.
-            FileInfo Dest = File.MoveTo(FileSystemInfoExtensions.AppDir);
-            Debug.WriteLine($"1. Moved the file to {Dest}");
-            VM.InstallProgress = 0.5;
-
-            //2. Assign the 'ffmpeg.exe' path to the settings
-            Props.FFmpegPath.Value = Dest;
-            Props.Save();
-            Props.Write();
-            Debug.WriteLine($"2. Changed related property & saved changes ( --> {Props.FFmpegPath} )");
-            VM.InstallProgress = 1.0;
+            Debug.WriteLine("This method of installation (direct/exe) for ffmpeg is not expected, but is supported to a degree. This may not work as other dependencies (DLLs, ffprobe, etc.) may not be found.", "WARNING");
+            InstallViaDirectMethod(File);
         } else {
-            Debug.WriteLine("Installing FFmpeg via unknown method.");
-            _ = File.SelectInExplorer(out _);
-            Debug.WriteLine("1. Opened in file explorer so that the user can manage installation themselves.");
-            VM.InstallProgress = 1.0;
+            Debug.WriteLine($"This method of installation (unknown) for ffmpeg is invalid. Unsure how to handle '{File.Name}' files, so installation is directed to user.", "WARNING");
+            InstallUnknown(File);
         }
         VM.InstallProgress = 1.0;
         Debug.WriteLine("\t*. Complete!");
@@ -267,56 +227,70 @@ public partial class UtilityDownloaderWindow : IView<UtilityDownloaderWindow_Vie
         VM.InstallProgress = -1;
 
         if ( KUD.Match == KnownUtilityDownloadMatchType.Supported || File.Extension.Equals(".exe", StringComparison.InvariantCultureIgnoreCase) ) {
-            Debug.WriteLine("Installing YoutubeDL via direct method.");
-            //1. Move file to AppDir.
-            FileInfo Dest = File.MoveTo(FileSystemInfoExtensions.AppDir.CreateSubdirectory("Utilities"));
-            Debug.WriteLine($"1. Moved the file to {Dest}");
-            VM.InstallProgress = 0.5;
-
-            //2. Assign the 'ffmpeg.exe' path to the settings
-            Props.YoutubeDLPath.Value = Dest;
-            Props.Save();
-            Props.Write();
-            Debug.WriteLine($"2. Changed related property & saved changes ( --> {Props.YoutubeDLPath} )");
-            VM.InstallProgress = 1.0;
+            InstallViaDirectMethod(File);
         } else if ( File.Extension.EqualsAny(StringComparison.InvariantCultureIgnoreCase, ".zip", ".7z", ".rar", ".tar", ".gz", ".tar.gz")
                   ) {
-            Debug.WriteLine("Installing YoutubeDL via extraction method.");
-
-            //1. Extract to relative folder.
-            DirectoryInfo FileExFolder = File.Extract(true);
-            Debug.WriteLine($"1. Extracted {File} to {FileExFolder}");
-            VM.InstallProgress = 0.2;
-
-            //2. Find 'bin' folder within the extracted path.
-            DirectoryInfo BinFolder = FileExFolder.GetDirectories("bin", SearchOption.AllDirectories).First();
-            Debug.WriteLine($"2. Retrieved {BinFolder} from {FileExFolder}");
-            VM.InstallProgress = 0.4;
-
-            //3. Move 'bin' folder to new 'Utilities' folder in AppDir.
-            BinFolder.SmartMoveTo(Path.Combine(FileSystemInfoExtensions.AppDir.FullName, "Utilities"));
-            Debug.WriteLine($"3. Moved bin folder to {BinFolder}");
-            VM.InstallProgress = 0.6;
-
-            //4. Delete archive & archive extraction folder.
-            File.Delete();
-            FileExFolder.Delete(true);
-            Debug.WriteLine("4. Deleted archive & relative extraction folder.");
-            VM.InstallProgress = 0.8;
-
-            //5. Assign the extracted 'ffmpeg.exe' path to the settings.
-            Props.YoutubeDLPath.Value = BinFolder.CreateSubfile("youtube-dl.exe", false);
-            Props.Save();
-            Props.Write();
-            Debug.WriteLine($"5. Changed related property & saved changes ( --> {Props.YoutubeDLPath} )");
-            VM.InstallProgress = 1.0;
+            Debug.WriteLine("This method of installation (archive/bin) for youtube-dl is not expected, but is supported to a degree.", "WARNING");
+            InstallViaBinFolder(File);
         } else {
-            Debug.WriteLine("Installing YoutubeDL via unknown method.");
-            _ = File.SelectInExplorer(out _);
-            Debug.WriteLine("1. Opened in file explorer so that the user can manage installation themselves.");
-            VM.InstallProgress = 1.0;
+            Debug.WriteLine($"This method of installation (unknown) for youtube-dl is invalid. Unsure how to handle '{File.Name}' files, so installation is directed to user.", "WARNING");
+            InstallUnknown(File);
         }
         VM.InstallProgress = 1.0;
         Debug.WriteLine("\t*. Complete!");
+    }
+
+    void InstallViaBinFolder( FileInfo File ) {
+        Debug.WriteLine("Installing via extraction/bin method.");
+
+        //1. Extract to relative folder.
+        DirectoryInfo FileExFolder = File.Extract(true);
+        Debug.WriteLine($"1. Extracted {File} to {FileExFolder}");
+        VM.InstallProgress = 0.2;
+
+        //2. Find 'bin' folder within the extracted path.
+        DirectoryInfo BinFolder = FileExFolder.GetDirectories("bin", SearchOption.AllDirectories).First();
+        Debug.WriteLine($"2. Retrieved {BinFolder} from {FileExFolder}");
+        VM.InstallProgress = 0.4;
+
+        //3. Move 'bin' folder to new 'Utilities' folder in AppDir.
+        BinFolder.SmartMoveTo(Path.Combine(FileSystemInfoExtensions.AppDir.FullName, "Utilities"));
+        Debug.WriteLine($"3. Moved bin folder to {BinFolder}");
+        VM.InstallProgress = 0.6;
+
+        //4. Delete archive & archive extraction folder.
+        File.Delete();
+        FileExFolder.Delete(true);
+        Debug.WriteLine("4. Deleted archive & relative extraction folder.");
+        VM.InstallProgress = 0.8;
+
+        //5. Assign the extracted 'ffmpeg.exe' path to the settings.
+        Props.YoutubeDLPath.Value = BinFolder.CreateSubfile("youtube-dl.exe", false);
+        Props.Save();
+        Props.Write();
+        Debug.WriteLine($"5. Changed related property & saved changes ( --> {Props.YoutubeDLPath} )");
+        VM.InstallProgress = 1.0;
+    }
+
+    void InstallViaDirectMethod( FileInfo File ) {
+        Debug.WriteLine("Installing via direct method.");
+        //1. Move file to AppDir.
+        FileInfo Dest = File.MoveTo(FileSystemInfoExtensions.AppDir.CreateSubdirectory("Utilities"));
+        Debug.WriteLine($"1. Moved the file to {Dest}");
+        VM.InstallProgress = 0.5;
+
+        //2. Assign the 'ffmpeg.exe' path to the settings
+        Props.YoutubeDLPath.Value = Dest;
+        Props.Save();
+        Props.Write();
+        Debug.WriteLine($"2. Changed related property & saved changes ( --> {Props.YoutubeDLPath} )");
+        VM.InstallProgress = 1.0;
+    }
+
+    void InstallUnknown( FileInfo File ) {
+        Debug.WriteLine("Installing via unknown method.");
+        _ = File.SelectInExplorer(out _);
+        Debug.WriteLine("1. Opened in file explorer so that the user can manage installation themselves.");
+        VM.InstallProgress = 1.0;
     }
 }
