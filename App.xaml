@@ -1,16 +1,15 @@
-﻿<Application x:Class="DownTube.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="Views/Windows/MainWindow.xaml">
+﻿<Application
+    x:Class="DownTube.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    StartupUri="Views/Windows/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/Theme/Dark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/WPFUI;component/Styles/WPFUI.xaml" />
-                <ResourceDictionary
-                    Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingPulse.xaml" />
-                <ResourceDictionary
-                    Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingArcs.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingPulse.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/LoadingIndicators.WPF;component/styles/LoadingArcs.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <FontFamily x:Key="SegoeFluentIcons">pack://application:,,,/;component/Resources/Fonts/#Segoe Fluent Icons</FontFamily>
             <FontFamily x:Key="AtkinsonHyperlegible">pack://application:,,,/;component/Resources/Fonts/#Atkinson Hyperlegible</FontFamily>

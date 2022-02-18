@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+﻿#region Copyright (C) 2017-2022  Cody Bock
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -67,7 +67,7 @@ public static class UpdateChecker {
     public record UpdateSearchResult( bool HasUpdate, Version Current, Version Newest, Release Release );
 
     /// <summary>
-    /// Asynchronously checks for an updated release on the GitHub repository (starflash-studios/DownTube).
+    /// Asynchronously checks for an updated release on the GitHub repository (Neonalig/DownTube).
     /// </summary>
     /// <returns><see langword="true"/> if the latest release is a greater version than <see cref="StaticBindings.AppVersion"/></returns>
     public static async Task<Result<UpdateSearchResult>> SearchForUpdatesAsync() {
@@ -80,7 +80,7 @@ public static class UpdateChecker {
         try {
             Version Current = StaticBindings.AppVersion;
 
-            Repository Repo = await Client.Repository.Get("starflash-studios", "DownTube");
+            Repository Repo = await Client.Repository.Get("Neonalig", "DownTube");
             RepoUrl = Repo.HtmlUrl;
             //Debug.WriteLine($"Repo is {Repo.FullName}");
             Release Latest = await Client.Repository.Release.GetLatest(Repo.Id);
@@ -294,7 +294,7 @@ public static class UpdateChecker {
         }
         try {
             Debug.WriteLine("[[IGNORE START]]");
-            CurrentRelease = await Client.Repository.Release.Get("starflash-studios", "DownTube", $"v{CurrentVersion.ToString(3)}");
+            CurrentRelease = await Client.Repository.Release.Get("Neonalig", "DownTube", $"v{CurrentVersion.ToString(3)}");
             Debug.WriteLine("[[IGNORE FINISH]]");
         } catch ( NotFoundException ) { //If the current release is not found, then it is likely an internal debug build.
             CurrentRelease = null;

@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+﻿#region Copyright (C) 2017-2022  Cody Bock
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -15,7 +15,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
 
-using DownTube.Converters;
 using DownTube.Engine;
 
 using MVVMUtils;
@@ -78,7 +77,7 @@ public partial class SearchPage : IView<SearchPage_ViewModel> {
     }
 
     /// <summary>
-    /// Occurs when the <see cref="Hyperlink"/> text is clicked on.
+    /// Occurs when the <see cref="System.Windows.Documents.Hyperlink"/> text is clicked on.
     /// </summary>
     /// <param name="Sender">The source of the <see langword="event"/>.</param>
     /// <param name="E">The raised <see langword="event"/> arguments.</param>

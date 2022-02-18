@@ -1,9 +1,9 @@
 [submodule "wpfui"]
 	path = wpfui
-	url = https://github.com/starflash-studios/wpfui
+	url = https://github.com/Neonalig/wpfui
 [submodule "Updater"]
 	path = Updater
-	url = https://github.com/starflash-studios/DownTube-Updater
+	url = https://github.com/Neonalig/DownTube-Updater
 [submodule "MVVMUtils"]
 	path = MVVMUtils
-	url = https://github.com/starflash-studios/MVVMUtils
+	url = https://github.com/Neonalig/MVVMUtils

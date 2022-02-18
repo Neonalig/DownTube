@@ -1,60 +1,72 @@
-﻿<Window x:Class="DownTube.Views.Windows.UtilityDownloaderWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:common="clr-namespace:DownTube.DataTypes.Common"
-        xmlns:windows="clr-namespace:DownTube.Views.Windows"
-        xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
-        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
-        xmlns:udcControls="clr-namespace:DownTube.Views.Controls"
-        xmlns:converters="clr-namespace:DownTube.Converters"
-        xmlns:mvvmUtils="clr-namespace:MVVMUtils;assembly=MVVMUtils"
-        mc:Ignorable="d"
-        d:Background="#202020"
-        AllowsTransparency="True"
-        WindowState="Normal"
-        d:WindowState="Normal"
-        WindowStyle="None"
-        Style="{StaticResource UiWindow}"
-        WindowStartupLocation="CenterScreen"
-        Title="Updates are available"
-        Height="450"
-        d:MinHeight="450"
-        d:MaxHeight="450"
-        Width="810"
-        d:MinWidth="810"
-        d:MaxWidth="810"
-        ResizeMode="NoResize"
-        d:DataContext="{d:DesignInstance Type=windows:UtilityDownloaderWindow_ViewModel}">
+﻿<Window
+    x:Class="DownTube.Views.Windows.UtilityDownloaderWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:common="clr-namespace:DownTube.DataTypes.Common"
+    xmlns:controls="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+    xmlns:converters="clr-namespace:DownTube.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mvvmUtils="clr-namespace:MVVMUtils;assembly=MVVMUtils"
+    xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+    xmlns:udcControls="clr-namespace:DownTube.Views.Controls"
+    xmlns:windows="clr-namespace:DownTube.Views.Windows"
+    Title="Updates are available"
+    Width="810"
+    Height="450"
+    d:Background="#202020"
+    d:DataContext="{d:DesignInstance Type=windows:UtilityDownloaderWindow_ViewModel}"
+    d:MaxHeight="450"
+    d:MaxWidth="810"
+    d:MinHeight="450"
+    d:MinWidth="810"
+    d:WindowState="Normal"
+    AllowsTransparency="True"
+    ResizeMode="NoResize"
+    Style="{StaticResource UiWindow}"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Normal"
+    WindowStyle="None"
+    mc:Ignorable="d">
     <Window.Resources>
         <common:StaticBindings x:Key="StatInfo" />
-        <converters:DownloadUtilityTypeToDrawingImageConverter x:Key="DUTToImgSrc"
-                                                      FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,AppName=DownTube}"
-                                                      YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,AppName=DownTube}"/>
+        <converters:DownloadUtilityTypeToDrawingImageConverter
+            x:Key="DUTToImgSrc"
+            FFmpeg="{svgc:SvgImage Source=/Resources/FFmpegLogo.svg,
+                                   AppName=DownTube}"
+            YoutubeDL="{svgc:SvgImage Source=/Resources/YoutubeDLLogo.svg,
+                                      AppName=DownTube}" />
         <!--<converters:NullabilityToVisibilityConverter x:Key="NullToVisConv" ReturnWhenNull="Collapsed" DefaultReturn="Visible"/>-->
-        <converters:NullabilityToBoolConverter x:Key="NullToBoolConv" Null="False" Default="True"/>
+        <converters:NullabilityToBoolConverter
+            x:Key="NullToBoolConv"
+            Default="True"
+            Null="False" />
         <AlternationConverter x:Key="AlternationBackgroundConverter">
             <SolidColorBrush Color="Transparent" />
-            <SolidColorBrush Color="{DynamicResource AccentFillColorDisabled}" Opacity="0.2" />
+            <SolidColorBrush Opacity="0.2" Color="{DynamicResource AccentFillColorDisabled}" />
         </AlternationConverter>
         <!--<BooleanToVisibilityConverter x:Key="BoolToVisConv"/>-->
-        <converters:KnownUtilityDownloadMatchTypeToStringConverter x:Key="KUDMTTooltipConv"
-                                                                Supported="This is a supported download. Selecting this file ensures automatic installation knows how to continue based on previous tested versions."
-                                                                Recommended="This is a recommended download. Whilst the filename is unexpected, the format is known so the installer can still attempt to install regardless."
-                                                                Unknown="This is an unknown download. Automatic installation does not know how to handle this file, and will only download it then open the directory for you to manage."/>
-        <converters:BoolToDoubleConverter x:Key="KUDMTKnownOpacityConv" True="1.0" False="0.25"/>
+        <converters:KnownUtilityDownloadMatchTypeToStringConverter
+            x:Key="KUDMTTooltipConv"
+            Recommended="This is a recommended download. Whilst the filename is unexpected, the format is known so the installer can still attempt to install regardless."
+            Supported="This is a supported download. Selecting this file ensures automatic installation knows how to continue based on previous tested versions."
+            Unknown="This is an unknown download. Automatic installation does not know how to handle this file, and will only download it then open the directory for you to manage." />
+        <converters:BoolToDoubleConverter
+            x:Key="KUDMTKnownOpacityConv"
+            False="0.25"
+            True="1.0" />
         <Style x:Key="ListAlternationBG" TargetType="{x:Type ListViewItem}">
-            <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AlternationBackgroundConverter}}"/>
+            <Setter Property="Background" Value="{Binding RelativeSource={RelativeSource Self}, Path=(ItemsControl.AlternationIndex), Converter={StaticResource AlternationBackgroundConverter}}" />
         </Style>
     </Window.Resources>
-    <Border x:Name="MainBorder"
-            CornerRadius="8"
-            Margin="{Binding BorderMargin}"
-            d:Margin="0,0,7,7"
-            BorderThickness="{Binding BorderThickness}"
-            d:BorderThickness="1"
-            Effect="{Binding BorderEffect}">
+    <Border
+        x:Name="MainBorder"
+        Margin="{Binding BorderMargin}"
+        d:BorderThickness="1"
+        d:Margin="0,0,7,7"
+        BorderThickness="{Binding BorderThickness}"
+        CornerRadius="8"
+        Effect="{Binding BorderEffect}">
         <SelectiveScrollingGrid>
             <SelectiveScrollingGrid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -72,69 +84,76 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*" />
                         <RowDefinition Height="2*" />
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
                     </Grid.RowDefinitions>
-                    <Image Grid.Column="1" Grid.Row="1"
-                           d:Source="{Binding Converter={svgc:SvgImageConverter AppName=DownTube}, ConverterParameter=/Resources/FFmpegLogo.svg}"
-                           Source="{Binding Utility, Converter={StaticResource DUTToImgSrc}, Mode=OneWay}"/>
-                    <TextBlock Grid.Column="1" Grid.Row="2"
-                               TextWrapping="WrapWithOverflow"
-                               FontSize="20"
-                               TextAlignment="Center"
-                               VerticalAlignment="Stretch"
-                               Text="{Binding UtilitySummary, Mode=OneWay}"
-                               d:Text="A complete, cross-platform solution to record, convert and stream audio and video."/>
+                    <Image
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        d:Source="{Binding Converter={svgc:SvgImageConverter AppName=DownTube}, ConverterParameter=/Resources/FFmpegLogo.svg}"
+                        Source="{Binding Utility, Converter={StaticResource DUTToImgSrc}, Mode=OneWay}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        VerticalAlignment="Stretch"
+                        d:Text="A complete, cross-platform solution to record, convert and stream audio and video."
+                        FontSize="20"
+                        Text="{Binding UtilitySummary, Mode=OneWay}"
+                        TextAlignment="Center"
+                        TextWrapping="WrapWithOverflow" />
                 </Grid>
-                <SelectiveScrollingGrid Grid.Row="1"
-                                        VerticalAlignment="Stretch">
+                <SelectiveScrollingGrid Grid.Row="1" VerticalAlignment="Stretch">
                     <SelectiveScrollingGrid.ColumnDefinitions>
                         <ColumnDefinition Width="1*" />
                         <ColumnDefinition Width="3*" />
                         <ColumnDefinition Width="1*" />
                     </SelectiveScrollingGrid.ColumnDefinitions>
-                    <Button Grid.Column="0"
-                            Margin="5"
-                            Padding="0"
-                            Click="CancelButton_Click"
-                            Background="{DynamicResource AccentFillColorDisabledBrush}"
-                            Content="Cancel Download"
-                            VerticalAlignment="Stretch" />
-                    <ContentPresenter Grid.Column="1"
-                                      HorizontalAlignment="Stretch"
-                                      Content="{Binding LegalBlurb,Mode=OneWay}">
+                    <Button
+                        Grid.Column="0"
+                        Margin="5"
+                        Padding="0"
+                        VerticalAlignment="Stretch"
+                        Background="{DynamicResource AccentFillColorDisabledBrush}"
+                        Click="CancelButton_Click"
+                        Content="Cancel Download" />
+                    <ContentPresenter
+                        Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Content="{Binding LegalBlurb, Mode=OneWay}">
                         <d:ContentPresenter.Content>
-                            <udcControls:UtilityDownloaderWindow_FFmpegLegal/>
+                            <udcControls:UtilityDownloaderWindow_FFmpegLegal />
                         </d:ContentPresenter.Content>
                     </ContentPresenter>
-                    <Button Grid.Column="2"
-                            Margin="5"
-                            Padding="0"
-                            Click="InstallButton_Click"
-                            VerticalAlignment="Stretch">
+                    <Button
+                        Grid.Column="2"
+                        Margin="5"
+                        Padding="0"
+                        VerticalAlignment="Stretch"
+                        Click="InstallButton_Click">
                         <Button.Content>
                             <TextBlock>
-                                <Run Text="Install"/>
-                                <Run Text=""/>
+                                <Run Text="Install" />
+                                <Run Text="" />
                             </TextBlock>
                         </Button.Content>
                     </Button>
                 </SelectiveScrollingGrid>
             </SelectiveScrollingGrid>
-            <controls:Dialog x:Name="UpdateDialog"
-                             Grid.Row="0"
-                             Grid.RowSpan="2"
-                             DialogHeight="255"
-                             Show="{Binding UpdateDialogVisible}"
-                             d:Show="True"
-                             Click="CancelInstall_OnClick"
-                             ButtonLeftAppearance="Secondary"
-                             ButtonLeftName="Open in GitHub"
-                             ButtonRightClick="AutomaticInstall_OnClick"
-                             ButtonRightAppearance="Primary"
-                             ButtonRightName="Install Automatically">
+            <controls:Dialog
+                x:Name="UpdateDialog"
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                d:Show="True"
+                ButtonLeftAppearance="Secondary"
+                ButtonLeftName="Open in GitHub"
+                ButtonRightAppearance="Primary"
+                ButtonRightClick="AutomaticInstall_OnClick"
+                ButtonRightName="Install Automatically"
+                Click="CancelInstall_OnClick"
+                DialogHeight="255"
+                Show="{Binding UpdateDialogVisible}">
                 <Grid Width="360">
                     <StackPanel>
                         <StackPanel.Resources>
@@ -142,113 +161,117 @@
                             <windows:InstallProgressToVisibilityConverter x:Key="ProgToVisConv" />
                             <windows:InstallProgressToStringConverter x:Key="ProgToTxtConv" />
                         </StackPanel.Resources>
-                        <TextBlock FontWeight="Medium"
-                                   Text="INSTALL UPDATE"
-                                   Margin="0,0,0,10" />
-                        <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                                   TextAlignment="Justify"
-                                   TextWrapping="WrapWithOverflow"
-                                   mvvmUtils:TextBlockHelper.TrimRuns="True">
+                        <TextBlock
+                            Margin="0,0,0,10"
+                            FontWeight="Medium"
+                            Text="INSTALL UPDATE" />
+                        <TextBlock
+                            mvvmUtils:TextBlockHelper.TrimRuns="True"
+                            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+                            TextAlignment="Justify"
+                            TextWrapping="WrapWithOverflow">
                             <Run Text="{Binding Source={StaticResource StatInfo}, Path=AppName, Mode=OneWay}" />
                             <Run Text="  provides an automatic method of installing  " />
-                            <Run Text="{Binding UtilityName, Mode=OneWay, FallbackValue=utilities}"/>
+                            <Run Text="{Binding UtilityName, Mode=OneWay, FallbackValue=utilities}" />
                             <Run Text=", though it may be slower than manually downloading and installing the program by yourself. Choose either option below to install the program." />
                         </TextBlock>
                         <Grid
-                                Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}"
-                              Margin="0,10,0,0"
-                              Height="20">
-                            <ProgressBar Minimum="0"
-                                         SmallChange="0.01"
-                                         Maximum="1"
-                                         Height="20"
-                                         Value="{Binding InstallProgress, Mode=OneWay}"
-                                         IsIndeterminate="{Binding InstallProgress, Converter={StaticResource ProgToInterConv}, Mode=OneWay}" />
-                            <Label Padding="0"
-                                   Content="{Binding InstallProgress, Converter={StaticResource ProgToTxtConv}, Mode=OneWay}"
-                                   d:Content="32.46%"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
+                            Height="20"
+                            Margin="0,10,0,0"
+                            Visibility="{Binding InstallProgress, Converter={StaticResource ProgToVisConv}, Mode=OneWay}">
+                            <ProgressBar
+                                Height="20"
+                                IsIndeterminate="{Binding InstallProgress, Converter={StaticResource ProgToInterConv}, Mode=OneWay}"
+                                Maximum="1"
+                                Minimum="0"
+                                SmallChange="0.01"
+                                Value="{Binding InstallProgress, Mode=OneWay}" />
+                            <Label
+                                Padding="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                d:Content="32.46%"
+                                Content="{Binding InstallProgress, Converter={StaticResource ProgToTxtConv}, Mode=OneWay}" />
                         </Grid>
                     </StackPanel>
                 </Grid>
             </controls:Dialog>
-            <controls:Dialog Name="DownloadPickerDialog"
-                             Grid.Row="0"
-                             Grid.RowSpan="2"
-                             DialogHeight="320"
-                             Show="{Binding AwaitingRelease, Converter={StaticResource NullToBoolConv}, Mode=OneWay}"
-                             d:Show="True"
-                             Click="CancelInstall_OnClick"
-                             ButtonLeftAppearance="Secondary"
-                             ButtonLeftName="Back"
-                             ButtonRightClick="StartInstall_OnClick"
-                             ButtonRightAppearance="{Binding AwaitingReleaseContinuationButtonAppearance}"
-                             d:ButtonRightAppearance="Primary"
-                             ButtonRightName="Start">
+            <controls:Dialog
+                Name="DownloadPickerDialog"
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                d:ButtonRightAppearance="Primary"
+                d:Show="True"
+                ButtonLeftAppearance="Secondary"
+                ButtonLeftName="Back"
+                ButtonRightAppearance="{Binding AwaitingReleaseContinuationButtonAppearance}"
+                ButtonRightClick="StartInstall_OnClick"
+                ButtonRightName="Start"
+                Click="CancelInstall_OnClick"
+                DialogHeight="320"
+                Show="{Binding AwaitingRelease, Converter={StaticResource NullToBoolConv}, Mode=OneWay}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="15" />
                         <ColumnDefinition />
-                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition Width="15" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Vertical"
-                                Grid.Column="1">
-                        <TextBlock FontWeight="Medium"
-                                   Text="PICK A DOWNLOAD"
-                                   Margin="0,0,0,10" />
-                        <TextBlock Text="The correct download could not be found. Please pick the version of the utility that you would like to download below."
-                                   TextWrapping="WrapWithOverflow"
-                                   Margin="0,0,0,10" />
-                        <ListView Background="Transparent"
-                                  AlternationCount="2"
-                                  HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding AwaitingRelease,Mode=OneWay}">
+                    <StackPanel Grid.Column="1" Orientation="Vertical">
+                        <TextBlock
+                            Margin="0,0,0,10"
+                            FontWeight="Medium"
+                            Text="PICK A DOWNLOAD" />
+                        <TextBlock
+                            Margin="0,0,0,10"
+                            Text="The correct download could not be found. Please pick the version of the utility that you would like to download below."
+                            TextWrapping="WrapWithOverflow" />
+                        <ListView
+                            HorizontalAlignment="Stretch"
+                            AlternationCount="2"
+                            Background="Transparent"
+                            ItemsSource="{Binding AwaitingRelease, Mode=OneWay}">
                             <ListView.ItemTemplate>
                                 <DataTemplate DataType="{x:Type windows:KnownUtilityDownload}">
-                                    <SelectiveScrollingGrid
-                                        ToolTip="{Binding Match, Converter={StaticResource KUDMTTooltipConv}, Mode=OneWay}">
+                                    <SelectiveScrollingGrid ToolTip="{Binding Match, Converter={StaticResource KUDMTTooltipConv}, Mode=OneWay}">
                                         <SelectiveScrollingGrid.ColumnDefinitions>
                                             <ColumnDefinition Width="50" />
                                             <ColumnDefinition />
-                                            <ColumnDefinition Width="20"/>
+                                            <ColumnDefinition Width="20" />
                                         </SelectiveScrollingGrid.ColumnDefinitions>
-                                        <ToggleButton Grid.Column="0"
-                                                      IsChecked="{Binding Chosen, Mode=TwoWay}" />
-                                        <TextBlock Grid.Column="1"
-                                                   HorizontalAlignment="Stretch"
-                                                   Text="{Binding FileName, Mode=OneWay}"
-                                                   IsEnabled="{Binding IsKnown, Mode=OneWay}"
-                                                   Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}"/>
-                                        <controls:Icon Grid.Column="2"
-                                                       Glyph="Star48"
-                                                       Filled="{Binding IsSupported, Mode=OneWay}"
-                                                       Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}"/>
+                                        <ToggleButton Grid.Column="0" IsChecked="{Binding Chosen, Mode=TwoWay}" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            HorizontalAlignment="Stretch"
+                                            IsEnabled="{Binding IsKnown, Mode=OneWay}"
+                                            Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}"
+                                            Text="{Binding FileName, Mode=OneWay}" />
+                                        <controls:Icon
+                                            Grid.Column="2"
+                                            Filled="{Binding IsSupported, Mode=OneWay}"
+                                            Glyph="Star48"
+                                            Opacity="{Binding IsKnown, Converter={StaticResource KUDMTKnownOpacityConv}, Mode=OneWay}" />
                                     </SelectiveScrollingGrid>
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                             <ListView.ItemContainerStyle>
-                                <Style TargetType="ListViewItem" BasedOn="{StaticResource ListAlternationBG}">
-                                    <Setter Property="HorizontalContentAlignment"
-                                            Value="Stretch" />
+                                <Style BasedOn="{StaticResource ListAlternationBG}" TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 </Style>
                             </ListView.ItemContainerStyle>
                             <d:ListView.Items>
-                                <windows:KnownUtilityDownload FileName="youtube-dl.exe"
-                                                              Match="Supported" />
-                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz"
-                                                              Match="Recommended" />
-                                <windows:KnownUtilityDownload FileName="youtube-dl"
-                                                              Match="Unknown"/>
+                                <windows:KnownUtilityDownload FileName="youtube-dl.exe" Match="Supported" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl-2021.12.17.tar.gz" Match="Recommended" />
+                                <windows:KnownUtilityDownload FileName="youtube-dl" Match="Unknown" />
                             </d:ListView.Items>
                         </ListView>
                     </StackPanel>
                 </Grid>
             </controls:Dialog>
-            <controls:TitleBar Grid.Row="0"
-                               ApplicationNavigation="True"
-                               ShowMaximize="False"
-                               ShowMinimize="False" />
+            <controls:TitleBar
+                Grid.Row="0"
+                ApplicationNavigation="True"
+                ShowMaximize="False"
+                ShowMinimize="False" />
         </SelectiveScrollingGrid>
     </Border>
 </Window>

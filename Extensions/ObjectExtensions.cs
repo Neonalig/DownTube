@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+﻿#region Copyright (C) 2017-2022  Cody Bock
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -27,7 +27,7 @@ public static class ObjectExtensions {
     /// <param name="Expression">The name of the object.</param>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static void ThrowIfNull( [NotNull] this object? Obj, [CallerArgumentExpression("Obj")] string? Expression = null )  {
         if ( Obj is null ) {
             throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
@@ -42,7 +42,7 @@ public static class ObjectExtensions {
     /// <param name="Expression">The name of the object.</param>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was null.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static void ThrowIfNull<T>( [NotNull] this T? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) {
         if ( Obj is null ) {
             throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
@@ -57,7 +57,7 @@ public static class ObjectExtensions {
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was null.</exception>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static object CatchNull( [NotNull] this object? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) {
         if ( Obj is null ) {
             throw new ArgumentNullException(Expression, $"Argument {Expression} was null.");
@@ -73,7 +73,7 @@ public static class ObjectExtensions {
     /// <param name="Expression">The name of the object.</param>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static T CatchNull<T>( [NotNull] this Result<T>? Res, [CallerArgumentExpression("Res")] string? Expression = null ) {
         if ( Res is { Value: { } Val } ) {
             return Val;
@@ -91,7 +91,7 @@ public static class ObjectExtensions {
     /// <param name="Expression">The name of the object.</param>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static T CatchNull<T>( [NotNull] this T? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) {
         if ( Obj is null ) {
             // ReSharper disable ExceptionNotDocumented
@@ -109,7 +109,7 @@ public static class ObjectExtensions {
     /// <param name="Expression">The name of the object.</param>
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="Obj"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static TS CatchNull<TS>( [NotNull] this TS? Obj, [CallerArgumentExpression("Obj")] string? Expression = null ) where TS : struct{
         if ( Obj is null ) {
             // ReSharper disable ExceptionNotDocumented
@@ -129,7 +129,7 @@ public static class ObjectExtensions {
     /// <returns>The original object (if not <see langword="null"/>).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="Result"/> was <see langword="null"/>.</exception>
     [return: NotNullIfNotNull("Result")]
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static T CatchNull<T>( this bool AttemptResult, T? Result, [CallerArgumentExpression("AttemptResult")] string? Expression = null ) {
         if ( !AttemptResult || Result is null ) {
             // ReSharper disable ExceptionNotDocumented
@@ -147,7 +147,7 @@ public static class ObjectExtensions {
     /// <param name="Result">The object to test.</param>
     /// <param name="Expression">The name of the object.</param>
     /// <exception cref="ArgumentNullException"><paramref name="Result"/> was <see langword="null"/>.</exception>
-    [DebuggerStepThrough, DebuggerHidden]
+    [ DebuggerStepThrough][ DebuggerHidden]
     public static void ThrowIfNull<T>( this bool AttemptResult, [NotNull] T? Result, [CallerArgumentExpression("AttemptResult")] string? Expression = null ) {
         if ( !AttemptResult || Result is null ) {
             // ReSharper disable ExceptionNotDocumented

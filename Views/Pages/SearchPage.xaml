@@ -1,28 +1,29 @@
-﻿<Page x:Class="DownTube.Views.Pages.SearchPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:engine="clr-namespace:DownTube.Engine"
-      xmlns:pages="clr-namespace:DownTube.Views.Pages"
-      xmlns:li="clr-namespace:LoadingIndicators.WPF;assembly=LoadingIndicators.WPF"
-      xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
-      xmlns:converters="clr-namespace:DownTube.Converters"
-      Title="SearchPage"
-      FontFamily="AtkinsonHyperlegible"
-      d:DesignHeight="388"
-      d:DesignWidth="635"
-      Style="{StaticResource UiPageScrollable}"
-      mc:Ignorable="d">
+﻿<Page
+    x:Class="DownTube.Views.Pages.SearchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="clr-namespace:DownTube.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:engine="clr-namespace:DownTube.Engine"
+    xmlns:li="clr-namespace:LoadingIndicators.WPF;assembly=LoadingIndicators.WPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="clr-namespace:DownTube.Views.Pages"
+    xmlns:wpfui="clr-namespace:WPFUI.Controls;assembly=WPFUI"
+    Title="SearchPage"
+    d:DesignHeight="388"
+    d:DesignWidth="635"
+    FontFamily="AtkinsonHyperlegible"
+    Style="{StaticResource UiPageScrollable}"
+    mc:Ignorable="d">
     <Page.Resources>
         <converters:IntegerToVisibilityConverter
             x:Key="SearchEmptyIntToVisConv"
-            Visible="0"
-            Hidden="-1"
             Collapsed="1"
-            DefaultVisibility="Collapsed" />
+            DefaultVisibility="Collapsed"
+            Hidden="-1"
+            Visible="0" />
     </Page.Resources>
-    <!-- d:DataContext="{d:DesignInstance Type=pages:MusicDownloadPage_ViewModel}" -->
+    <!--  d:DataContext="{d:DesignInstance Type=pages:MusicDownloadPage_ViewModel}"  -->
     <Page.DataContext>
         <pages:SearchPage_ViewModel />
     </Page.DataContext>
@@ -33,20 +34,19 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   FontSize="20">
-            <!-- URL Top-Level domain is irrelevant as YouTube will determine it automatically based on the user's current region and/or Google account settings -->
-            <Hyperlink RequestNavigate="WebHyperlink_RequestNavigate"
-                       NavigateUri="https://www.youtube.com"
-                       Foreground="{DynamicResource TextFillColorPrimaryBrush}" TextDecorations="None">
+        <TextBlock Grid.Row="0" FontSize="20">
+            <!--  URL Top-Level domain is irrelevant as YouTube will determine it automatically based on the user's current region and/or Google account settings  -->
+            <Hyperlink
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                NavigateUri="https://www.youtube.com"
+                RequestNavigate="WebHyperlink_RequestNavigate"
+                TextDecorations="None">
                 <Run Text="YouTube" />
             </Hyperlink>
-            <Run Text="Search"
-                 Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
+            <Run Foreground="{DynamicResource TextFillColorTertiaryBrush}" Text="Search" />
         </TextBlock>
 
-        <Grid Grid.Row="1"
-              Margin="0,18">
+        <Grid Grid.Row="1" Margin="0,18">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -58,20 +58,25 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <Label Width="50" Content="{Binding TimesDownloaded}" HorizontalContentAlignment="Center"
-                       VerticalAlignment="Center" FontSize="30" />
+                <Label
+                    Width="50"
+                    VerticalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    Content="{Binding TimesDownloaded}"
+                    FontSize="30" />
                 <!--<Image Width="70"
                        RenderOptions.BitmapScalingMode="HighQuality"
                        Source="pack://application:,,,/Assets/microsoft-icon-store.png" />-->
-                <StackPanel Grid.Column="1"
-                            Margin="12,0,0,0"
-                            VerticalAlignment="Center">
-                    <TextBlock Margin="0,0,0,4"
-                               FontSize="16"
-                               FontWeight="Medium"
-                               Text="Downloaded" />
-                    <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}"
-                               Text="Last: 2021年12月09日" />
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="12,0,0,0"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        Margin="0,0,0,4"
+                        FontSize="16"
+                        FontWeight="Medium"
+                        Text="Downloaded" />
+                    <TextBlock Foreground="{DynamicResource TextFillColorTertiaryBrush}" Text="Last: 2021年12月09日" />
                 </StackPanel>
             </Grid>
             <SelectiveScrollingGrid Grid.Column="1" Grid.ColumnSpan="2">
@@ -84,22 +89,30 @@
                     <RowDefinition />
                     <RowDefinition Height="15" />
                 </SelectiveScrollingGrid.RowDefinitions>
-                <TextBox Grid.Column="0" Grid.Row="0" Text="{Binding SearchQuery}" />
-                <Button Grid.Column="2" Grid.Row="0"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch" Padding="0" Click="SearchButton_Click">
+                <TextBox
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Text="{Binding SearchQuery}" />
+                <Button
+                    Grid.Row="0"
+                    Grid.Column="2"
+                    Padding="0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Click="SearchButton_Click">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="   Search " />
-                            <wpfui:Icon Glyph="Search28" VerticalAlignment="Center" />
+                            <wpfui:Icon VerticalAlignment="Center" Glyph="Search28" />
                         </StackPanel>
                     </Button.Content>
                 </Button>
-                <StackPanel Orientation="Horizontal"
-                            Grid.Column="0"
-                            Grid.ColumnSpan="3"
-                            Grid.Row="1"
-                            VerticalAlignment="Stretch">
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="3"
+                    VerticalAlignment="Stretch"
+                    Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Top">
                         <Run Text="Will download to:" />
                         <Hyperlink Click="Hyperlink_Path_Click">
@@ -110,28 +123,32 @@
                             </TextBlock>
                         </Hyperlink>
                         <Hyperlink Click="Hyperlink_PathEdit_Click" TextDecorations="None">
-                            <wpfui:Icon Glyph="Edit16"
-                                        FontSize="12"
-                                        Margin="0,0,0,-2" />
+                            <wpfui:Icon
+                                Margin="0,0,0,-2"
+                                FontSize="12"
+                                Glyph="Edit16" />
                         </Hyperlink>
                     </TextBlock>
                 </StackPanel>
             </SelectiveScrollingGrid>
         </Grid>
-        <Label Grid.Row="2"
-               Content="Enter a search query above!"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               VerticalContentAlignment="Center"
-               FontSize="25"
-               Height="75"
-               Visibility="{Binding CachedResults.Count, Converter={StaticResource SearchEmptyIntToVisConv}, Mode=OneWay}"
-               Foreground="{DynamicResource TextFillColorTertiaryBrush}" />
-        <ListBox Grid.Row="2"
-                 ItemsSource="{Binding CachedResults}">
+        <Label
+            Grid.Row="2"
+            Height="75"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            VerticalContentAlignment="Center"
+            Content="Enter a search query above!"
+            FontSize="25"
+            Foreground="{DynamicResource TextFillColorTertiaryBrush}"
+            Visibility="{Binding CachedResults.Count, Converter={StaticResource SearchEmptyIntToVisConv}, Mode=OneWay}" />
+        <ListBox Grid.Row="2" ItemsSource="{Binding CachedResults}">
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type engine:SearchResult}">
-                    <wpfui:CardAction Padding="0" Margin="0" Click="SearchResult_Click">
+                    <wpfui:CardAction
+                        Margin="0"
+                        Padding="0"
+                        Click="SearchResult_Click">
                         <SelectiveScrollingGrid>
                             <SelectiveScrollingGrid.ColumnDefinitions>
                                 <ColumnDefinition Width="50" />
@@ -139,46 +156,58 @@
                                 <ColumnDefinition />
                             </SelectiveScrollingGrid.ColumnDefinitions>
                             <Grid Grid.Column="0" HorizontalAlignment="Left">
-                                <li:LoadingIndicator Style="{StaticResource LoadingIndicatorPulseStyleKey}"
-                                                     SpeedRatio="1.3"
-                                                     HorizontalAlignment="Stretch"
-                                                     Visibility="{Binding PollingVisibility}" />
-                                <wpfui:Icon FontSize="28"
-                                            HorizontalAlignment="Center"
-                                            Glyph="ArrowDownload48"
-                                            Visibility="{Binding IdleVisibility}" />
-                                <li:LoadingIndicator Style="{StaticResource LoadingIndicatorArcsStyleKey}"
-                                                     SpeedRatio="1.3"
-                                                     Visibility="{Binding DownloadingVisibility}">
+                                <li:LoadingIndicator
+                                    HorizontalAlignment="Stretch"
+                                    SpeedRatio="1.3"
+                                    Style="{StaticResource LoadingIndicatorPulseStyleKey}"
+                                    Visibility="{Binding PollingVisibility}" />
+                                <wpfui:Icon
+                                    HorizontalAlignment="Center"
+                                    FontSize="28"
+                                    Glyph="ArrowDownload48"
+                                    Visibility="{Binding IdleVisibility}" />
+                                <li:LoadingIndicator
+                                    SpeedRatio="1.3"
+                                    Style="{StaticResource LoadingIndicatorArcsStyleKey}"
+                                    Visibility="{Binding DownloadingVisibility}">
                                     <li:LoadingIndicator.LayoutTransform>
                                         <ScaleTransform ScaleX="0.7" ScaleY="0.7" />
                                     </li:LoadingIndicator.LayoutTransform>
                                 </li:LoadingIndicator>
-                                <wpfui:Icon FontSize="28"
-                                            HorizontalAlignment="Center"
-                                            Glyph="CheckmarkCircle48"
-                                            Visibility="{Binding CompleteVisibility}" />
+                                <wpfui:Icon
+                                    HorizontalAlignment="Center"
+                                    FontSize="28"
+                                    Glyph="CheckmarkCircle48"
+                                    Visibility="{Binding CompleteVisibility}" />
                             </Grid>
-                            <Grid Width="70"
-                                  Grid.Column="1"
-                                  Height="40">
-                                <Image Width="70"
-                                       Height="53"
-                                       Source="{Binding Thumbnail}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center">
+                            <Grid
+                                Grid.Column="1"
+                                Width="70"
+                                Height="40">
+                                <Image
+                                    Width="70"
+                                    Height="53"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding Thumbnail}">
                                     <Image.Clip>
-                                        <RectangleGeometry Rect="0 7 70 38" RadiusX="4" RadiusY="4" />
+                                        <RectangleGeometry
+                                            RadiusX="4"
+                                            RadiusY="4"
+                                            Rect="0 7 70 38" />
                                     </Image.Clip>
                                 </Image>
                             </Grid>
-                            <UniformGrid Grid.Column="2"
-                                         Rows="{Binding Children.Count, Mode=OneWay, RelativeSource={RelativeSource Self}}"
-                                         Columns="1"
-                                         Margin="10,0,0,0">
-                                <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-                                <TextBlock Text="{Binding Author}" VerticalAlignment="Center"
-                                           Foreground="{DynamicResource UiBrushForegroundSecondary}" />
+                            <UniformGrid
+                                Grid.Column="2"
+                                Margin="10,0,0,0"
+                                Columns="1"
+                                Rows="{Binding Children.Count, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource UiBrushForegroundSecondary}"
+                                    Text="{Binding Author}" />
                                 <ProgressBar Visibility="Collapsed" />
                             </UniformGrid>
                         </SelectiveScrollingGrid>
@@ -187,9 +216,10 @@
             </ListBox.ItemTemplate>
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"
-                                IsItemsHost="True"
-                                IsHitTestVisible="False" />
+                    <StackPanel
+                        IsHitTestVisible="False"
+                        IsItemsHost="True"
+                        Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
         </ListBox>
@@ -235,7 +265,9 @@
                 <wpfui:CardCollapse Title="Find out more!"
                                     Margin="0,0,0,8"
                                     Glyph="Heart28">
-                    --><!-- Filled="True" --><!--
+        -->
+        <!--  Filled="True"  -->
+        <!--
                     <StackPanel>
                         <TextBlock Margin="0,0,0,4"
                                    FontWeight="Medium"

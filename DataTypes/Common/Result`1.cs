@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+﻿#region Copyright (C) 2017-2022  Cody Bock
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -132,7 +132,7 @@ public readonly struct Result<T> : IResult<Result<T>> {
     /// <returns>
     /// The result of the conversion.
     /// </returns>
-    public static explicit operator Result<T>( Result Result ) => new Result<T>(Result.WasSuccess ? default(T) : _NoData, Result.WasSuccess, Result.ErrorCode, Result.Message);
+    public static explicit operator Result<T>( Result Result ) => new Result<T>(Result.WasSuccess ? default : _NoData, Result.WasSuccess, Result.ErrorCode, Result.Message);
 
     /// <summary>
     /// Outputs the value of the result.

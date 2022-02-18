@@ -1,4 +1,4 @@
-﻿#region Copyright (C) 2017-2021  Starflash Studios
+﻿#region Copyright (C) 2017-2022  Cody Bock
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License (Version 3.0)
 // as published by the Free Software Foundation.
@@ -6,7 +6,11 @@
 // More information can be found here: https://www.gnu.org/licenses/gpl-3.0.en.html
 #endregion
 
+#region Using Directives
+
 using System.Collections.ObjectModel;
+
+#endregion
 
 namespace DownTube.Extensions;
 
@@ -134,7 +138,7 @@ public static class EnumerableExtensions {
         int I = 0;
         foreach ( T Item in Enum ) {
             if ( I >= StartIndex ) {
-                if ( (I - StartIndex) > Length ) { yield break; }
+                if ( I - StartIndex > Length ) { yield break; }
                 yield return Item;
             }
             I++;
